@@ -32,18 +32,31 @@ Keep archived tool versions in `tools/vX/` directories with their own `VERSION.m
 - Why it was superseded
 - Key differences from current
 
-## Pipeline Architecture (v3.1)
+## Pipeline Architecture (v3.2)
 
 ```
-transcripts/ → sample → analyze → metrics → extract_nl → insights → report
+transcripts/ → sample → analyze (parallel) → metrics → extract_nl → insights → report
 ```
 
 1. `sample_transcripts.py` - Random stratified sampling
-2. `batch_analyze.py` - LLM analysis (produces v3 JSON)
+2. `batch_analyze.py` - LLM analysis with parallel processing (v3.2: default 3 workers)
 3. `compute_metrics.py` - Section A: Deterministic metrics
-4. `extract_nl_fields.py` - Condensed NL data for LLM
+4. `extract_nl_fields.py` - Condensed NL data for LLM (v3.1)
 5. `generate_insights.py` - Section B: LLM insights
 6. `render_report.py` - Markdown executive summary
+
+### Parallelization (v3.2)
+
+```bash
+# Default: 3 parallel workers
+python3 tools/run_analysis.py -n 200
+
+# More aggressive
+python3 tools/run_analysis.py -n 300 --workers 5
+
+# Sequential (v3.1 behavior)
+python3 tools/run_analysis.py -n 50 --workers 1
+```
 
 ## Testing
 

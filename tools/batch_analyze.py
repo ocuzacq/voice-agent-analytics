@@ -1,21 +1,64 @@
 #!/usr/bin/env python3
 """
-Batch Transcript Analyzer for Vacatia AI Voice Agent Analytics (v3)
+Batch Transcript Analyzer for Vacatia AI Voice Agent Analytics (v3.2)
 
-Analyzes multiple transcripts with rate limiting and progress tracking.
+Analyzes multiple transcripts with configurable parallelization and rate limiting.
 Produces v3 schema analyses with 18 fields including policy_gap_detail,
 customer_verbatim, agent_miss_detail, and resolution_steps.
+
+v3.2: Added parallel processing (default 3 workers) for faster batch analysis.
 """
 
 import argparse
 import sys
 import time
+import threading
+from concurrent.futures import ThreadPoolExecutor, as_completed
 from pathlib import Path
 from datetime import datetime
 
 sys.path.insert(0, str(Path(__file__).parent))
 
 from analyze_transcript import configure_genai, analyze_transcript, save_analysis
+
+
+# Thread-safe counter for progress tracking
+class ProgressTracker:
+    """Thread-safe progress tracker."""
+
+    def __init__(self, total: int):
+        self.total = total
+        self.completed = 0
+        self.successful = 0
+        self.failed = 0
+        self.errors: list[str] = []
+        self.lock = threading.Lock()
+        self.start_time = datetime.now()
+
+    def record_success(self, transcript_name: str, outcome: str, effort: str):
+        with self.lock:
+            self.completed += 1
+            self.successful += 1
+            elapsed = (datetime.now() - self.start_time).total_seconds()
+            rate = self.completed / elapsed if elapsed > 0 else 0
+            eta = (self.total - self.completed) / rate if rate > 0 else 0
+            print(f"[{self.completed}/{self.total}] ✓ {transcript_name}: {outcome} | effort={effort} ({rate:.1f}/s, ETA {eta:.0f}s)")
+
+    def record_failure(self, transcript_name: str, error: str):
+        with self.lock:
+            self.completed += 1
+            self.failed += 1
+            self.errors.append(f"{transcript_name}: {error}")
+            print(f"[{self.completed}/{self.total}] ✗ {transcript_name}: {error}")
+
+    def get_results(self) -> dict:
+        with self.lock:
+            return {
+                "total": self.total,
+                "successful": self.successful,
+                "failed": self.failed,
+                "errors": self.errors.copy()
+            }
 
 
 def get_transcripts_to_analyze(input_dir: Path, output_dir: Path, skip_existing: bool = True) -> list[Path]:
@@ -29,7 +72,78 @@ def get_transcripts_to_analyze(input_dir: Path, output_dir: Path, skip_existing:
     return sorted(transcripts)
 
 
-def batch_analyze(
+def analyze_single(
+    transcript: Path,
+    output_dir: Path,
+    model_name: str,
+    tracker: ProgressTracker,
+    rate_limit: float,
+    max_retries: int
+) -> bool:
+    """Analyze a single transcript with retries. Thread-safe."""
+    for retry in range(max_retries):
+        try:
+            analysis = analyze_transcript(transcript, model_name)
+            save_analysis(analysis, output_dir)
+            outcome = analysis.get("outcome", "?")
+            effort = analysis.get("customer_effort", "?")
+            tracker.record_success(transcript.name, outcome, str(effort))
+
+            # Rate limiting per call
+            if rate_limit > 0:
+                time.sleep(rate_limit)
+
+            return True
+        except Exception as e:
+            if retry < max_retries - 1:
+                # Exponential backoff on retry
+                wait_time = rate_limit * (2 ** (retry + 1))
+                time.sleep(wait_time)
+            else:
+                tracker.record_failure(transcript.name, str(e))
+                return False
+
+    return False
+
+
+def batch_analyze_parallel(
+    transcripts: list[Path],
+    output_dir: Path,
+    model_name: str,
+    workers: int = 3,
+    rate_limit: float = 1.0,
+    max_retries: int = 3,
+    stop_on_error: bool = False
+) -> dict:
+    """Analyze multiple transcripts in parallel."""
+    tracker = ProgressTracker(len(transcripts))
+
+    print(f"\nStarting parallel analysis with {workers} workers...")
+    print(f"Rate limit: {rate_limit}s per call, Max retries: {max_retries}")
+    print()
+
+    with ThreadPoolExecutor(max_workers=workers) as executor:
+        futures = {
+            executor.submit(
+                analyze_single,
+                transcript, output_dir, model_name, tracker, rate_limit, max_retries
+            ): transcript
+            for transcript in transcripts
+        }
+
+        for future in as_completed(futures):
+            if stop_on_error:
+                results = tracker.get_results()
+                if results["failed"] > 0:
+                    # Cancel remaining futures
+                    for f in futures:
+                        f.cancel()
+                    break
+
+    return tracker.get_results()
+
+
+def batch_analyze_sequential(
     transcripts: list[Path],
     output_dir: Path,
     model_name: str,
@@ -37,7 +151,7 @@ def batch_analyze(
     max_retries: int = 3,
     stop_on_error: bool = False
 ) -> dict:
-    """Analyze multiple transcripts."""
+    """Analyze multiple transcripts sequentially (legacy mode)."""
     results = {"total": len(transcripts), "successful": 0, "failed": 0, "errors": []}
 
     for i, transcript in enumerate(transcripts, 1):
@@ -70,7 +184,24 @@ def batch_analyze(
 
 
 def main():
-    parser = argparse.ArgumentParser(description="Batch analyze transcripts (v3 schema)")
+    parser = argparse.ArgumentParser(
+        description="Batch analyze transcripts (v3.2 - parallel processing)",
+        formatter_class=argparse.RawDescriptionHelpFormatter,
+        epilog="""
+Examples:
+    # Default: 3 parallel workers
+    python3 tools/batch_analyze.py
+
+    # Custom parallelization
+    python3 tools/batch_analyze.py --workers 5
+
+    # Sequential mode (v3.1 behavior)
+    python3 tools/batch_analyze.py --workers 1
+
+    # Aggressive parallelization (use with caution)
+    python3 tools/batch_analyze.py --workers 10 --rate-limit 0.5
+        """
+    )
     parser.add_argument("-i", "--input-dir", type=Path,
                         default=Path(__file__).parent.parent / "sampled",
                         help="Input directory")
@@ -78,15 +209,22 @@ def main():
                         default=Path(__file__).parent.parent / "analyses",
                         help="Output directory")
     parser.add_argument("--model", default="gemini-2.5-flash", help="Model name")
-    parser.add_argument("--rate-limit", type=float, default=1.0, help="Delay between calls")
-    parser.add_argument("--max-retries", type=int, default=3, help="Max retries")
+    parser.add_argument("-w", "--workers", type=int, default=3,
+                        help="Number of parallel workers (default: 3, use 1 for sequential)")
+    parser.add_argument("--rate-limit", type=float, default=1.0,
+                        help="Delay between API calls per worker (seconds)")
+    parser.add_argument("--max-retries", type=int, default=3, help="Max retries per transcript")
     parser.add_argument("--no-skip-existing", action="store_true", help="Re-analyze existing")
     parser.add_argument("--stop-on-error", action="store_true", help="Stop on first error")
     parser.add_argument("--limit", type=int, help="Limit number to analyze")
 
     args = parser.parse_args()
 
-    print("Configuring API...")
+    print("=" * 50)
+    print("BATCH ANALYZER v3.2 (Parallel Processing)")
+    print("=" * 50)
+
+    print("\nConfiguring API...")
     try:
         configure_genai()
     except ValueError as e:
@@ -105,27 +243,41 @@ def main():
         print("No transcripts to analyze")
         return 0
 
-    print(f"Found {len(transcripts)} transcripts")
+    print(f"Found {len(transcripts)} transcripts to analyze")
+    print(f"Workers: {args.workers}, Rate limit: {args.rate_limit}s")
 
     start = datetime.now()
-    results = batch_analyze(
-        transcripts, args.output_dir, args.model,
-        args.rate_limit, args.max_retries, args.stop_on_error
-    )
-    duration = (datetime.now() - start).total_seconds()
 
-    print("\n" + "=" * 40)
-    print("BATCH COMPLETE (v3)")
-    print("=" * 40)
+    if args.workers == 1:
+        print("\nRunning in sequential mode...")
+        results = batch_analyze_sequential(
+            transcripts, args.output_dir, args.model,
+            args.rate_limit, args.max_retries, args.stop_on_error
+        )
+    else:
+        results = batch_analyze_parallel(
+            transcripts, args.output_dir, args.model,
+            args.workers, args.rate_limit, args.max_retries, args.stop_on_error
+        )
+
+    duration = (datetime.now() - start).total_seconds()
+    rate = results['successful'] / duration if duration > 0 else 0
+
+    print("\n" + "=" * 50)
+    print("BATCH COMPLETE (v3.2)")
+    print("=" * 50)
     print(f"Total: {results['total']}")
     print(f"Successful: {results['successful']}")
     print(f"Failed: {results['failed']}")
     print(f"Duration: {duration:.1f}s")
+    print(f"Throughput: {rate:.2f} transcripts/sec")
 
     if results['errors']:
         print("\nErrors:")
-        for err in results['errors']:
+        for err in results['errors'][:10]:  # Limit error output
             print(f"  - {err}")
+        if len(results['errors']) > 10:
+            print(f"  ... and {len(results['errors']) - 10} more errors")
 
     return 0 if results['failed'] == 0 else 1
 

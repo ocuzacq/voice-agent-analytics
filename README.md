@@ -8,7 +8,7 @@ Analytical framework to evaluate the Vacatia AI voice agent's performance using 
 - **Section A**: Python-calculated metrics (reproducible, auditable)
 - **Section B**: LLM-generated insights (executive narratives, recommendations)
 
-**v3.1 Enhancement**: Dedicated NL field extraction step for optimized LLM context usage.
+**v3.2 Enhancement**: Configurable parallel processing (default 3 workers) for faster batch analysis.
 
 ## Overview
 
@@ -26,17 +26,20 @@ Analytical framework to evaluate the Vacatia AI voice agent's performance using 
 # 1. Set your Google AI API key
 export GOOGLE_API_KEY="your-api-key-here"
 
-# 2. Run the full pipeline (50 transcripts by default)
+# 2. Run the full pipeline (50 transcripts, 3 parallel workers)
 python3 tools/run_analysis.py
 
 # OR quick test with 5 transcripts
 python3 tools/run_analysis.py --quick
 
+# OR larger batch with more parallelization
+python3 tools/run_analysis.py -n 200 --workers 5
+
 # OR step-by-step:
 python3 tools/sample_transcripts.py -n 50
-python3 tools/batch_analyze.py
+python3 tools/batch_analyze.py --workers 3   # v3.2: Parallel processing
 python3 tools/compute_metrics.py
-python3 tools/extract_nl_fields.py   # v3.1: Condensed NL data for LLM
+python3 tools/extract_nl_fields.py           # v3.1: Condensed NL data for LLM
 python3 tools/generate_insights.py
 python3 tools/render_report.py
 ```
@@ -48,11 +51,14 @@ python3 tools/render_report.py
 End-to-end pipeline that runs all steps in sequence.
 
 ```bash
-# Full pipeline with 50 transcripts
+# Full pipeline with 50 transcripts (3 parallel workers)
 python3 tools/run_analysis.py
 
 # Quick test with 5 transcripts
 python3 tools/run_analysis.py --quick
+
+# Larger batch with more parallelization
+python3 tools/run_analysis.py -n 200 --workers 5
 
 # Custom sample size with reproducible seed
 python3 tools/run_analysis.py -n 100 --seed 42
@@ -84,12 +90,14 @@ python3 tools/analyze_transcript.py sampled/some-uuid.txt --stdout
 
 ### `batch_analyze.py`
 
-Batch analyzes multiple transcripts with rate limiting and progress tracking.
+Batch analyzes multiple transcripts with configurable parallelization (v3.2).
 
 ```bash
-python3 tools/batch_analyze.py
-python3 tools/batch_analyze.py --limit 10  # First 10 only
-python3 tools/batch_analyze.py --no-skip-existing  # Re-analyze all
+python3 tools/batch_analyze.py                    # Default: 3 parallel workers
+python3 tools/batch_analyze.py --workers 5        # More parallelization
+python3 tools/batch_analyze.py --workers 1        # Sequential (v3.1 behavior)
+python3 tools/batch_analyze.py --limit 10         # First 10 only
+python3 tools/batch_analyze.py --no-skip-existing # Re-analyze all
 ```
 
 ### `compute_metrics.py`
@@ -174,7 +182,8 @@ reports/
 | **v1** | ~50 | +Performance, agent quality, customer profile | Archived | `tools/v1/VERSION.md` |
 | **v2** | 14 | Actionable insights, failure analysis, training | Previous | `tools/v2/VERSION.md` |
 | **v3** | 18 | Hybrid metrics + insights, policy gaps, verbatims | Previous | `tools/v3/VERSION.md` |
-| **v3.1** | 18 | Dedicated NL extraction for optimized LLM context | **Current** | [`README_v3.1.md`](README_v3.1.md) |
+| **v3.1** | 18 | Dedicated NL extraction for optimized LLM context | Previous | [`README_v3.1.md`](README_v3.1.md) |
+| **v3.2** | 18 | Configurable parallel processing (default 3 workers) | **Current** | [`README_v3.2.md`](README_v3.2.md) |
 
 ### Versioning Guidelines
 

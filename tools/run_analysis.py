@@ -1,24 +1,26 @@
 #!/usr/bin/env python3
 """
-End-to-End Analysis Pipeline for Vacatia AI Voice Agent Analytics (v3.1)
+End-to-End Analysis Pipeline for Vacatia AI Voice Agent Analytics (v3.2)
 
 Orchestrates the complete analysis workflow:
 1. sample_transcripts.py → Sample transcripts from corpus
-2. batch_analyze.py → Analyze transcripts with LLM (v3 schema)
+2. batch_analyze.py → Analyze transcripts with LLM (v3 schema, parallel in v3.2)
 3. compute_metrics.py → Calculate Section A deterministic metrics
-4. extract_nl_fields.py → Extract condensed NL data for LLM (NEW in v3.1)
+4. extract_nl_fields.py → Extract condensed NL data for LLM (v3.1)
 5. generate_insights.py → Generate Section B LLM insights
 6. render_report.py → Render Markdown executive summary
 
+v3.2: Added configurable parallelization (default 3 workers) for batch analysis.
+
 Usage:
-    # Full pipeline with 50 transcripts
+    # Full pipeline with 50 transcripts (3 parallel workers)
     python3 tools/run_analysis.py
 
     # Quick test with 5 transcripts
     python3 tools/run_analysis.py --quick
 
-    # Custom sample size
-    python3 tools/run_analysis.py -n 100
+    # Custom sample size with more parallelization
+    python3 tools/run_analysis.py -n 200 --workers 5
 
     # Skip sampling (use existing sampled directory)
     python3 tools/run_analysis.py --skip-sampling
@@ -87,8 +89,10 @@ Examples:
                         help="Skip LLM insights generation (metrics only)")
     parser.add_argument("--model", type=str, default="gemini-2.5-flash",
                         help="Gemini model to use")
+    parser.add_argument("-w", "--workers", type=int, default=3,
+                        help="Number of parallel workers for batch analysis (default: 3)")
     parser.add_argument("--rate-limit", type=float, default=1.0,
-                        help="Delay between API calls in seconds")
+                        help="Delay between API calls per worker in seconds")
     parser.add_argument("--seed", type=int,
                         help="Random seed for reproducible sampling")
     parser.add_argument("--transcripts-dir", type=Path,
@@ -112,13 +116,14 @@ Examples:
         args.sample_size = 5
 
     print("=" * 60)
-    print("VACATIA AI VOICE AGENT ANALYTICS - v3 PIPELINE")
+    print("VACATIA AI VOICE AGENT ANALYTICS - v3.2 PIPELINE")
     print("=" * 60)
     print(f"Started: {datetime.now().isoformat()}")
     print(f"\nConfiguration:")
     print(f"  Sample size: {args.sample_size}")
     print(f"  Model: {args.model}")
-    print(f"  Rate limit: {args.rate_limit}s")
+    print(f"  Workers: {args.workers}")
+    print(f"  Rate limit: {args.rate_limit}s per worker")
     print(f"  Transcripts: {transcripts_dir}")
     print(f"  Output: {reports_dir}")
 
@@ -146,7 +151,7 @@ Examples:
         print("\n⏭️ Skipping sampling (--skip-sampling)")
         steps_completed.append("sampling (skipped)")
 
-    # Step 2: Batch analyze
+    # Step 2: Batch analyze (parallel in v3.2)
     if not args.skip_analysis:
         cmd = [
             sys.executable,
@@ -154,10 +159,11 @@ Examples:
             "-i", str(sampled_dir),
             "-o", str(analyses_dir),
             "--model", args.model,
+            "--workers", str(args.workers),
             "--rate-limit", str(args.rate_limit)
         ]
 
-        if run_step("Batch Analyze Transcripts (v3)", cmd):
+        if run_step(f"Batch Analyze Transcripts (v3.2, {args.workers} workers)", cmd):
             steps_completed.append("analysis")
         else:
             steps_failed.append("analysis")
