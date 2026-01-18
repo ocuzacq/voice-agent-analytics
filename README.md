@@ -1,0 +1,358 @@
+# Vacatia AI Voice Agent Analytics Framework
+
+Analytical framework to evaluate the Vacatia AI voice agent's performance using ~5,800 call transcripts.
+
+## Philosophy
+
+**Two-part report architecture** separating deterministic metrics from LLM-powered insights:
+- **Section A**: Python-calculated metrics (reproducible, auditable)
+- **Section B**: LLM-generated insights (executive narratives, recommendations)
+
+**v3.1 Enhancement**: Dedicated NL field extraction step for optimized LLM context usage.
+
+## Overview
+
+- **18-field analysis schema** (v3) - hybrid metrics + insights
+- **3 quality scores** - agent effectiveness, conversation quality, customer effort
+- **Policy gap breakdown** - structured categorization of capability limitations
+- **Customer verbatim** - direct quotes capturing frustration/needs
+- **Agent coaching insights** - specific missed opportunities
+- **Resolution steps** - call flow timeline
+- **Executive-ready Markdown reports**
+
+## Quick Start
+
+```bash
+# 1. Set your Google AI API key
+export GOOGLE_API_KEY="your-api-key-here"
+
+# 2. Run the full pipeline (50 transcripts by default)
+python3 tools/run_analysis.py
+
+# OR quick test with 5 transcripts
+python3 tools/run_analysis.py --quick
+
+# OR step-by-step:
+python3 tools/sample_transcripts.py -n 50
+python3 tools/batch_analyze.py
+python3 tools/compute_metrics.py
+python3 tools/extract_nl_fields.py   # v3.1: Condensed NL data for LLM
+python3 tools/generate_insights.py
+python3 tools/render_report.py
+```
+
+## Tools
+
+### `run_analysis.py` (Orchestrator)
+
+End-to-end pipeline that runs all steps in sequence.
+
+```bash
+# Full pipeline with 50 transcripts
+python3 tools/run_analysis.py
+
+# Quick test with 5 transcripts
+python3 tools/run_analysis.py --quick
+
+# Custom sample size with reproducible seed
+python3 tools/run_analysis.py -n 100 --seed 42
+
+# Skip sampling/analysis (use existing data)
+python3 tools/run_analysis.py --skip-sampling --skip-analysis
+
+# Metrics only (no LLM insights)
+python3 tools/run_analysis.py --skip-insights
+```
+
+### `sample_transcripts.py`
+
+Randomly selects N transcripts stratified by file size (proxy for call complexity).
+
+```bash
+python3 tools/sample_transcripts.py -n 50
+python3 tools/sample_transcripts.py -n 100 --seed 42  # Reproducible
+```
+
+### `analyze_transcript.py`
+
+Analyzes a single transcript using LLM (Gemini) and produces v3 JSON schema.
+
+```bash
+python3 tools/analyze_transcript.py sampled/some-uuid.txt
+python3 tools/analyze_transcript.py sampled/some-uuid.txt --stdout
+```
+
+### `batch_analyze.py`
+
+Batch analyzes multiple transcripts with rate limiting and progress tracking.
+
+```bash
+python3 tools/batch_analyze.py
+python3 tools/batch_analyze.py --limit 10  # First 10 only
+python3 tools/batch_analyze.py --no-skip-existing  # Re-analyze all
+```
+
+### `compute_metrics.py`
+
+Computes Section A: Deterministic Metrics from analysis JSON files.
+
+```bash
+python3 tools/compute_metrics.py
+python3 tools/compute_metrics.py --json-only
+```
+
+### `extract_nl_fields.py` (v3.1)
+
+Extracts and condenses natural language fields from v3 analyses for optimized LLM context usage.
+
+```bash
+python3 tools/extract_nl_fields.py
+python3 tools/extract_nl_fields.py --limit 50  # Test with subset
+```
+
+**Benefits over embedded extraction:**
+- ~70% smaller than full analysis JSONs
+- Explicit pipeline step (better architecture)
+- LLM-ready grouping by failure type
+
+### `generate_insights.py`
+
+Generates Section B: LLM-powered insights from metrics + NL summary.
+
+```bash
+python3 tools/generate_insights.py
+python3 tools/generate_insights.py --model gemini-2.5-flash
+```
+
+### `render_report.py`
+
+Renders the full report as executive-ready Markdown.
+
+```bash
+python3 tools/render_report.py
+python3 tools/render_report.py --stdout  # Print to console
+```
+
+## Output Files
+
+```
+reports/
+├── metrics_v3_{timestamp}.json           # Section A: Deterministic metrics
+├── nl_summary_v3_{timestamp}.json        # v3.1: Condensed NL fields for LLM
+├── report_v3_{timestamp}.json            # Combined Section A + B
+└── executive_summary_v3_{timestamp}.md   # Markdown executive report
+```
+
+## Directory Structure
+
+```
+.
+├── transcripts/           # 5822 raw transcript files
+├── tools/
+│   ├── run_analysis.py    # End-to-end orchestrator
+│   ├── sample_transcripts.py
+│   ├── analyze_transcript.py
+│   ├── batch_analyze.py
+│   ├── compute_metrics.py
+│   ├── extract_nl_fields.py  # v3.1: NL extraction
+│   ├── generate_insights.py
+│   ├── render_report.py
+│   ├── v0/                # Archived: Simple schema (~15 fields)
+│   ├── v1/                # Archived: Verbose schema (~50 fields)
+│   ├── v2/                # Previous: Actionable schema (14 fields)
+│   └── v3/                # Current: Hybrid schema (18 fields)
+├── sampled/               # Output from sampling script
+├── analyses/              # JSON output from analyzer
+└── reports/               # Aggregate metrics and reports
+```
+
+## Version History
+
+| Version | Fields | Focus | Status |
+|---------|--------|-------|--------|
+| **v0** | ~15 | Funnel, coverage, outcome | Archived |
+| **v1** | ~50 | +Performance, agent quality, customer profile | Archived (overengineered) |
+| **v2** | 14 | Actionable insights, failure analysis, training | Previous |
+| **v3** | 18 | Hybrid metrics + insights, policy gaps, verbatims | Previous |
+| **v3.1** | 18 | Dedicated NL extraction for optimized LLM context | **Current** |
+
+## Analysis Schema (v3)
+
+Each transcript analysis produces a JSON with 18 actionable fields:
+
+```json
+{
+  "call_id": "uuid",
+  "schema_version": "v3",
+
+  // === OUTCOME ===
+  "outcome": "resolved",
+  "resolution_type": "payment processed",
+
+  // === QUALITY SCORES (1-5) ===
+  "agent_effectiveness": 4,
+  "conversation_quality": 4,
+  "customer_effort": 2,
+
+  // === FAILURE ANALYSIS ===
+  "failure_point": "none",
+  "failure_description": null,
+  "was_recoverable": null,
+  "critical_failure": false,
+
+  // === ACTIONABLE FLAGS ===
+  "escalation_requested": false,
+  "repeat_caller_signals": false,
+  "training_opportunity": null,
+  "additional_intents": null,
+
+  "summary": "Customer called to make payment. Resolved after brief verification.",
+
+  // === NEW IN v3 ===
+  "policy_gap_detail": null,
+  "customer_verbatim": null,
+  "agent_miss_detail": null,
+  "resolution_steps": ["greeted customer", "verified identity", "processed payment", "confirmed success"]
+}
+```
+
+### New v3 Fields
+
+| Field | Type | Description |
+|-------|------|-------------|
+| `policy_gap_detail` | object | Structured breakdown when failure_point="policy_gap" |
+| `customer_verbatim` | string | Key quote capturing customer frustration/need |
+| `agent_miss_detail` | string | What agent should have done differently |
+| `resolution_steps` | array | Sequence of actions taken during the call |
+
+### Policy Gap Detail Structure
+
+```json
+{
+  "category": "capability_limit | data_access | auth_restriction | business_rule | integration_missing",
+  "specific_gap": "what exactly couldn't be done",
+  "customer_ask": "what the customer wanted",
+  "blocker": "why it couldn't be fulfilled"
+}
+```
+
+## Two-Part Report Structure
+
+### Section A: Deterministic Metrics
+
+All metrics computed via Python - reproducible and auditable:
+
+- Outcome distribution with rates
+- Key rates: success, containment, escalation, failure
+- Quality score statistics (mean, median, std)
+- Failure analysis by failure_point
+- Policy gap breakdown by category
+- Top specific gaps and customer asks
+- Actionable flags
+- Training priorities
+
+### Section B: LLM-Generated Insights
+
+Strategic analysis generated by LLM:
+
+- **Executive summary** - 2-3 sentence takeaway
+- **Root cause analysis** - Primary driver + contributing factors
+- **Recommendations** - P0/P1/P2 prioritized actions with expected impact
+- **Trend narratives** - Failure patterns, customer experience, agent performance
+- **Verbatim highlights** - Most frustrated, common ask, biggest miss
+
+## Metrics Reference
+
+### Key Rates
+
+| Metric | Description |
+|--------|-------------|
+| **Success Rate** | resolved / total |
+| **Containment Rate** | (resolved + abandoned) / total |
+| **Escalation Rate** | escalated / total |
+| **Failure Rate** | non-resolved / total |
+
+### Quality Scores (1-5 scale)
+
+| Score | What It Measures | 1 = | 5 = |
+|-------|-----------------|-----|-----|
+| `agent_effectiveness` | Understanding + response quality | Poor | Perfect |
+| `conversation_quality` | Flow, tone, clarity | Stilted | Natural |
+| `customer_effort` | Customer work required | Effortless | Painful |
+
+### Failure Point Taxonomy
+
+| Type | Description |
+|------|-------------|
+| `none` | Call succeeded |
+| `nlu_miss` | Agent misunderstood customer |
+| `wrong_action` | Agent understood but acted incorrectly |
+| `policy_gap` | Business rules prevented resolution |
+| `customer_confusion` | Customer unclear or wrong info |
+| `tech_issue` | System errors, call quality |
+| `other` | Anything else |
+
+### Policy Gap Categories
+
+| Category | Description |
+|----------|-------------|
+| `capability_limit` | Feature not built yet |
+| `data_access` | Agent can't access needed info |
+| `auth_restriction` | Verification prevented action |
+| `business_rule` | Policy prevents action |
+| `integration_missing` | System integration unavailable |
+
+## Validation Rules (v3)
+
+1. **failure_point consistency**: If outcome ∈ {abandoned, escalated, unclear} → failure_point ≠ "none"
+2. **policy_gap_detail required**: If failure_point = "policy_gap" → policy_gap_detail must be populated
+3. **agent_miss_detail conditional**: If was_recoverable = true → agent_miss_detail should be populated
+
+## Requirements
+
+- Python 3.10+
+- `google-generativeai` package
+
+```bash
+pip install google-generativeai
+```
+
+## Configuration
+
+Set your Google AI API key:
+
+```bash
+export GOOGLE_API_KEY="your-key"
+# or
+export GEMINI_API_KEY="your-key"
+```
+
+## Sample Output
+
+### Executive Summary (Markdown)
+
+```markdown
+# Vacatia AI Voice Agent Performance Report
+Generated: 2026-01-18 14:30 | Calls Analyzed: 50
+
+## Executive Summary
+The AI agent resolves 35% of calls, with policy gaps accounting for
+44% of failures. Authentication restrictions and missing capabilities
+are the primary blockers. Quick wins: adding address change capability
+could resolve 8% of abandoned calls.
+
+## Key Metrics at a Glance
+| Metric | Value | Assessment |
+|--------|-------|------------|
+| Success Rate | 34.9% | ⚠️ Below target |
+| Escalation Rate | 20.9% | ✅ Within range |
+| Customer Effort | 3.26/5 | ⚠️ Room for improvement |
+...
+```
+
+## Existing Analysis
+
+The `cowork/` directory contains previous manual analysis:
+- `Vacatia_AI_Agent_Analysis_FINAL.xlsx`
+- `Vacatia_Transcript_Analysis_Results.xlsx`
+- `Vacatia_AI_Agent_Codebook_v1.docx`

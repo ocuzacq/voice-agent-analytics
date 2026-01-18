@@ -1,0 +1,80 @@
+{
+  "_description": "Ground truth metrics for v3 test data (5 files)",
+  "_test_files": [
+    "test-v3-policy-gap-001.json",
+    "test-v3-policy-gap-002.json",
+    "test-v3-nlu-miss-001.json",
+    "test-v3-resolved-001.json",
+    "test-v3-auth-fail-001.json"
+  ],
+
+  "total_calls": 5,
+
+  "outcome_distribution": {
+    "resolved": {"count": 1, "rate": 0.2},
+    "escalated": {"count": 1, "rate": 0.2},
+    "abandoned": {"count": 3, "rate": 0.6}
+  },
+
+  "key_rates": {
+    "success_rate": 0.2,
+    "containment_rate": 0.8,
+    "escalation_rate": 0.2,
+    "failure_rate": 0.8
+  },
+
+  "failure_analysis": {
+    "total_failures": 4,
+    "failure_rate": 0.8,
+    "by_failure_point": {
+      "policy_gap": {"count": 3, "rate": 0.75},
+      "nlu_miss": {"count": 1, "rate": 0.25}
+    },
+    "recoverable_count": 3,
+    "recoverable_rate": 0.75
+  },
+
+  "quality_scores": {
+    "agent_effectiveness": {"n": 5, "mean": 3.4, "median": 3.0, "min": 2, "max": 5},
+    "conversation_quality": {"n": 5, "mean": 3.4, "median": 3.0, "min": 2, "max": 5},
+    "customer_effort": {"n": 5, "mean": 3.4, "median": 4.0, "min": 1, "max": 5}
+  },
+
+  "policy_gap_breakdown": {
+    "by_category": {
+      "capability_limit": {"count": 1},
+      "data_access": {"count": 1},
+      "auth_restriction": {"count": 1}
+    },
+    "total_gaps": 3
+  },
+
+  "nl_extraction": {
+    "total_verbatims": 4,
+    "total_agent_misses": 3,
+    "total_policy_gap_details": 3,
+    "by_failure_type": {
+      "policy_gap": 3,
+      "nlu_miss": 1
+    }
+  },
+
+  "schema_validation": {
+    "outcome_failure_consistency": {
+      "_rule": "resolved outcome should have failure_point=none, non-resolved should have specific failure_point",
+      "expected_valid": 5
+    },
+    "policy_gap_detail_population": {
+      "_rule": "failure_point=policy_gap should have policy_gap_detail populated",
+      "expected_valid": 3
+    },
+    "quality_score_bounds": {
+      "_rule": "all quality scores should be 1-5",
+      "expected_valid": 5
+    },
+    "recoverable_miss_detail": {
+      "_rule": "was_recoverable=true should have agent_miss_detail (soft rule)",
+      "expected_valid": 3
+    }
+  }
+}

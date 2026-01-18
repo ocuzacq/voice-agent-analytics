@@ -1,0 +1,22 @@
+{
+  "call_id": "test-v3-resolved-001",
+  "outcome": "resolved",
+  "resolution_type": "payment link sent",
+  "agent_effectiveness": 5,
+  "conversation_quality": 5,
+  "customer_effort": 1,
+  "failure_point": "none",
+  "failure_description": null,
+  "was_recoverable": null,
+  "critical_failure": false,
+  "escalation_requested": false,
+  "repeat_caller_signals": false,
+  "training_opportunity": null,
+  "additional_intents": null,
+  "summary": "Customer successfully received payment link for maintenance fees. Smooth interaction.",
+  "policy_gap_detail": null,
+  "customer_verbatim": null,
+  "agent_miss_detail": null,
+  "resolution_steps": ["greeted customer", "verified identity", "customer requested payment link", "sent payment link via SMS", "confirmed receipt", "ended call"],
+  "schema_version": "v3"
+}

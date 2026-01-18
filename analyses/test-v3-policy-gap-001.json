@@ -1,0 +1,27 @@
+{
+  "call_id": "test-v3-policy-gap-001",
+  "outcome": "abandoned",
+  "resolution_type": "none",
+  "agent_effectiveness": 3,
+  "conversation_quality": 3,
+  "customer_effort": 4,
+  "failure_point": "policy_gap",
+  "failure_description": "Agent could not process address change request - feature not available",
+  "was_recoverable": true,
+  "critical_failure": false,
+  "escalation_requested": true,
+  "repeat_caller_signals": true,
+  "training_opportunity": "escalation_handling",
+  "additional_intents": "Customer also asked about payment due date",
+  "summary": "Customer wanted to update mailing address but agent lacks capability. Customer frustrated after multiple prior calls.",
+  "policy_gap_detail": {
+    "category": "capability_limit",
+    "specific_gap": "cannot process address changes",
+    "customer_ask": "update mailing address for statements",
+    "blocker": "Address update feature not implemented in voice agent"
+  },
+  "customer_verbatim": "I've called three times about this and no one can help me change my address",
+  "agent_miss_detail": "Should have immediately offered transfer to human agent when recognizing address change request is not supported",
+  "resolution_steps": ["greeted customer", "identified address change request", "explained limitation", "customer expressed frustration", "offered escalation", "customer abandoned before transfer"],
+  "schema_version": "v3"
+}

@@ -1,0 +1,27 @@
+{
+  "call_id": "test-v3-auth-fail-001",
+  "outcome": "abandoned",
+  "resolution_type": "none",
+  "agent_effectiveness": 3,
+  "conversation_quality": 3,
+  "customer_effort": 4,
+  "failure_point": "policy_gap",
+  "failure_description": "Customer could not be verified - phone number not matching account",
+  "was_recoverable": true,
+  "critical_failure": false,
+  "escalation_requested": false,
+  "repeat_caller_signals": false,
+  "training_opportunity": "verification",
+  "additional_intents": "Customer mentioned they recently changed phone numbers",
+  "summary": "Verification failed because customer's new phone number wasn't updated in system. No alternative verification offered.",
+  "policy_gap_detail": {
+    "category": "auth_restriction",
+    "specific_gap": "cannot verify customer with non-matching phone",
+    "customer_ask": "access account to check balance",
+    "blocker": "Phone-based verification is only method available"
+  },
+  "customer_verbatim": "But I just changed my phone last week, the old number should still be on file",
+  "agent_miss_detail": "Should have offered alternative verification method (email, last 4 SSN) or offered to transfer to human who can manually verify",
+  "resolution_steps": ["greeted customer", "attempted phone verification", "verification failed", "customer explained phone change", "agent repeated verification requirement", "customer hung up"],
+  "schema_version": "v3"
+}
