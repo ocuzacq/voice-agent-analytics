@@ -1,9 +1,21 @@
 #!/usr/bin/env python3
 """
-LLM Insights Generator for Vacatia AI Voice Agent Analytics (v3.1)
+LLM Insights Generator for Vacatia AI Voice Agent Analytics (v3.4)
 
 Generates Section B: LLM-powered insights by passing Section A metrics
 and the condensed NL summary (from extract_nl_fields.py) to Gemini.
+
+v3.4 additions:
+- Inline descriptions for ALL table rows (key metrics, failure types, policy gaps)
+- key_metrics_descriptions: WHY-focused context for each metric (drivers/causes)
+- failure_type_descriptions: Concise inline context for each failure type
+- policy_gap_descriptions: Concise inline context for each policy gap category
+- major_failure_breakdowns: Sub-breakdowns for failure types with ≥5% of failures
+
+v3.3 additions:
+- Call ID references throughout (failure entries, verbatims, policy gaps)
+- supporting_call_ids in actionable_recommendations
+- customer_ask_clusters: Semantic grouping of similar customer asks
 
 Primary input: nl_summary_v3_{timestamp}.json (from extract_nl_fields.py)
 """
@@ -22,11 +34,11 @@ INSIGHTS_SYSTEM_PROMPT = """You are a senior call center analytics consultant. Y
 
 You will receive:
 1. Section A: Deterministic metrics (calculated via Python - factual, auditable)
-2. Aggregated qualitative data: failure descriptions, customer quotes, agent misses
+2. Aggregated qualitative data: failure descriptions, customer quotes, agent misses (with call_ids for traceability)
 
 Your task: Generate Section B insights that synthesize the data into strategic recommendations.
 
-## Output Format
+## Output Format (v3.4)
 
 Return ONLY valid JSON matching this structure:
 {
@@ -44,7 +56,8 @@ Return ONLY valid JSON matching this structure:
       "category": "capability | training | prompt | process",
       "recommendation": "string (specific action to take)",
       "expected_impact": "string (e.g., 'Could resolve 18% of failures')",
-      "evidence": "string (why this matters)"
+      "evidence": "string (why this matters)",
+      "supporting_call_ids": ["call_id1", "call_id2"]
     }
   ],
 
@@ -58,7 +71,39 @@ Return ONLY valid JSON matching this structure:
     "most_frustrated": "string (worst customer quote showing pain)",
     "most_common_ask": "string (recurring unmet customer need)",
     "biggest_miss": "string (most impactful missed agent opportunity)"
-  }
+  },
+
+  "key_metrics_descriptions": {
+    "success_rate": "WHY this rate - main driver/cause (max 15 words)",
+    "escalation_rate": "WHY this rate - main driver/cause (max 15 words)",
+    "failure_rate": "WHY this rate - main driver/cause (max 15 words)",
+    "customer_effort": "WHY this score - main driver/cause (max 15 words)"
+  },
+
+  "failure_type_descriptions": {
+    "<failure_type>": "concise run-specific description (max 15 words)"
+  },
+
+  "policy_gap_descriptions": {
+    "<category>": "concise run-specific description (max 15 words)"
+  },
+
+  "major_failure_breakdowns": {
+    "<failure_type>": {
+      "patterns": [
+        {"pattern": "pattern name", "count": 10, "description": "run-specific context (max 15 words)"}
+      ]
+    }
+  },
+
+  "customer_ask_clusters": [
+    {
+      "canonical_label": "Human-readable cluster name (e.g., 'Request human agent transfer')",
+      "member_asks": ["speak to a representative", "talk to a live agent", "..."],
+      "total_count": 10,
+      "example_call_ids": ["call_id1", "call_id2", "call_id3"]
+    }
+  ]
 }
 
 ## Guidelines
@@ -74,6 +119,22 @@ Return ONLY valid JSON matching this structure:
 5. **Connect dots**: Link failure patterns to customer experience to recommendations
 
 6. **Be concise**: Executive summaries should be scannable in 30 seconds
+
+7. **Include call_ids**: For each recommendation, include 2-5 supporting call_ids that exemplify the issue
+
+8. **Semantic clustering - CRITICAL**: You will receive a list titled "ALL Customer Asks for Clustering" containing every customer_ask from policy gap failures. You MUST:
+   - Group semantically similar asks (e.g., "speak to a representative", "Representative.", "talk to a live agent", "I need a real person" → all cluster as "Request human agent transfer")
+   - Count EVERY item in the list - the total across all clusters should equal the number of asks provided
+   - The `total_count` for each cluster should reflect actual occurrences, not pre-aggregated counts
+   - Common clusters: "Request human agent", "Make payment by phone", "Make reservation", "RCI deposit/exchange", etc.
+
+9. **CRITICAL - ALL descriptions required**: You MUST provide a description for EVERY row in failure_type_descriptions, policy_gap_descriptions, and key_metrics_descriptions. Do not skip any. If a failure type or category appears in the metrics, it MUST have a corresponding description.
+
+10. **Key metrics descriptions - WHY, not WHAT**: For key_metrics_descriptions, focus on the PRIMARY DRIVER or ROOT CAUSE behind each metric value. Don't restate the number or compare to a threshold. Explain WHY.
+   - BAD: "Below 50% target; majority fail"
+   - GOOD: "Driven by dead-end escalation; verified customers can't reach humans"
+
+11. **Sub-breakdowns for major failure types**: For each failure_type representing ≥5% of total failures (excluding policy_gap which already has a breakdown), analyze the failure descriptions and identify 2-5 common patterns. Group similar failures and provide run-specific context. Include in major_failure_breakdowns.
 
 Return ONLY the JSON object, no markdown code blocks or additional text.
 """
@@ -124,7 +185,7 @@ def extract_json_from_response(text: str) -> dict:
 
 
 def build_insights_prompt(metrics: dict, nl_summary: dict) -> str:
-    """Build the prompt for LLM insight generation using v3.1 NL summary format."""
+    """Build the prompt for LLM insight generation using v3.4 NL summary format with call_ids."""
 
     # Format Section A metrics
     metrics_json = json.dumps(metrics, indent=2)
@@ -132,13 +193,15 @@ def build_insights_prompt(metrics: dict, nl_summary: dict) -> str:
     # Format natural language fields from nl_summary_v3 structure
     nl_sections = []
 
-    # Failures grouped by type (new v3.1 structure)
+    # Failures grouped by type (v3.3: includes call_id for traceability)
     if nl_summary.get("by_failure_type"):
         nl_sections.append("## Failures by Type")
         for fp_type, entries in nl_summary["by_failure_type"].items():
             nl_sections.append(f"\n### {fp_type} ({len(entries)} calls)")
             for entry in entries[:10]:  # Limit per type
-                parts = [f"[{entry.get('outcome', 'unknown')}]"]
+                call_id = entry.get('call_id', 'unknown')
+                outcome = entry.get('outcome', 'unknown')
+                parts = [f"[{call_id}]", f"[{outcome}]"]
                 if entry.get("description"):
                     parts.append(entry["description"])
                 if entry.get("verbatim"):
@@ -147,35 +210,49 @@ def build_insights_prompt(metrics: dict, nl_summary: dict) -> str:
                     parts.append(f'Miss: {entry["miss"]}')
                 nl_sections.append(f"- {' | '.join(parts)}")
 
-    # Customer verbatims (all quotes)
+    # Customer verbatims (all quotes) - v3.3: includes call_id
     if nl_summary.get("all_verbatims"):
         nl_sections.append("\n## Customer Verbatims (direct quotes)")
         for v in nl_summary["all_verbatims"][:15]:
-            nl_sections.append(f'- [{v.get("outcome", "unknown")}] "{v.get("quote", "")}"')
+            call_id = v.get("call_id", "unknown")
+            outcome = v.get("outcome", "unknown")
+            quote = v.get("quote", "")
+            nl_sections.append(f'- [{call_id}] [{outcome}] "{quote}"')
 
     # Agent miss details
     if nl_summary.get("all_agent_misses"):
         nl_sections.append("\n## Agent Miss Details (coaching opportunities)")
         for m in nl_summary["all_agent_misses"][:15]:
+            call_id = m.get("call_id", "unknown")
             recoverable = "recoverable" if m.get("was_recoverable") else "not recoverable"
-            nl_sections.append(f"- [{recoverable}] {m.get('miss', '')}")
+            nl_sections.append(f"- [{call_id}] [{recoverable}] {m.get('miss', '')}")
 
-    # Policy gap details (structured)
+    # Policy gap details (structured) - v3.3: includes call_id
     if nl_summary.get("policy_gap_details"):
-        nl_sections.append("\n## Policy Gap Details")
+        nl_sections.append("\n## Policy Gap Details (sample)")
         for g in nl_summary["policy_gap_details"][:15]:
+            call_id = g.get("call_id", "unknown")
             nl_sections.append(
-                f"- [{g.get('category', 'unknown')}] Gap: {g.get('gap', '')} | "
+                f"- [{call_id}] [{g.get('category', 'unknown')}] Gap: {g.get('gap', '')} | "
                 f"Ask: {g.get('ask', '')} | Blocker: {g.get('blocker', '')}"
             )
 
-    # Failed call flows
+    # v3.4: ALL customer asks for semantic clustering (not limited to 15)
+    if nl_summary.get("all_customer_asks"):
+        all_asks = nl_summary["all_customer_asks"]
+        nl_sections.append(f"\n## ALL Customer Asks for Clustering ({len(all_asks)} total)")
+        nl_sections.append("Cluster these semantically similar asks and count them:")
+        for ask in all_asks:
+            nl_sections.append(f"- {ask}")
+
+    # Failed call flows - v3.3: includes call_id
     if nl_summary.get("failed_call_flows"):
         nl_sections.append("\n## Sample Failed Call Flows")
         for call in nl_summary["failed_call_flows"][:5]:
+            call_id = call.get("call_id", "unknown")
             steps = call.get("steps", [])
             steps_str = " → ".join(steps[:10])
-            nl_sections.append(f"- [{call.get('outcome', 'unknown')}] {steps_str}")
+            nl_sections.append(f"- [{call_id}] [{call.get('outcome', 'unknown')}] {steps_str}")
 
     nl_text = "\n".join(nl_sections)
 
@@ -205,7 +282,7 @@ Return ONLY the JSON object."""
 def generate_insights(
     metrics_path: Path,
     nl_summary_path: Path | None,
-    model_name: str = "gemini-2.5-flash"
+    model_name: str = "gemini-3-pro-preview"
 ) -> dict:
     """Generate Section B insights using LLM.
 
@@ -243,7 +320,7 @@ def generate_insights(
         prompt,
         generation_config=genai.GenerationConfig(
             temperature=0.3,
-            max_output_tokens=4096,
+            max_output_tokens=32000,  # v3.3: High limit for expanded schema with large datasets
         )
     )
 
@@ -274,7 +351,7 @@ def combine_report(metrics_path: Path, insights: dict, output_path: Path) -> dic
 def print_insights_summary(insights: dict) -> None:
     """Print human-readable summary of insights."""
     print("\n" + "=" * 60)
-    print("VACATIA AI VOICE AGENT - INSIGHTS (v3 - Section B)")
+    print("VACATIA AI VOICE AGENT - INSIGHTS (v3.4 - Section B)")
     print("=" * 60)
 
     # Executive Summary
@@ -337,7 +414,7 @@ def print_insights_summary(insights: dict) -> None:
 
 
 def main():
-    parser = argparse.ArgumentParser(description="Generate v3.1 Section B: LLM Insights")
+    parser = argparse.ArgumentParser(description="Generate v3.4 Section B: LLM Insights")
     parser.add_argument("-m", "--metrics", type=Path,
                         help="Path to Section A metrics JSON file")
     parser.add_argument("-n", "--nl-summary", type=Path,
@@ -345,8 +422,8 @@ def main():
     parser.add_argument("-o", "--output-dir", type=Path,
                         default=Path(__file__).parent.parent / "reports",
                         help="Output directory for combined report")
-    parser.add_argument("--model", type=str, default="gemini-2.5-flash",
-                        help="Gemini model to use")
+    parser.add_argument("--model", type=str, default="gemini-3-pro-preview",
+                        help="Gemini model to use (default: gemini-3-pro-preview)")
     parser.add_argument("--json-only", action="store_true",
                         help="Output only JSON")
 

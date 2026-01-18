@@ -10,6 +10,7 @@ v3.2: Added parallel processing (default 3 workers) for faster batch analysis.
 """
 
 import argparse
+import csv
 import sys
 import time
 import threading
@@ -61,15 +62,46 @@ class ProgressTracker:
             }
 
 
+def get_transcripts_from_manifest(input_dir: Path) -> list[Path] | None:
+    """Read manifest.csv to get the scoped file list.
+
+    Returns list of transcript paths if manifest exists, None otherwise.
+    This enables v3.2 run isolation - only process files from current scope.
+    """
+    manifest_path = input_dir / "manifest.csv"
+    if not manifest_path.exists():
+        return None
+
+    transcripts = []
+    with open(manifest_path, 'r') as f:
+        reader = csv.DictReader(f)
+        for row in reader:
+            file_path = input_dir / row['filename']
+            if file_path.exists():
+                transcripts.append(file_path)
+
+    return transcripts if transcripts else None
+
+
 def get_transcripts_to_analyze(input_dir: Path, output_dir: Path, skip_existing: bool = True) -> list[Path]:
-    """Get list of transcripts needing analysis."""
-    transcripts = [f for f in input_dir.iterdir() if f.suffix == '.txt']
+    """Get list of transcripts needing analysis.
+
+    v3.2: If manifest.csv exists, only process files listed in it (scope enforcement).
+    Falls back to directory scan if no manifest found (backward compatible).
+    """
+    # Try manifest first (v3.2 scope enforcement)
+    transcripts = get_transcripts_from_manifest(input_dir)
+    manifest_used = transcripts is not None
+
+    if transcripts is None:
+        # Fall back to directory scan (backward compatible)
+        transcripts = [f for f in input_dir.iterdir() if f.suffix == '.txt']
 
     if skip_existing and output_dir.exists():
         analyzed_ids = {f.stem for f in output_dir.iterdir() if f.suffix == '.json'}
         transcripts = [t for t in transcripts if t.stem not in analyzed_ids]
 
-    return sorted(transcripts)
+    return sorted(transcripts), manifest_used
 
 
 def analyze_single(
@@ -208,7 +240,7 @@ Examples:
     parser.add_argument("-o", "--output-dir", type=Path,
                         default=Path(__file__).parent.parent / "analyses",
                         help="Output directory")
-    parser.add_argument("--model", default="gemini-2.5-flash", help="Model name")
+    parser.add_argument("--model", default="gemini-3-flash-preview", help="Model name (default: gemini-3-flash-preview)")
     parser.add_argument("-w", "--workers", type=int, default=3,
                         help="Number of parallel workers (default: 3, use 1 for sequential)")
     parser.add_argument("--rate-limit", type=float, default=1.0,
@@ -232,9 +264,14 @@ Examples:
         return 1
 
     print(f"Scanning: {args.input_dir}")
-    transcripts = get_transcripts_to_analyze(
+    transcripts, manifest_used = get_transcripts_to_analyze(
         args.input_dir, args.output_dir, not args.no_skip_existing
     )
+
+    if manifest_used:
+        print("✓ Using manifest.csv for scope (v3.2 run isolation)")
+    else:
+        print("⚠ No manifest.csv found - using all .txt files in directory")
 
     if args.limit:
         transcripts = transcripts[:args.limit]

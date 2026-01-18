@@ -8,7 +8,22 @@ Analytical framework to evaluate the Vacatia AI voice agent's performance using 
 - **Section A**: Python-calculated metrics (reproducible, auditable)
 - **Section B**: LLM-generated insights (executive narratives, recommendations)
 
-**v3.2 Enhancement**: Configurable parallel processing (default 3 workers) for faster batch analysis.
+**v3.4 Enhancements**:
+- Inline descriptions in 4th column (Context) for all major tables
+- Key metrics context explaining WHY each value (drivers/causes, not thresholds)
+- Sub-breakdowns for major failure types (≥5% of failures)
+- Fixed customer ask clustering: LLM now sees ALL asks for accurate semantic grouping
+
+**v3.3 Enhancements**:
+- Semantic clustering of customer asks (eliminates duplicates)
+- Explanatory qualifiers for failure types and policy gap categories
+- Call ID references throughout for traceability
+- Validation warnings for data quality issues
+
+**v3.2 Enhancements**:
+- Configurable parallel processing (default 3 workers) for faster batch analysis
+- Run isolation: `sampled/` cleared by default between runs
+- Scope coherence: `batch_analyze.py` respects `manifest.csv`
 
 ## Overview
 
@@ -63,6 +78,12 @@ python3 tools/run_analysis.py -n 200 --workers 5
 # Custom sample size with reproducible seed
 python3 tools/run_analysis.py -n 100 --seed 42
 
+# Resume an interrupted run (uses existing manifest)
+python3 tools/run_analysis.py --resume
+
+# Append to existing samples (don't clear sampled/)
+python3 tools/run_analysis.py -n 50 --no-clear
+
 # Skip sampling/analysis (use existing data)
 python3 tools/run_analysis.py --skip-sampling --skip-analysis
 
@@ -77,7 +98,10 @@ Randomly selects N transcripts stratified by file size (proxy for call complexit
 ```bash
 python3 tools/sample_transcripts.py -n 50
 python3 tools/sample_transcripts.py -n 100 --seed 42  # Reproducible
+python3 tools/sample_transcripts.py -n 50 --no-clear  # Append to existing samples
 ```
+
+**v3.2**: Clears `sampled/` by default before copying new files (run isolation). Use `--no-clear` to append.
 
 ### `analyze_transcript.py`
 
@@ -99,6 +123,8 @@ python3 tools/batch_analyze.py --workers 1        # Sequential (v3.1 behavior)
 python3 tools/batch_analyze.py --limit 10         # First 10 only
 python3 tools/batch_analyze.py --no-skip-existing # Re-analyze all
 ```
+
+**v3.2**: If `manifest.csv` exists in input directory, only processes files listed in it (scope coherence).
 
 ### `compute_metrics.py`
 
@@ -183,7 +209,9 @@ reports/
 | **v2** | 14 | Actionable insights, failure analysis, training | Previous | `tools/v2/VERSION.md` |
 | **v3** | 18 | Hybrid metrics + insights, policy gaps, verbatims | Previous | `tools/v3/VERSION.md` |
 | **v3.1** | 18 | Dedicated NL extraction for optimized LLM context | Previous | [`README_v3.1.md`](README_v3.1.md) |
-| **v3.2** | 18 | Configurable parallel processing (default 3 workers) | **Current** | [`README_v3.2.md`](README_v3.2.md) |
+| **v3.2** | 18 | Configurable parallel processing (default 3 workers) | Previous | [`README_v3.2.md`](README_v3.2.md) |
+| **v3.3** | 18 | Report quality: clustering, explanations, call IDs | Previous | [`README_v3.3.md`](README_v3.3.md) |
+| **v3.4** | 18 | Inline descriptions, key metrics context, sub-breakdowns | **Current** | [`README_v3.4.md`](README_v3.4.md) |
 
 ### Versioning Guidelines
 
@@ -360,11 +388,17 @@ are the primary blockers. Quick wins: adding address change capability
 could resolve 8% of abandoned calls.
 
 ## Key Metrics at a Glance
-| Metric | Value | Assessment |
-|--------|-------|------------|
-| Success Rate | 34.9% | ⚠️ Below target |
-| Escalation Rate | 20.9% | ✅ Within range |
-| Customer Effort | 3.26/5 | ⚠️ Room for improvement |
+| Metric | Value | Assessment | Context |
+|--------|-------|------------|---------|
+| Success Rate | 34.9% | ⚠️ | Driven by dead-end escalation; verified customers can't reach humans |
+| Escalation Rate | 20.9% | ✅ | 45% explicitly requested human; most blocked by capacity limits |
+| Customer Effort | 3.26/5 | ⚠️ | Verification succeeds but leads nowhere (verify-then-dump) |
+
+## Failure Point Breakdown
+| Failure Type | Count | % of Failures | Context |
+|--------------|-------|---------------|---------|
+| policy_gap | 22 | 44.0% | Dead-end escalation logic; no callback capability |
+| other | 10 | 20.0% | Caller hangups and unclear outcomes |
 ...
 ```
 

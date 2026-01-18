@@ -196,7 +196,7 @@ def extract_json_from_response(text: str) -> dict:
     raise ValueError(f"Could not parse JSON from: {text[:300]}...")
 
 
-def analyze_transcript(transcript_path: Path, model_name: str = "gemini-2.5-flash") -> dict:
+def analyze_transcript(transcript_path: Path, model_name: str = "gemini-3-flash-preview") -> dict:
     """Analyze a single transcript using the LLM."""
     content = transcript_path.read_text(encoding='utf-8')
     call_id = transcript_path.stem
@@ -244,8 +244,8 @@ def main():
     parser.add_argument("-o", "--output-dir", type=Path,
                         default=Path(__file__).parent.parent / "analyses",
                         help="Output directory for analysis JSON")
-    parser.add_argument("--model", type=str, default="gemini-2.5-flash",
-                        help="Gemini model to use")
+    parser.add_argument("--model", type=str, default="gemini-3-flash-preview",
+                        help="Gemini model to use (default: gemini-3-flash-preview)")
     parser.add_argument("--stdout", action="store_true",
                         help="Print to stdout instead of saving")
 

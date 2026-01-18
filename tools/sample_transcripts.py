@@ -68,10 +68,26 @@ def stratified_sample(
 def copy_samples(
     samples: list[tuple[Path, int]],
     output_dir: Path,
-    median_size: int
+    median_size: int,
+    clear_existing: bool = True
 ) -> list[dict]:
-    """Copy sampled files to output directory and return manifest data."""
+    """Copy sampled files to output directory and return manifest data.
+
+    Args:
+        samples: List of (file_path, size) tuples to copy
+        output_dir: Destination directory
+        median_size: Median file size for categorization
+        clear_existing: If True, clear existing .txt files before copying (default: True)
+    """
     output_dir.mkdir(parents=True, exist_ok=True)
+
+    # Clear existing transcript files if requested (v3.2 run isolation)
+    if clear_existing:
+        existing_txt = list(output_dir.glob("*.txt"))
+        if existing_txt:
+            print(f"Clearing {len(existing_txt)} existing transcript files...")
+            for f in existing_txt:
+                f.unlink()
 
     manifest = []
     for file_path, size in samples:
@@ -144,6 +160,11 @@ def main():
         default=None,
         help="Random seed for reproducibility"
     )
+    parser.add_argument(
+        "--no-clear",
+        action="store_true",
+        help="Don't clear existing sampled files (append mode)"
+    )
 
     args = parser.parse_args()
 
@@ -182,8 +203,11 @@ def main():
     samples, median_size = stratified_sample(files, args.total, n_large, n_small)
 
     # Copy to output
+    clear_existing = not args.no_clear
     print(f"\nCopying {len(samples)} files to: {args.output_dir}")
-    manifest = copy_samples(samples, args.output_dir, median_size)
+    if clear_existing:
+        print("(clearing existing files first - use --no-clear to append)")
+    manifest = copy_samples(samples, args.output_dir, median_size, clear_existing)
 
     # Write manifest
     manifest_path = write_manifest(manifest, args.output_dir)

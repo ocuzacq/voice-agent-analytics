@@ -1,13 +1,18 @@
 #!/usr/bin/env python3
 """
-Aggregate Metrics Calculator for Vacatia AI Voice Agent Analytics (v3.1)
+Aggregate Metrics Calculator for Vacatia AI Voice Agent Analytics (v3.3)
 
 Computes Section A: Deterministic Metrics - all Python-calculated, reproducible and auditable.
+
+v3.3 additions:
+- validate_failure_consistency: Flags failure_point=none for non-resolved calls
+- validation_warnings: Included in report output for data quality checks
 
 Note: NL field extraction is now handled by the dedicated extract_nl_fields.py script (v3.1).
 """
 
 import argparse
+import csv
 import json
 import statistics
 import sys
@@ -16,11 +21,41 @@ from datetime import datetime
 from pathlib import Path
 
 
-def load_analyses(analyses_dir: Path, schema_version: str = "v3") -> list[dict]:
-    """Load analysis JSON files from directory matching the specified schema version."""
+def load_manifest_ids(sampled_dir: Path) -> set[str] | None:
+    """Load call IDs from manifest.csv if it exists."""
+    manifest_path = sampled_dir / "manifest.csv"
+    if not manifest_path.exists():
+        return None
+
+    call_ids = set()
+    with open(manifest_path, 'r', encoding='utf-8') as f:
+        reader = csv.DictReader(f)
+        for row in reader:
+            # Extract call_id from filename (e.g., "abc123.txt" -> "abc123")
+            filename = row.get("filename", "")
+            if filename:
+                call_ids.add(Path(filename).stem)
+    return call_ids
+
+
+def load_analyses(analyses_dir: Path, schema_version: str = "v3", manifest_ids: set[str] | None = None) -> list[dict]:
+    """Load analysis JSON files from directory matching the specified schema version.
+
+    Args:
+        analyses_dir: Directory containing analysis JSON files
+        schema_version: Schema version to filter by ("v3" or "v2")
+        manifest_ids: Optional set of call_ids to filter by (scope coherence)
+    """
     analyses = []
+    skipped_not_in_manifest = 0
+
     for f in analyses_dir.iterdir():
         if f.is_file() and f.suffix == '.json':
+            # v3.3: Scope coherence - filter by manifest if provided
+            if manifest_ids is not None and f.stem not in manifest_ids:
+                skipped_not_in_manifest += 1
+                continue
+
             try:
                 with open(f, 'r', encoding='utf-8') as fp:
                     data = json.load(fp)
@@ -32,6 +67,10 @@ def load_analyses(analyses_dir: Path, schema_version: str = "v3") -> list[dict]:
                         analyses.append(data)
             except (json.JSONDecodeError, IOError) as e:
                 print(f"Warning: Could not load {f}: {e}", file=sys.stderr)
+
+    if skipped_not_in_manifest > 0:
+        print(f"Scope filter: Skipped {skipped_not_in_manifest} analyses not in manifest", file=sys.stderr)
+
     return analyses
 
 
@@ -60,6 +99,29 @@ def safe_stats(values: list) -> dict:
         result["std"] = 0.0
 
     return result
+
+
+def validate_failure_consistency(analyses: list[dict]) -> dict:
+    """
+    Flag failure_point inconsistencies (v3.3).
+
+    A non-resolved call (abandoned, escalated, unclear) should NOT have
+    failure_point='none' - this indicates a data quality issue.
+    """
+    warnings = []
+    for a in analyses:
+        outcome = a.get("outcome")
+        failure_point = a.get("failure_point")
+
+        # Non-resolved outcomes should have a failure_point other than "none"
+        if outcome in ("abandoned", "escalated", "unclear") and failure_point == "none":
+            warnings.append({
+                "call_id": a.get("call_id"),
+                "outcome": outcome,
+                "issue": "failure_point='none' invalid for non-resolved call"
+            })
+
+    return {"failure_point_inconsistencies": warnings}
 
 
 def extract_policy_gap_breakdown(analyses: list[dict]) -> dict:
@@ -228,6 +290,9 @@ def generate_report(analyses: list[dict]) -> dict:
     # Containment = resolved + abandoned (not escalated to human)
     containment_count = resolved_count + abandoned_count
 
+    # Validation warnings (v3.3)
+    validation_warnings = validate_failure_consistency(analyses)
+
     return {
         "metadata": {
             "report_generated": datetime.now().isoformat(),
@@ -276,7 +341,9 @@ def generate_report(analyses: list[dict]) -> dict:
 
         "training_priorities": dict(training_opps.most_common(10)),
 
-        "resolution_types": dict(resolution_types.most_common(15))
+        "resolution_types": dict(resolution_types.most_common(15)),
+
+        "validation_warnings": validation_warnings
     }
 
 
@@ -388,13 +455,18 @@ def print_summary(report: dict) -> None:
 
 
 def main():
-    parser = argparse.ArgumentParser(description="Compute v3 Section A: Deterministic Metrics")
+    parser = argparse.ArgumentParser(description="Compute v3.3 Section A: Deterministic Metrics")
     parser.add_argument("-i", "--input-dir", type=Path,
                         default=Path(__file__).parent.parent / "analyses",
                         help="Directory containing analysis JSON files")
     parser.add_argument("-o", "--output-dir", type=Path,
                         default=Path(__file__).parent.parent / "reports",
                         help="Output directory for report")
+    parser.add_argument("-s", "--sampled-dir", type=Path,
+                        default=Path(__file__).parent.parent / "sampled",
+                        help="Directory containing manifest.csv for scope filtering (v3.3)")
+    parser.add_argument("--no-scope-filter", action="store_true",
+                        help="Disable manifest-based scope filtering (include all analyses)")
     parser.add_argument("--json-only", action="store_true",
                         help="Output only JSON")
     parser.add_argument("--schema-version", type=str, choices=["v2", "v3"], default="v3",
@@ -402,8 +474,17 @@ def main():
 
     args = parser.parse_args()
 
+    # v3.3: Load manifest for scope coherence
+    manifest_ids = None
+    if not args.no_scope_filter:
+        manifest_ids = load_manifest_ids(args.sampled_dir)
+        if manifest_ids:
+            print(f"Scope filter: Using manifest with {len(manifest_ids)} call IDs", file=sys.stderr)
+        else:
+            print("Scope filter: No manifest found, including all analyses", file=sys.stderr)
+
     print(f"Loading from: {args.input_dir}", file=sys.stderr)
-    analyses = load_analyses(args.input_dir, args.schema_version)
+    analyses = load_analyses(args.input_dir, args.schema_version, manifest_ids)
     print(f"Loaded {len(analyses)} {args.schema_version} analyses", file=sys.stderr)
 
     if not analyses:

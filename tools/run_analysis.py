@@ -10,7 +10,11 @@ Orchestrates the complete analysis workflow:
 5. generate_insights.py → Generate Section B LLM insights
 6. render_report.py → Render Markdown executive summary
 
-v3.2: Added configurable parallelization (default 3 workers) for batch analysis.
+v3.2 Features:
+- Configurable parallelization (default 3 workers) for batch analysis
+- Run isolation: sampled/ cleared by default between runs
+- Scope coherence: batch_analyze respects manifest.csv
+- Resume capability: --resume to continue from existing samples
 
 Usage:
     # Full pipeline with 50 transcripts (3 parallel workers)
@@ -24,6 +28,9 @@ Usage:
 
     # Skip sampling (use existing sampled directory)
     python3 tools/run_analysis.py --skip-sampling
+
+    # Resume interrupted run (uses existing manifest)
+    python3 tools/run_analysis.py --resume
 
     # Skip analysis (use existing analyses)
     python3 tools/run_analysis.py --skip-analysis
@@ -83,12 +90,20 @@ Examples:
                         help="Quick test with 5 transcripts")
     parser.add_argument("--skip-sampling", action="store_true",
                         help="Skip sampling step (use existing sampled/)")
+    parser.add_argument("--resume", action="store_true",
+                        help="Resume from existing sampled/ (skip sampling, respect manifest)")
+    parser.add_argument("--no-clear", action="store_true",
+                        help="Don't clear sampled/ before new sampling (append mode)")
     parser.add_argument("--skip-analysis", action="store_true",
                         help="Skip analysis step (use existing analyses/)")
+    parser.add_argument("--no-clear-analyses", action="store_true",
+                        help="Don't clear analyses/ before fresh run (default: clear for run isolation)")
     parser.add_argument("--skip-insights", action="store_true",
                         help="Skip LLM insights generation (metrics only)")
-    parser.add_argument("--model", type=str, default="gemini-2.5-flash",
-                        help="Gemini model to use")
+    parser.add_argument("--analysis-model", type=str, default="gemini-3-flash-preview",
+                        help="Gemini model for transcript analysis (default: gemini-3-flash-preview)")
+    parser.add_argument("--insights-model", type=str, default="gemini-3-pro-preview",
+                        help="Gemini model for insights generation (default: gemini-3-pro-preview)")
     parser.add_argument("-w", "--workers", type=int, default=3,
                         help="Number of parallel workers for batch analysis (default: 3)")
     parser.add_argument("--rate-limit", type=float, default=1.0,
@@ -115,17 +130,40 @@ Examples:
     if args.quick:
         args.sample_size = 5
 
+    # Resume mode: skip sampling and use existing manifest
+    if args.resume:
+        args.skip_sampling = True
+        manifest_path = sampled_dir / "manifest.csv"
+        if not manifest_path.exists():
+            print(f"Error: Cannot resume - no manifest.csv found in {sampled_dir}")
+            print("Run without --resume to create a new sample.")
+            return 1
+        # Count files in manifest for display
+        import csv
+        with open(manifest_path) as f:
+            manifest_count = sum(1 for _ in csv.reader(f)) - 1  # minus header
+        print(f"Resuming from existing manifest ({manifest_count} files)")
+
+    # Generate run ID for logging
+    run_id = datetime.now().strftime("%Y%m%d_%H%M%S")
+
     print("=" * 60)
     print("VACATIA AI VOICE AGENT ANALYTICS - v3.2 PIPELINE")
     print("=" * 60)
+    print(f"Run ID: {run_id}")
     print(f"Started: {datetime.now().isoformat()}")
     print(f"\nConfiguration:")
     print(f"  Sample size: {args.sample_size}")
-    print(f"  Model: {args.model}")
+    print(f"  Analysis model: {args.analysis_model}")
+    print(f"  Insights model: {args.insights_model}")
     print(f"  Workers: {args.workers}")
     print(f"  Rate limit: {args.rate_limit}s per worker")
     print(f"  Transcripts: {transcripts_dir}")
     print(f"  Output: {reports_dir}")
+    if args.resume:
+        print(f"  Mode: RESUME (using existing manifest)")
+    elif args.no_clear:
+        print(f"  Mode: APPEND (keeping existing samples)")
 
     steps_completed = []
     steps_failed = []
@@ -141,29 +179,42 @@ Examples:
         ]
         if args.seed:
             cmd.extend(["--seed", str(args.seed)])
+        if args.no_clear:
+            cmd.append("--no-clear")
 
-        if run_step("Sample Transcripts", cmd):
+        step_name = "Sample Transcripts" + (" (append mode)" if args.no_clear else " (clearing existing)")
+        if run_step(step_name, cmd):
             steps_completed.append("sampling")
         else:
             steps_failed.append("sampling")
             print("\n⚠️ Sampling failed. Attempting to continue with existing samples...")
     else:
-        print("\n⏭️ Skipping sampling (--skip-sampling)")
+        skip_reason = "--resume" if args.resume else "--skip-sampling"
+        print(f"\n⏭️ Skipping sampling ({skip_reason})")
         steps_completed.append("sampling (skipped)")
 
     # Step 2: Batch analyze (parallel in v3.2)
     if not args.skip_analysis:
+        # v3.3: Clear analyses/ for run isolation (unless --resume or --no-clear-analyses)
+        if not args.resume and not args.no_clear_analyses:
+            existing_analyses = list(analyses_dir.glob("*.json"))
+            if existing_analyses:
+                print(f"\n🧹 Clearing {len(existing_analyses)} existing analyses for run isolation...")
+                for f in existing_analyses:
+                    f.unlink()
+                print("   (use --no-clear-analyses to preserve existing analyses)")
+
         cmd = [
             sys.executable,
             str(tools_dir / "batch_analyze.py"),
             "-i", str(sampled_dir),
             "-o", str(analyses_dir),
-            "--model", args.model,
+            "--model", args.analysis_model,
             "--workers", str(args.workers),
             "--rate-limit", str(args.rate_limit)
         ]
 
-        if run_step(f"Batch Analyze Transcripts (v3.2, {args.workers} workers)", cmd):
+        if run_step(f"Batch Analyze Transcripts (v3.3, {args.workers} workers)", cmd):
             steps_completed.append("analysis")
         else:
             steps_failed.append("analysis")
@@ -174,12 +225,13 @@ Examples:
         print("\n⏭️ Skipping analysis (--skip-analysis)")
         steps_completed.append("analysis (skipped)")
 
-    # Step 3: Compute metrics
+    # Step 3: Compute metrics (v3.3: scope coherence via manifest)
     cmd = [
         sys.executable,
         str(tools_dir / "compute_metrics.py"),
         "-i", str(analyses_dir),
-        "-o", str(reports_dir)
+        "-o", str(reports_dir),
+        "-s", str(sampled_dir)  # v3.3: Pass sampled dir for manifest filtering
     ]
 
     if run_step("Compute Deterministic Metrics (Section A)", cmd):
@@ -189,27 +241,28 @@ Examples:
         print("\n❌ Metrics computation failed. Cannot continue.")
         return 1
 
-    # Step 4: Extract NL fields (v3.1 - dedicated extraction step)
+    # Step 4: Extract NL fields (v3.3: scope coherence via manifest)
     cmd = [
         sys.executable,
         str(tools_dir / "extract_nl_fields.py"),
         "-i", str(analyses_dir),
-        "-o", str(reports_dir)
+        "-o", str(reports_dir),
+        "-s", str(sampled_dir)  # v3.3: Pass sampled dir for manifest filtering
     ]
 
-    if run_step("Extract NL Fields for LLM (v3.1)", cmd):
+    if run_step("Extract NL Fields for LLM (v3.3)", cmd):
         steps_completed.append("nl_extraction")
     else:
         steps_failed.append("nl_extraction")
         print("\n⚠️ NL extraction failed. Insights will be based on metrics only.")
 
-    # Step 5: Generate insights
+    # Step 5: Generate insights (v3.3: uses gemini-3-pro-preview by default)
     if not args.skip_insights:
         cmd = [
             sys.executable,
             str(tools_dir / "generate_insights.py"),
             "-o", str(reports_dir),
-            "--model", args.model
+            "--model", args.insights_model
         ]
 
         if run_step("Generate LLM Insights (Section B)", cmd):

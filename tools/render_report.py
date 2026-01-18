@@ -1,8 +1,18 @@
 #!/usr/bin/env python3
 """
-Markdown Report Renderer for Vacatia AI Voice Agent Analytics (v3)
+Markdown Report Renderer for Vacatia AI Voice Agent Analytics (v3.4)
 
 Renders the combined Section A + Section B report as an executive-ready Markdown document.
+
+v3.4 additions:
+- Inline descriptions in 4th column (Context) for Key Metrics, Failure Types, Policy Gaps
+- Sub-breakdowns for major failure types (≥5% of failures)
+
+v3.3 additions:
+- Clustered customer asks with semantic grouping
+- Explanatory qualifiers for failure types
+- Explanatory qualifiers for policy gap categories
+- Supporting call_ids in recommendations
 """
 
 import argparse
@@ -71,21 +81,22 @@ def render_markdown(report: dict) -> str:
     # Key Metrics at a Glance
     lines.append("## Key Metrics at a Glance")
     lines.append("")
-    lines.append("| Metric | Value | Assessment |")
-    lines.append("|--------|-------|------------|")
+    lines.append("| Metric | Value | Assessment | Context |")
+    lines.append("|--------|-------|------------|---------|")
 
     key_rates = metrics.get("key_rates", {})
     quality_scores = metrics.get("quality_scores", {})
+    key_metrics_desc = insights.get("key_metrics_descriptions", {})
 
     success_rate = key_rates.get("success_rate", 0)
     escalation_rate = key_rates.get("escalation_rate", 0)
     failure_rate = key_rates.get("failure_rate", 0)
     customer_effort = quality_scores.get("customer_effort", {}).get("mean", 0) or 0
 
-    lines.append(f"| Success Rate | {success_rate*100:.1f}% | {get_assessment_emoji(success_rate, 'success_rate')} |")
-    lines.append(f"| Escalation Rate | {escalation_rate*100:.1f}% | {get_assessment_emoji(escalation_rate, 'escalation_rate')} |")
-    lines.append(f"| Failure Rate | {failure_rate*100:.1f}% | {get_assessment_emoji(failure_rate, 'failure_rate')} |")
-    lines.append(f"| Customer Effort | {customer_effort:.2f}/5 | {get_assessment_emoji(customer_effort, 'customer_effort')} |")
+    lines.append(f"| Success Rate | {success_rate*100:.1f}% | {get_assessment_emoji(success_rate, 'success_rate')} | {key_metrics_desc.get('success_rate', '')} |")
+    lines.append(f"| Escalation Rate | {escalation_rate*100:.1f}% | {get_assessment_emoji(escalation_rate, 'escalation_rate')} | {key_metrics_desc.get('escalation_rate', '')} |")
+    lines.append(f"| Failure Rate | {failure_rate*100:.1f}% | {get_assessment_emoji(failure_rate, 'failure_rate')} | {key_metrics_desc.get('failure_rate', '')} |")
+    lines.append(f"| Customer Effort | {customer_effort:.2f}/5 | {get_assessment_emoji(customer_effort, 'customer_effort')} | {key_metrics_desc.get('customer_effort', '')} |")
     lines.append("")
 
     # Why Calls Are Failing
@@ -116,12 +127,28 @@ def render_markdown(report: dict) -> str:
     if by_failure_point:
         lines.append("### Failure Point Breakdown")
         lines.append("")
-        lines.append("| Failure Type | Count | % of Failures |")
-        lines.append("|--------------|-------|---------------|")
+        lines.append("| Failure Type | Count | % of Failures | Context |")
+        lines.append("|--------------|-------|---------------|---------|")
+        fp_desc = insights.get("failure_type_descriptions", {})
         for fp, data in by_failure_point.items():
             rate = data.get("rate", 0) or 0
-            lines.append(f"| {fp} | {data['count']} | {rate*100:.1f}% |")
+            desc = fp_desc.get(fp, "")
+            lines.append(f"| {fp} | {data['count']} | {rate*100:.1f}% | {desc} |")
         lines.append("")
+
+        # v3.4: Render sub-breakdowns for major failure types (≥5% of failures)
+        total_failures = sum(d.get("count", 0) for d in by_failure_point.values())
+        threshold = total_failures * 0.05  # 5% of total failures
+        major_breakdowns = insights.get("major_failure_breakdowns", {})
+        for fp_type, breakdown in major_breakdowns.items():
+            if fp_type in by_failure_point and by_failure_point[fp_type].get("count", 0) >= threshold:
+                lines.append(f"#### {fp_type.replace('_', ' ').title()} Breakdown")
+                lines.append("")
+                lines.append("| Pattern | Count | Description |")
+                lines.append("|---------|-------|-------------|")
+                for p in breakdown.get("patterns", []):
+                    lines.append(f"| {p.get('pattern', '')} | {p.get('count', 0)} | {p.get('description', '')} |")
+                lines.append("")
 
     # Policy Gap Breakdown
     pgb = metrics.get("policy_gap_breakdown", {})
@@ -130,16 +157,33 @@ def render_markdown(report: dict) -> str:
     if by_category:
         lines.append("### Policy Gap Breakdown")
         lines.append("")
-        lines.append("| Category | Count | % of Gaps |")
-        lines.append("|----------|-------|-----------|")
+        lines.append("| Category | Count | % of Gaps | Context |")
+        lines.append("|----------|-------|-----------|---------|")
+        pg_desc = insights.get("policy_gap_descriptions", {})
         for cat, data in by_category.items():
             rate = data.get("rate", 0) or 0
-            lines.append(f"| {cat} | {data['count']} | {rate*100:.1f}% |")
+            desc = pg_desc.get(cat, "")
+            lines.append(f"| {cat} | {data['count']} | {rate*100:.1f}% | {desc} |")
         lines.append("")
 
-    # Top Unmet Customer Needs
+    # Top Unmet Customer Needs - v3.3: Use clustered asks when available
+    customer_ask_clusters = insights.get("customer_ask_clusters", [])
     top_asks = pgb.get("top_customer_asks", [])
-    if top_asks:
+
+    if customer_ask_clusters:
+        lines.append("### Top Unmet Customer Needs (Clustered)")
+        lines.append("")
+        for i, cluster in enumerate(customer_ask_clusters[:5], 1):
+            label = cluster.get("canonical_label", "Unknown")
+            count = cluster.get("total_count", 0)
+            member_asks = cluster.get("member_asks", [])
+            lines.append(f"{i}. **{label}** - {count} calls")
+            if member_asks:
+                examples = ", ".join(f'"{a}"' for a in member_asks[:3])
+                lines.append(f"   *Examples: {examples}*")
+        lines.append("")
+    elif top_asks:
+        # Fallback to raw asks
         lines.append("### Top Unmet Customer Needs")
         lines.append("")
         for i, item in enumerate(top_asks[:5], 1):
@@ -163,6 +207,10 @@ def render_markdown(report: dict) -> str:
             lines.append(f"- Category: {rec.get('category', 'N/A')}")
             lines.append(f"- Expected Impact: {rec.get('expected_impact', 'N/A')}")
             lines.append(f"- Evidence: {rec.get('evidence', 'N/A')}")
+            # v3.3: Add supporting call_ids
+            call_ids = rec.get("supporting_call_ids", [])
+            if call_ids:
+                lines.append(f"- Example calls: {', '.join(call_ids[:5])}")
             lines.append("")
 
     if p1_recs:
@@ -172,13 +220,22 @@ def render_markdown(report: dict) -> str:
             lines.append(f"**{rec.get('recommendation', 'N/A')}**")
             lines.append(f"- Category: {rec.get('category', 'N/A')}")
             lines.append(f"- Expected Impact: {rec.get('expected_impact', 'N/A')}")
+            # v3.3: Add supporting call_ids
+            call_ids = rec.get("supporting_call_ids", [])
+            if call_ids:
+                lines.append(f"- Example calls: {', '.join(call_ids[:5])}")
             lines.append("")
 
     if p2_recs:
         lines.append("### P2 - Moderate Priority")
         lines.append("")
         for rec in p2_recs:
-            lines.append(f"- {rec.get('recommendation', 'N/A')} ({rec.get('category', 'N/A')})")
+            rec_text = f"- {rec.get('recommendation', 'N/A')} ({rec.get('category', 'N/A')})"
+            # v3.3: Add supporting call_ids inline for P2
+            call_ids = rec.get("supporting_call_ids", [])
+            if call_ids:
+                rec_text += f" - calls: {', '.join(call_ids[:3])}"
+            lines.append(rec_text)
         lines.append("")
 
     # Customer Voice
@@ -280,7 +337,7 @@ def render_markdown(report: dict) -> str:
 
     # Footer
     lines.append("---")
-    lines.append(f"*Report generated by Vacatia AI Voice Agent Analytics Framework v3*")
+    lines.append(f"*Report generated by Vacatia AI Voice Agent Analytics Framework v3.4*")
 
     return "\n".join(lines)
 

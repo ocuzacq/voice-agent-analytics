@@ -1,9 +1,12 @@
 #!/usr/bin/env python3
 """
-NL Field Extractor for Vacatia AI Voice Agent Analytics (v3.1)
+NL Field Extractor for Vacatia AI Voice Agent Analytics (v3.3)
 
 Extracts natural language fields from v3 analysis JSONs into a condensed
 format optimized for LLM insight generation.
+
+v3.3 additions:
+- Scope coherence: Respects manifest.csv for run isolation
 
 This dedicated script replaces the --export-nl-fields flag in compute_metrics.py,
 providing:
@@ -15,6 +18,7 @@ Output: nl_summary_v3_{timestamp}.json
 """
 
 import argparse
+import csv
 import json
 import sys
 from collections import defaultdict
@@ -22,11 +26,39 @@ from datetime import datetime
 from pathlib import Path
 
 
-def load_v3_analyses(analyses_dir: Path) -> list[dict]:
-    """Load only v3 schema analysis files."""
+def load_manifest_ids(sampled_dir: Path) -> set[str] | None:
+    """Load call IDs from manifest.csv if it exists."""
+    manifest_path = sampled_dir / "manifest.csv"
+    if not manifest_path.exists():
+        return None
+
+    call_ids = set()
+    with open(manifest_path, 'r', encoding='utf-8') as f:
+        reader = csv.DictReader(f)
+        for row in reader:
+            filename = row.get("filename", "")
+            if filename:
+                call_ids.add(Path(filename).stem)
+    return call_ids
+
+
+def load_v3_analyses(analyses_dir: Path, manifest_ids: set[str] | None = None) -> list[dict]:
+    """Load only v3 schema analysis files.
+
+    Args:
+        analyses_dir: Directory containing analysis JSON files
+        manifest_ids: Optional set of call_ids to filter by (scope coherence)
+    """
     analyses = []
+    skipped_not_in_manifest = 0
+
     for f in analyses_dir.iterdir():
         if f.is_file() and f.suffix == '.json':
+            # v3.3: Scope coherence - filter by manifest if provided
+            if manifest_ids is not None and f.stem not in manifest_ids:
+                skipped_not_in_manifest += 1
+                continue
+
             try:
                 with open(f, 'r', encoding='utf-8') as fp:
                     data = json.load(fp)
@@ -34,6 +66,10 @@ def load_v3_analyses(analyses_dir: Path) -> list[dict]:
                         analyses.append(data)
             except (json.JSONDecodeError, IOError) as e:
                 print(f"Warning: Could not load {f}: {e}", file=sys.stderr)
+
+    if skipped_not_in_manifest > 0:
+        print(f"Scope filter: Skipped {skipped_not_in_manifest} analyses not in manifest", file=sys.stderr)
+
     return analyses
 
 
@@ -156,6 +192,14 @@ def extract_nl_summary(analyses: list[dict]) -> dict:
         if has_nl_data:
             calls_with_nl_data += 1
 
+    # v3.4: Extract all customer_asks for LLM semantic clustering
+    # This provides the raw list so LLM can cluster semantically similar asks
+    all_customer_asks = []
+    for detail in policy_gap_details:
+        ask = detail.get("ask")
+        if ask and ask.strip():
+            all_customer_asks.append(ask.strip())
+
     return {
         "metadata": {
             "extracted_at": datetime.now().isoformat(),
@@ -166,7 +210,8 @@ def extract_nl_summary(analyses: list[dict]) -> dict:
         "all_verbatims": all_verbatims,
         "all_agent_misses": all_agent_misses,
         "policy_gap_details": policy_gap_details,
-        "failed_call_flows": failed_call_flows
+        "failed_call_flows": failed_call_flows,
+        "all_customer_asks": all_customer_asks  # v3.4: Raw list for LLM clustering
     }
 
 
@@ -258,6 +303,11 @@ Examples:
     parser.add_argument("-o", "--output-dir", type=Path,
                         default=Path(__file__).parent.parent / "reports",
                         help="Output directory for NL summary")
+    parser.add_argument("-s", "--sampled-dir", type=Path,
+                        default=Path(__file__).parent.parent / "sampled",
+                        help="Directory containing manifest.csv for scope filtering (v3.3)")
+    parser.add_argument("--no-scope-filter", action="store_true",
+                        help="Disable manifest-based scope filtering (include all analyses)")
     parser.add_argument("--limit", type=int,
                         help="Limit number of analyses to process (for testing)")
     parser.add_argument("--json-only", action="store_true",
@@ -265,8 +315,17 @@ Examples:
 
     args = parser.parse_args()
 
+    # v3.3: Load manifest for scope coherence
+    manifest_ids = None
+    if not args.no_scope_filter:
+        manifest_ids = load_manifest_ids(args.sampled_dir)
+        if manifest_ids:
+            print(f"Scope filter: Using manifest with {len(manifest_ids)} call IDs", file=sys.stderr)
+        else:
+            print("Scope filter: No manifest found, including all analyses", file=sys.stderr)
+
     print(f"Loading v3 analyses from: {args.input_dir}", file=sys.stderr)
-    analyses = load_v3_analyses(args.input_dir)
+    analyses = load_v3_analyses(args.input_dir, manifest_ids)
 
     if not analyses:
         print("Error: No v3 schema analysis files found", file=sys.stderr)
