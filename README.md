@@ -168,13 +168,22 @@ reports/
 
 ## Version History
 
-| Version | Fields | Focus | Status |
-|---------|--------|-------|--------|
-| **v0** | ~15 | Funnel, coverage, outcome | Archived |
-| **v1** | ~50 | +Performance, agent quality, customer profile | Archived (overengineered) |
-| **v2** | 14 | Actionable insights, failure analysis, training | Previous |
-| **v3** | 18 | Hybrid metrics + insights, policy gaps, verbatims | Previous |
-| **v3.1** | 18 | Dedicated NL extraction for optimized LLM context | **Current** |
+| Version | Fields | Focus | Status | Release Notes |
+|---------|--------|-------|--------|---------------|
+| **v0** | ~15 | Funnel, coverage, outcome | Archived | `tools/v0/VERSION.md` |
+| **v1** | ~50 | +Performance, agent quality, customer profile | Archived | `tools/v1/VERSION.md` |
+| **v2** | 14 | Actionable insights, failure analysis, training | Previous | `tools/v2/VERSION.md` |
+| **v3** | 18 | Hybrid metrics + insights, policy gaps, verbatims | Previous | `tools/v3/VERSION.md` |
+| **v3.1** | 18 | Dedicated NL extraction for optimized LLM context | **Current** | [`README_v3.1.md`](README_v3.1.md) |
+
+### Versioning Guidelines
+
+**Always create a `README_vX.Y.md`** when releasing a new version, documenting:
+- What changed from the previous version
+- Why the changes were made
+- Migration notes if applicable
+
+See [`CLAUDE.md`](CLAUDE.md) for full versioning guidelines and project instructions.
 
 ## Analysis Schema (v3)
 
