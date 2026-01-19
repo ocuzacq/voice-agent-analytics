@@ -57,9 +57,38 @@ Failed API calls now use exponential backoff:
 
 This improves resilience against transient API errors and rate limiting.
 
+### Run Isolation & Scope Coherence
+
+v3.2 ensures pipeline steps operate on the same file set, preventing interference between runs.
+
+**Problem solved**: Previously, running `-n 100` might analyze 200+ files because `sampled/` accumulated files from previous runs.
+
+**New behavior**:
+- `sample_transcripts.py` now **clears `sampled/` by default** before copying new files
+- `batch_analyze.py` **respects `manifest.csv`** for scope enforcement
+- Use `--no-clear` to append to existing samples instead
+
+```bash
+# Default: Clean run (clears sampled/, analyzes exactly N files)
+python3 tools/run_analysis.py -n 50
+
+# Append mode (adds to existing samples)
+python3 tools/run_analysis.py -n 50 --no-clear
+
+# Resume interrupted run (uses existing manifest)
+python3 tools/run_analysis.py --resume
+```
+
+### New Flags
+
+| Flag | Tool | Description |
+|------|------|-------------|
+| `--no-clear` | `sample_transcripts.py`, `run_analysis.py` | Don't clear existing samples (append mode) |
+| `--resume` | `run_analysis.py` | Resume from existing `sampled/` using manifest |
+
 ### Pipeline Integration
 
-`run_analysis.py` now accepts `--workers` flag:
+`run_analysis.py` now accepts `--workers`, `--no-clear`, and `--resume` flags:
 
 ```bash
 # Full pipeline with 5 workers
@@ -67,14 +96,18 @@ python3 tools/run_analysis.py -n 200 --workers 5
 
 # Quick test still works
 python3 tools/run_analysis.py --quick
+
+# Resume an interrupted run
+python3 tools/run_analysis.py --resume
 ```
 
 ## Files Changed
 
 | File | Change |
 |------|--------|
-| `tools/batch_analyze.py` | **Major** - Added parallel processing with ThreadPoolExecutor |
-| `tools/run_analysis.py` | Added `--workers` flag, updated to v3.2 |
+| `tools/sample_transcripts.py` | Added `--no-clear` flag, clears `sampled/` by default |
+| `tools/batch_analyze.py` | Added parallel processing, manifest-based scope enforcement |
+| `tools/run_analysis.py` | Added `--workers`, `--resume`, `--no-clear` flags, run ID logging |
 
 ## Migration from v3.1
 
@@ -102,6 +135,17 @@ If you encounter `429 Too Many Requests` errors, reduce workers or increase rate
 # Verify batch_analyze parallel mode
 python3 tools/batch_analyze.py --help | grep workers
 # Expected: -w WORKERS, --workers WORKERS
+
+# Verify run isolation flags
+python3 tools/sample_transcripts.py --help | grep no-clear
+# Expected: --no-clear  Don't clear existing sampled files
+
+python3 tools/run_analysis.py --help | grep -E "(resume|no-clear)"
+# Expected: --resume, --no-clear flags shown
+
+# Test resume without manifest (should fail with helpful message)
+python3 tools/run_analysis.py --resume
+# Expected: Error: Cannot resume - no manifest.csv found
 
 # Test with existing test data (no API calls needed for metrics)
 python3 tools/test_framework.py
