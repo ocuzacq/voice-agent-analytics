@@ -36,7 +36,8 @@ import sys
 from datetime import datetime
 from pathlib import Path
 
-import google.generativeai as genai
+from google import genai
+from google.genai import types
 
 
 REVIEW_SYSTEM_PROMPT = """You are a senior analytics editor reviewing an executive report on AI voice agent performance.
@@ -102,12 +103,18 @@ CRITICAL RULES:
 """
 
 
-def configure_genai():
-    """Configure the Google Generative AI client."""
+def get_genai_client() -> genai.Client:
+    """Get configured Google GenAI client."""
     api_key = os.environ.get("GOOGLE_API_KEY") or os.environ.get("GEMINI_API_KEY")
     if not api_key:
         raise ValueError("Set GOOGLE_API_KEY or GEMINI_API_KEY environment variable.")
-    genai.configure(api_key=api_key)
+    return genai.Client(api_key=api_key)
+
+
+# For backwards compatibility
+def configure_genai():
+    """Configure the Google Generative AI client (deprecated, use get_genai_client)."""
+    get_genai_client()  # Just validate the key exists
 
 
 def extract_json_from_response(text: str) -> dict:
@@ -297,21 +304,20 @@ def review_report(
     # Build prompt (strips appendix - reviewed report won't include it)
     prompt, _ = build_review_prompt(report_content, include_suggestions)
 
-    # Call LLM
-    model = genai.GenerativeModel(
-        model_name=model_name,
-        system_instruction=REVIEW_SYSTEM_PROMPT
+    # Call LLM with new SDK
+    client = get_genai_client()
+
+    config = types.GenerateContentConfig(
+        temperature=0.2,  # Lower temperature for editorial consistency
+        max_output_tokens=100000,  # Very large limit to accommodate full report + suggestions
+        # No thinking_config = uses model default (HIGH for Pro)
+        system_instruction=REVIEW_SYSTEM_PROMPT,
     )
 
-    response = model.generate_content(
-        prompt,
-        generation_config=genai.GenerationConfig(
-            temperature=0.2,  # Lower temperature for editorial consistency
-            max_output_tokens=100000,  # Very large limit to accommodate full report + suggestions
-            thinking_config=genai.types.ThinkingConfig(
-                thinking_level="MEDIUM"  # Balanced thinking for editorial review
-            )
-        )
+    response = client.models.generate_content(
+        model=model_name,
+        contents=prompt,
+        config=config,
     )
 
     try:
@@ -321,15 +327,15 @@ def review_report(
         if include_suggestions:
             print("Retrying with suggestions disabled due to truncation...", file=sys.stderr)
             prompt_no_suggestions, _ = build_review_prompt(report_content, include_suggestions=False)
-            response2 = model.generate_content(
-                prompt_no_suggestions,
-                generation_config=genai.GenerationConfig(
-                    temperature=0.2,
-                    max_output_tokens=100000,
-                    thinking_config=genai.types.ThinkingConfig(
-                        thinking_level="MEDIUM"
-                    )
-                )
+            config_retry = types.GenerateContentConfig(
+                temperature=0.2,
+                max_output_tokens=100000,
+                system_instruction=REVIEW_SYSTEM_PROMPT,
+            )
+            response2 = client.models.generate_content(
+                model=model_name,
+                contents=prompt_no_suggestions,
+                config=config_retry,
             )
             result = extract_json_from_response(response2.text)
         else:

@@ -3,6 +3,7 @@ transcripts/
 sampled/
 reports/
 cowork/
+preprocessed/
 
 # Keep test analyses, exclude production analyses
 analyses/*

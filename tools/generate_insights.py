@@ -53,7 +53,8 @@ import sys
 from datetime import datetime
 from pathlib import Path
 
-import google.generativeai as genai
+from google import genai
+from google.genai import types
 
 
 INSIGHTS_SYSTEM_PROMPT = """You are a senior call center analytics consultant. Your job is to analyze voice agent performance metrics and natural language data to provide executive-ready insights and actionable recommendations.
@@ -329,12 +330,18 @@ Return ONLY the JSON object, no markdown code blocks or additional text.
 """
 
 
-def configure_genai():
-    """Configure the Google Generative AI client."""
+def get_genai_client() -> genai.Client:
+    """Get configured Google GenAI client."""
     api_key = os.environ.get("GOOGLE_API_KEY") or os.environ.get("GEMINI_API_KEY")
     if not api_key:
         raise ValueError("Set GOOGLE_API_KEY or GEMINI_API_KEY environment variable.")
-    genai.configure(api_key=api_key)
+    return genai.Client(api_key=api_key)
+
+
+# For backwards compatibility
+def configure_genai():
+    """Configure the Google Generative AI client (deprecated, use get_genai_client)."""
+    get_genai_client()  # Just validate the key exists
 
 
 def extract_json_from_response(text: str) -> dict:
@@ -644,21 +651,20 @@ def generate_insights(
     # Build prompt
     prompt = build_insights_prompt(metrics, nl_summary)
 
-    # Call LLM
-    model = genai.GenerativeModel(
-        model_name=model_name,
-        system_instruction=INSIGHTS_SYSTEM_PROMPT
+    # Call LLM with new SDK
+    client = get_genai_client()
+
+    config = types.GenerateContentConfig(
+        temperature=0.3,
+        max_output_tokens=32000,  # v3.3: High limit for expanded schema with large datasets
+        # No thinking_config = uses model default (HIGH for Pro)
+        system_instruction=INSIGHTS_SYSTEM_PROMPT,
     )
 
-    response = model.generate_content(
-        prompt,
-        generation_config=genai.GenerationConfig(
-            temperature=0.3,
-            max_output_tokens=32000,  # v3.3: High limit for expanded schema with large datasets
-            thinking_config=genai.types.ThinkingConfig(
-                thinking_level="MEDIUM"  # Balanced thinking for aggregate insights
-            )
-        )
+    response = client.models.generate_content(
+        model=model_name,
+        contents=prompt,
+        config=config,
     )
 
     insights = extract_json_from_response(response.text)

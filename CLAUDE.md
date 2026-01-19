@@ -1,4 +1,12 @@
-# Voice Agent Analytics - Project Instructions (v3.8.5)
+# Voice Agent Analytics - Project Instructions (v3.8.6)
+
+## Environment
+
+**API Key available in `.env` file** - load with `source .env` or use python-dotenv.
+
+```bash
+source .env  # Sets GOOGLE_API_KEY
+```
 
 ## Versioning Guidelines
 
@@ -95,10 +103,12 @@ python3 tools/test_v36_features.py
 
 | Use Case | Model | Thinking Level |
 |----------|-------|----------------|
-| Per-transcript analysis | `gemini-3-flash-preview` | MEDIUM |
-| Aggregate insights | `gemini-3-pro-preview` | MEDIUM |
-| Report review | `gemini-3-pro-preview` | MEDIUM |
-| Report rendering | `gemini-3-pro-preview` | MEDIUM |
+| Per-transcript analysis | `gemini-3-flash-preview` | LOW (fast, ~3-6s/call) |
+| Aggregate insights | `gemini-3-pro-preview` | default (HIGH) |
+| Report review | `gemini-3-pro-preview` | default (HIGH) |
+| Report rendering | `gemini-3-pro-preview` | default (HIGH) |
+
+**Note:** Gemini 3 Pro only supports LOW/HIGH. Gemini 3 Flash supports minimal/low/medium/high.
 
 ### Thinking Configuration
 

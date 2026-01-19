@@ -41,7 +41,8 @@ import os
 import sys
 from pathlib import Path
 
-import google.generativeai as genai
+from google import genai
+from google.genai import types
 
 # Import preprocessing function
 from preprocess_transcript import preprocess_transcript, format_for_llm
@@ -301,12 +302,18 @@ USER_PROMPT_TEMPLATE = """Analyze this call transcript and return JSON matching 
 Return ONLY the JSON object."""
 
 
-def configure_genai():
-    """Configure the Google Generative AI client."""
+def get_genai_client() -> genai.Client:
+    """Get configured Google GenAI client."""
     api_key = os.environ.get("GOOGLE_API_KEY") or os.environ.get("GEMINI_API_KEY")
     if not api_key:
         raise ValueError("Set GOOGLE_API_KEY or GEMINI_API_KEY environment variable.")
-    genai.configure(api_key=api_key)
+    return genai.Client(api_key=api_key)
+
+
+# For backwards compatibility
+def configure_genai():
+    """Configure the Google Generative AI client (deprecated, use get_genai_client)."""
+    get_genai_client()  # Just validate the key exists
 
 
 def repair_truncated_json(text: str) -> str:
@@ -389,10 +396,11 @@ def extract_json_from_response(text: str, allow_repair: bool = True) -> dict:
     raise ValueError(f"Could not parse JSON from: {text[:300]}...")
 
 
-def analyze_transcript(transcript_path: Path, model_name: str = "gemini-3-flash-preview") -> dict:
+def analyze_transcript(transcript_path: Path, model_name: str = "gemini-3-flash-preview", client: genai.Client = None) -> dict:
     """Analyze a single transcript using the LLM.
 
     v3.7: Uses preprocessing to provide structured input with turn numbers.
+    v3.8.6: Uses new google.genai SDK with thinking config.
     """
     # Preprocess transcript for deterministic turn numbers
     preprocessed = preprocess_transcript(transcript_path)
@@ -406,34 +414,37 @@ def analyze_transcript(transcript_path: Path, model_name: str = "gemini-3-flash-
         transcript=formatted_transcript
     )
 
-    model = genai.GenerativeModel(
-        model_name=model_name,
-        system_instruction=SYSTEM_PROMPT
+    # Get client if not provided
+    if client is None:
+        client = get_genai_client()
+
+    # Build generation config with thinking
+    config = types.GenerateContentConfig(
+        temperature=0.2,
+        max_output_tokens=16384,  # Increased to accommodate thinking model overhead
+        thinking_config=types.ThinkingConfig(
+            thinking_level="LOW"  # Fast for per-call analysis (MEDIUM for insights/review)
+        ),
+        system_instruction=SYSTEM_PROMPT,
     )
 
-    response = model.generate_content(
-        user_prompt,
-        generation_config=genai.GenerationConfig(
-            temperature=0.2,
-            max_output_tokens=16384,  # Increased to accommodate thinking model overhead
-            thinking_config=genai.types.ThinkingConfig(
-                thinking_level="MEDIUM"  # Balanced thinking for structured JSON output
-            )
-        )
+    response = client.models.generate_content(
+        model=model_name,
+        contents=user_prompt,
+        config=config,
     )
 
     # Check finish reason for debugging truncation issues
     finish_reason = None
     if response.candidates:
         finish_reason = response.candidates[0].finish_reason
-        # STOP=1 is normal, MAX_TOKENS=2 indicates truncation
-        if finish_reason == 2:  # MAX_TOKENS
-            import sys
+        # Check for truncation
+        if finish_reason and "MAX_TOKENS" in str(finish_reason):
             print(f"  ⚠ Response truncated (MAX_TOKENS) for {call_id}", file=sys.stderr)
 
     analysis = extract_json_from_response(response.text)
     analysis["call_id"] = call_id
-    analysis["schema_version"] = "v3.8.5"
+    analysis["schema_version"] = "v3.8.6"
 
     # v3.8.5: No _preprocessing in output (bloat reduction)
     # Turn data is available in friction.turns
@@ -453,7 +464,7 @@ def save_analysis(analysis: dict, output_dir: Path) -> Path:
 
 
 def main():
-    parser = argparse.ArgumentParser(description="Analyze call transcript (v3.8.5 - streamlined friction tracking)")
+    parser = argparse.ArgumentParser(description="Analyze call transcript (v3.8.6 - google.genai SDK)")
     parser.add_argument("transcript", type=Path, help="Path to transcript file")
     parser.add_argument("-o", "--output-dir", type=Path,
                         default=Path(__file__).parent.parent / "analyses",
@@ -470,7 +481,7 @@ def main():
         return 1
 
     try:
-        configure_genai()
+        client = get_genai_client()
     except ValueError as e:
         print(f"Error: {e}", file=sys.stderr)
         return 1
@@ -478,7 +489,7 @@ def main():
     print(f"Analyzing: {args.transcript}", file=sys.stderr)
 
     try:
-        analysis = analyze_transcript(args.transcript, args.model)
+        analysis = analyze_transcript(args.transcript, args.model, client)
     except Exception as e:
         print(f"Error: {e}", file=sys.stderr)
         return 1
