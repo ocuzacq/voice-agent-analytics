@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """
-End-to-End Analysis Pipeline for Vacatia AI Voice Agent Analytics (v3.2)
+End-to-End Analysis Pipeline for Vacatia AI Voice Agent Analytics (v3.5.5)
 
 Orchestrates the complete analysis workflow:
 1. sample_transcripts.py → Sample transcripts from corpus
@@ -9,6 +9,13 @@ Orchestrates the complete analysis workflow:
 4. extract_nl_fields.py → Extract condensed NL data for LLM (v3.1)
 5. generate_insights.py → Generate Section B LLM insights
 6. render_report.py → Render Markdown executive summary
+7. review_report.py → Editorial review and pipeline suggestions (v3.5.5)
+
+v3.5.5 Features:
+- Report review pass with Gemini 3 Pro for editorial refinement
+- Pipeline improvement suggestions generated after each run
+- --skip-review to bypass review step
+- --no-suggestions to skip pipeline suggestions
 
 v3.2 Features:
 - Configurable parallelization (default 3 workers) for batch analysis
@@ -115,6 +122,14 @@ Examples:
     parser.add_argument("--output-dir", type=Path,
                         help="Custom output directory for all outputs")
 
+    # v3.5.5: Report review options
+    parser.add_argument("--skip-review", action="store_true",
+                        help="Skip report review step (v3.5.5)")
+    parser.add_argument("--review-model", type=str, default="gemini-3-pro-preview",
+                        help="Gemini model for report review (default: gemini-3-pro-preview)")
+    parser.add_argument("--no-suggestions", action="store_true",
+                        help="Skip pipeline suggestions in review (review only)")
+
     args = parser.parse_args()
 
     # Determine paths
@@ -148,7 +163,7 @@ Examples:
     run_id = datetime.now().strftime("%Y%m%d_%H%M%S")
 
     print("=" * 60)
-    print("VACATIA AI VOICE AGENT ANALYTICS - v3.2 PIPELINE")
+    print("VACATIA AI VOICE AGENT ANALYTICS - v3.5.5 PIPELINE")
     print("=" * 60)
     print(f"Run ID: {run_id}")
     print(f"Started: {datetime.now().isoformat()}")
@@ -156,6 +171,7 @@ Examples:
     print(f"  Sample size: {args.sample_size}")
     print(f"  Analysis model: {args.analysis_model}")
     print(f"  Insights model: {args.insights_model}")
+    print(f"  Review model: {args.review_model}{' (skipped)' if args.skip_review else ''}")
     print(f"  Workers: {args.workers}")
     print(f"  Rate limit: {args.rate_limit}s per worker")
     print(f"  Transcripts: {transcripts_dir}")
@@ -289,6 +305,29 @@ Examples:
             print("\n⚠️ Report rendering failed.")
     else:
         print("\n⏭️ Skipping report rendering (no insights available)")
+
+    # Step 7: Review and refine report (v3.5.5)
+    if not args.skip_review and "report" in steps_completed:
+        cmd = [
+            sys.executable,
+            str(tools_dir / "review_report.py"),
+            "-o", str(reports_dir),
+            "--model", args.review_model
+        ]
+
+        if args.no_suggestions:
+            cmd.append("--no-suggestions")
+
+        if run_step("Review & Refine Report (v3.5.5)", cmd):
+            steps_completed.append("review")
+        else:
+            steps_failed.append("review")
+            print("\n⚠️ Report review failed. Original report still available.")
+    elif args.skip_review:
+        print("\n⏭️ Skipping report review (--skip-review)")
+        steps_completed.append("review (skipped)")
+    elif "report" not in steps_completed:
+        print("\n⏭️ Skipping report review (no report available)")
 
     # Summary
     print("\n" + "=" * 60)
