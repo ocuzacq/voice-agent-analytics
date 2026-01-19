@@ -8,6 +8,12 @@ Analytical framework to evaluate the Vacatia AI voice agent's performance using 
 - **Section A**: Python-calculated metrics (reproducible, auditable)
 - **Section B**: LLM-generated insights (executive narratives, recommendations)
 
+**v3.5 Enhancements**:
+- Training & Development: Narrative-first section with priorities, root causes, and recommended actions
+- Cross-Dimensional Patterns: Training gaps correlated with failure types
+- Emergent Patterns: LLM-discovered patterns not fitting standard categories
+- Secondary Customer Needs: Clustered additional intents
+
 **v3.4 Enhancements**:
 - Inline descriptions in 4th column (Context) for all major tables
 - Key metrics context explaining WHY each value (drivers/causes, not thresholds)
@@ -211,7 +217,8 @@ reports/
 | **v3.1** | 18 | Dedicated NL extraction for optimized LLM context | Previous | [`README_v3.1.md`](README_v3.1.md) |
 | **v3.2** | 18 | Configurable parallel processing (default 3 workers) | Previous | [`README_v3.2.md`](README_v3.2.md) |
 | **v3.3** | 18 | Report quality: clustering, explanations, call IDs | Previous | [`README_v3.3.md`](README_v3.3.md) |
-| **v3.4** | 18 | Inline descriptions, key metrics context, sub-breakdowns | **Current** | [`README_v3.4.md`](README_v3.4.md) |
+| **v3.4** | 18 | Inline descriptions, key metrics context, sub-breakdowns | Previous | [`README_v3.4.md`](README_v3.4.md) |
+| **v3.5** | 18 | Training insights, emergent patterns, secondary intents | **Current** | [`README_v3.5.md`](README_v3.5.md) |
 
 ### Versioning Guidelines
 

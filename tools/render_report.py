@@ -1,8 +1,14 @@
 #!/usr/bin/env python3
 """
-Markdown Report Renderer for Vacatia AI Voice Agent Analytics (v3.4)
+Markdown Report Renderer for Vacatia AI Voice Agent Analytics (v3.5)
 
 Renders the combined Section A + Section B report as an executive-ready Markdown document.
+
+v3.5 additions:
+- Training & Development: Narrative-first section with priorities, root causes, and actions
+- Cross-Dimensional Patterns: Training gaps correlated with failures
+- Emergent Patterns: LLM-discovered patterns not in standard categories
+- Secondary Customer Needs: Clustered additional intents
 
 v3.4 additions:
 - Inline descriptions in 4th column (Context) for Key Metrics, Failure Types, Policy Gaps
@@ -259,6 +265,50 @@ def render_markdown(report: dict) -> str:
         lines.append(f'> "{verbatims["biggest_miss"]}"')
         lines.append("")
 
+    # v3.5: Secondary Customer Needs (after Customer Voice)
+    secondary = insights.get("secondary_intents_analysis", {})
+    if secondary.get("clusters"):
+        lines.append("## Secondary Customer Needs")
+        lines.append("")
+        if secondary.get("narrative"):
+            lines.append(secondary["narrative"])
+            lines.append("")
+        lines.append("| Need | Count | Implication |")
+        lines.append("|------|-------|-------------|")
+        for c in secondary.get("clusters", [])[:5]:
+            cluster = c.get("cluster", "N/A")
+            count = c.get("count", 0)
+            implication = c.get("implication", "")
+            lines.append(f"| {cluster} | {count} | {implication} |")
+        lines.append("")
+
+    # v3.5: Emergent Patterns
+    emergent = insights.get("emergent_patterns", [])
+    if emergent:
+        lines.append("## Emergent Patterns")
+        lines.append("")
+        lines.append("*Patterns discovered that don't fit standard categories:*")
+        lines.append("")
+        for p in emergent:
+            name = p.get("name", "Unnamed")
+            frequency = p.get("frequency", "Unknown")
+            significance = p.get("significance", "")
+            description = p.get("description", "")
+            example_ids = p.get("example_call_ids", [])
+
+            lines.append(f"### {name}")
+            lines.append(f"**Frequency:** {frequency}")
+            lines.append("")
+            if significance:
+                lines.append(f"**Significance:** {significance}")
+                lines.append("")
+            if description:
+                lines.append(f"_{description}_")
+                lines.append("")
+            if example_ids:
+                lines.append(f"Examples: {', '.join(example_ids[:3])}")
+                lines.append("")
+
     # Trend Narratives
     narratives = insights.get("trend_narratives", {})
     if narratives:
@@ -298,16 +348,54 @@ def render_markdown(report: dict) -> str:
             lines.append(f"| {label} | {mean} | {median} | {std} | {n} |")
     lines.append("")
 
-    # Training Priorities
+    # Training & Development (v3.5 - narrative first with priorities)
     training = metrics.get("training_priorities", {})
-    if training:
-        lines.append("## Training Priorities")
+    training_analysis = insights.get("training_analysis", {})
+
+    if training or training_analysis:
+        lines.append("## Training & Development")
         lines.append("")
-        lines.append("| Skill Gap | Count |")
-        lines.append("|-----------|-------|")
-        for skill, count in training.items():
-            lines.append(f"| {skill} | {count} |")
-        lines.append("")
+
+        # v3.5: Narrative first
+        if training_analysis.get("narrative"):
+            lines.append(training_analysis["narrative"])
+            lines.append("")
+
+        # Priority table with context (v3.5)
+        top_priorities = training_analysis.get("top_priorities", [])
+        if top_priorities:
+            lines.append("### Priority Skills")
+            lines.append("")
+            lines.append("| Skill | Count | Root Cause | Recommended Action |")
+            lines.append("|-------|-------|------------|-------------------|")
+            for p in top_priorities[:5]:
+                skill = p.get("skill", "N/A")
+                count = p.get("count", 0)
+                why = p.get("why", "")
+                action = p.get("action", "")
+                lines.append(f"| {skill} | {count} | {why} | {action} |")
+            lines.append("")
+        elif training:
+            # Fallback to simple table if no LLM analysis
+            lines.append("### Skill Gaps")
+            lines.append("")
+            lines.append("| Skill Gap | Count |")
+            lines.append("|-----------|-------|")
+            for skill, count in training.items():
+                lines.append(f"| {skill} | {count} |")
+            lines.append("")
+
+        # v3.5: Cross-correlations
+        correlations = training_analysis.get("cross_correlations", [])
+        if correlations:
+            lines.append("### Cross-Dimensional Patterns")
+            lines.append("")
+            for c in correlations:
+                pattern = c.get("pattern", "N/A")
+                count = c.get("count", 0)
+                insight = c.get("insight", "")
+                lines.append(f"- **{pattern}** ({count} calls): {insight}")
+            lines.append("")
 
     # Actionable Flags
     flags = metrics.get("actionable_flags", {})
@@ -337,7 +425,7 @@ def render_markdown(report: dict) -> str:
 
     # Footer
     lines.append("---")
-    lines.append(f"*Report generated by Vacatia AI Voice Agent Analytics Framework v3.4*")
+    lines.append(f"*Report generated by Vacatia AI Voice Agent Analytics Framework v3.5*")
 
     return "\n".join(lines)
 

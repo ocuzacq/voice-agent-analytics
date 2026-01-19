@@ -1,9 +1,14 @@
 #!/usr/bin/env python3
 """
-LLM Insights Generator for Vacatia AI Voice Agent Analytics (v3.4)
+LLM Insights Generator for Vacatia AI Voice Agent Analytics (v3.5)
 
 Generates Section B: LLM-powered insights by passing Section A metrics
 and the condensed NL summary (from extract_nl_fields.py) to Gemini.
+
+v3.5 additions:
+- training_analysis: Narrative + priorities + cross-correlations for training gaps
+- emergent_patterns: LLM-discovered patterns not fitting existing categories
+- secondary_intents_analysis: Clustering of additional customer intents
 
 v3.4 additions:
 - Inline descriptions for ALL table rows (key metrics, failure types, policy gaps)
@@ -35,10 +40,12 @@ INSIGHTS_SYSTEM_PROMPT = """You are a senior call center analytics consultant. Y
 You will receive:
 1. Section A: Deterministic metrics (calculated via Python - factual, auditable)
 2. Aggregated qualitative data: failure descriptions, customer quotes, agent misses (with call_ids for traceability)
+3. Training opportunities grouped by type with failure context (v3.5)
+4. Secondary customer intents for clustering (v3.5)
 
 Your task: Generate Section B insights that synthesize the data into strategic recommendations.
 
-## Output Format (v3.4)
+## Output Format (v3.5)
 
 Return ONLY valid JSON matching this structure:
 {
@@ -103,7 +110,47 @@ Return ONLY valid JSON matching this structure:
       "total_count": 10,
       "example_call_ids": ["call_id1", "call_id2", "call_id3"]
     }
-  ]
+  ],
+
+  "training_analysis": {
+    "narrative": "2-3 sentences synthesizing training gaps and root causes, explaining WHY these gaps exist and how they connect to failures",
+    "top_priorities": [
+      {
+        "skill": "verification",
+        "count": 666,
+        "why": "WHY this skill gap exists (root cause analysis)",
+        "action": "Specific training intervention or process change"
+      }
+    ],
+    "cross_correlations": [
+      {
+        "pattern": "training_gap + failure_type (e.g., 'verification + auth_restriction')",
+        "count": 145,
+        "insight": "What this correlation reveals about systemic issues"
+      }
+    ]
+  },
+
+  "emergent_patterns": [
+    {
+      "name": "Descriptive pattern name",
+      "frequency": "count or percentage string",
+      "description": "What you observed in the data",
+      "significance": "Why this matters for operations/CX",
+      "example_call_ids": ["id1", "id2"]
+    }
+  ],
+
+  "secondary_intents_analysis": {
+    "narrative": "Summary of secondary customer needs beyond primary intent",
+    "clusters": [
+      {
+        "cluster": "Cluster name (e.g., 'Exit/Sell Timeshare')",
+        "count": 50,
+        "implication": "What this reveals about customer needs or agent gaps"
+      }
+    ]
+  }
 }
 
 ## Guidelines
@@ -135,6 +182,29 @@ Return ONLY valid JSON matching this structure:
    - GOOD: "Driven by dead-end escalation; verified customers can't reach humans"
 
 11. **Sub-breakdowns for major failure types**: For each failure_type representing ≥5% of total failures (excluding policy_gap which already has a breakdown), analyze the failure descriptions and identify 2-5 common patterns. Group similar failures and provide run-specific context. Include in major_failure_breakdowns.
+
+12. **Training analysis - CONNECT THE DOTS**: Analyze the "Training Opportunities" data to understand WHY training gaps exist:
+    - What is the relationship between training gaps and failure types?
+    - Which training gaps correlate with which policy gap categories?
+    - What specific intervention (training, process, tooling) would address the root cause?
+    - The narrative should explain the systemic issues, not just list counts.
+
+13. **Cross-correlations**: Look for significant patterns spanning multiple dimensions:
+    - training_opportunity + failure_point (e.g., "verification gaps correlate with auth_restriction failures")
+    - training_opportunity + policy_gap category
+    - Include the count and a meaningful insight for each correlation found
+
+14. **Emergent patterns**: Actively identify patterns NOT covered by existing categories:
+    - Unexpected correlations in the data
+    - Themes in verbatims not captured by standard fields
+    - Surprising observations worth flagging for investigation
+    - Name each pattern clearly and explain its significance
+    - Only include patterns with meaningful frequency (not one-offs)
+
+15. **Secondary intents analysis**: Cluster the "Secondary Intents" data to understand:
+    - What additional needs customers have beyond their primary intent
+    - Which secondary needs are frequently unmet
+    - What this reveals about customer journey gaps
 
 Return ONLY the JSON object, no markdown code blocks or additional text.
 """
@@ -254,6 +324,40 @@ def build_insights_prompt(metrics: dict, nl_summary: dict) -> str:
             steps_str = " → ".join(steps[:10])
             nl_sections.append(f"- [{call_id}] [{call.get('outcome', 'unknown')}] {steps_str}")
 
+    # v3.5: Training opportunities grouped by type with failure context
+    if nl_summary.get("training_details"):
+        details = nl_summary["training_details"]
+        nl_sections.append(f"\n## Training Opportunities ({len(details)} calls)")
+        nl_sections.append("Analyze these training gaps to understand root causes and cross-correlations:")
+
+        # Group by training type
+        from collections import defaultdict
+        by_type = defaultdict(list)
+        for td in details:
+            by_type[td.get("opportunity", "unknown")].append(td)
+
+        for opp_type, entries in sorted(by_type.items(), key=lambda x: -len(x[1])):
+            nl_sections.append(f"\n### {opp_type} ({len(entries)} calls)")
+            for entry in entries[:8]:  # Sample per type to avoid overwhelming prompt
+                parts = [f"[{entry.get('call_id', '?')[:8]}]"]
+                parts.append(f"[{entry.get('failure_point', 'none')}]")
+                if entry.get("failure_description"):
+                    parts.append(entry["failure_description"][:100])
+                if entry.get("agent_miss_detail"):
+                    parts.append(f"Miss: {entry['agent_miss_detail'][:80]}")
+                nl_sections.append(f"- {' | '.join(parts)}")
+
+    # v3.5: Additional intents (secondary customer needs)
+    if nl_summary.get("all_additional_intents"):
+        intents = nl_summary["all_additional_intents"]
+        nl_sections.append(f"\n## Secondary Intents ({len(intents)} calls)")
+        nl_sections.append("Cluster these secondary customer needs:")
+        for i in intents[:15]:
+            call_id = i.get("call_id", "?")[:8]
+            outcome = i.get("outcome", "unknown")
+            intent = i.get("intent", "")
+            nl_sections.append(f"- [{call_id}] [{outcome}] {intent}")
+
     nl_text = "\n".join(nl_sections)
 
     return f"""Analyze this voice agent performance data and generate Section B insights.
@@ -351,7 +455,7 @@ def combine_report(metrics_path: Path, insights: dict, output_path: Path) -> dic
 def print_insights_summary(insights: dict) -> None:
     """Print human-readable summary of insights."""
     print("\n" + "=" * 60)
-    print("VACATIA AI VOICE AGENT - INSIGHTS (v3.4 - Section B)")
+    print("VACATIA AI VOICE AGENT - INSIGHTS (v3.5 - Section B)")
     print("=" * 60)
 
     # Executive Summary
@@ -409,6 +513,46 @@ def print_insights_summary(insights: dict) -> None:
     if verbatims.get("biggest_miss"):
         print(f"\n  Biggest Agent Miss:")
         print(f'    "{verbatims["biggest_miss"]}"')
+
+    # v3.5: Training Analysis
+    training = insights.get("training_analysis", {})
+    if training:
+        print("\n" + "-" * 40)
+        print("TRAINING ANALYSIS (v3.5)")
+        print("-" * 40)
+        if training.get("narrative"):
+            print(f"  {training['narrative']}")
+        priorities = training.get("top_priorities", [])
+        if priorities:
+            print("\n  Top Priorities:")
+            for p in priorities[:3]:
+                print(f"    - {p.get('skill', 'N/A')} ({p.get('count', 0)}): {p.get('action', 'N/A')}")
+        correlations = training.get("cross_correlations", [])
+        if correlations:
+            print("\n  Cross-Correlations:")
+            for c in correlations:
+                print(f"    - {c.get('pattern', 'N/A')} ({c.get('count', 0)}): {c.get('insight', 'N/A')}")
+
+    # v3.5: Emergent Patterns
+    emergent = insights.get("emergent_patterns", [])
+    if emergent:
+        print("\n" + "-" * 40)
+        print("EMERGENT PATTERNS (v3.5)")
+        print("-" * 40)
+        for p in emergent:
+            print(f"\n  {p.get('name', 'Unnamed')} ({p.get('frequency', 'unknown')})")
+            print(f"    {p.get('significance', '')}")
+
+    # v3.5: Secondary Intents
+    secondary = insights.get("secondary_intents_analysis", {})
+    if secondary.get("clusters"):
+        print("\n" + "-" * 40)
+        print("SECONDARY INTENTS (v3.5)")
+        print("-" * 40)
+        if secondary.get("narrative"):
+            print(f"  {secondary['narrative']}")
+        for c in secondary.get("clusters", [])[:3]:
+            print(f"    - {c.get('cluster', 'N/A')} ({c.get('count', 0)})")
 
     print("\n" + "=" * 60)
 

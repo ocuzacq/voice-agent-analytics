@@ -1,9 +1,13 @@
 #!/usr/bin/env python3
 """
-NL Field Extractor for Vacatia AI Voice Agent Analytics (v3.3)
+NL Field Extractor for Vacatia AI Voice Agent Analytics (v3.5)
 
 Extracts natural language fields from v3 analysis JSONs into a condensed
 format optimized for LLM insight generation.
+
+v3.5 additions:
+- training_details: Training opportunities with associated failure context
+- all_additional_intents: Secondary customer intents for clustering
 
 v3.3 additions:
 - Scope coherence: Respects manifest.csv for run isolation
@@ -200,6 +204,31 @@ def extract_nl_summary(analyses: list[dict]) -> dict:
         if ask and ask.strip():
             all_customer_asks.append(ask.strip())
 
+    # v3.5: Training details with context
+    # Extracts training opportunities with associated failure info for narrative generation
+    training_details = []
+    for a in analyses:
+        training_opp = a.get("training_opportunity")
+        if training_opp:
+            training_details.append({
+                "call_id": a.get("call_id"),
+                "opportunity": training_opp,
+                "outcome": a.get("outcome"),
+                "failure_point": a.get("failure_point"),
+                "failure_description": a.get("failure_description"),
+                "agent_miss_detail": a.get("agent_miss_detail")
+            })
+
+    # v3.5: Additional intents (secondary customer needs)
+    all_additional_intents = []
+    for a in analyses:
+        if a.get("additional_intents"):
+            all_additional_intents.append({
+                "call_id": a.get("call_id"),
+                "outcome": a.get("outcome"),
+                "intent": a.get("additional_intents")
+            })
+
     return {
         "metadata": {
             "extracted_at": datetime.now().isoformat(),
@@ -211,14 +240,16 @@ def extract_nl_summary(analyses: list[dict]) -> dict:
         "all_agent_misses": all_agent_misses,
         "policy_gap_details": policy_gap_details,
         "failed_call_flows": failed_call_flows,
-        "all_customer_asks": all_customer_asks  # v3.4: Raw list for LLM clustering
+        "all_customer_asks": all_customer_asks,  # v3.4: Raw list for LLM clustering
+        "training_details": training_details,  # v3.5: Training opportunities with context
+        "all_additional_intents": all_additional_intents  # v3.5: Secondary customer intents
     }
 
 
 def print_summary(nl_summary: dict) -> None:
     """Print human-readable summary of extracted NL data."""
     print("\n" + "=" * 60)
-    print("NL FIELD EXTRACTION SUMMARY (v3.1)")
+    print("NL FIELD EXTRACTION SUMMARY (v3.5)")
     print("=" * 60)
 
     meta = nl_summary.get("metadata", {})
@@ -276,6 +307,34 @@ def print_summary(nl_summary: dict) -> None:
     print("-" * 40)
     flows = nl_summary.get("failed_call_flows", [])
     print(f"  Flows documented: {len(flows)}")
+
+    # v3.5: Training details
+    print("\n" + "-" * 40)
+    print("TRAINING OPPORTUNITIES (v3.5)")
+    print("-" * 40)
+    training = nl_summary.get("training_details", [])
+    print(f"  Total training opportunities: {len(training)}")
+    if training:
+        # Count by type
+        from collections import Counter
+        types = Counter(t.get("opportunity") for t in training if t.get("opportunity"))
+        for opp_type, count in types.most_common(5):
+            print(f"    {opp_type}: {count}")
+
+    # v3.5: Additional intents
+    print("\n" + "-" * 40)
+    print("ADDITIONAL INTENTS (v3.5)")
+    print("-" * 40)
+    intents = nl_summary.get("all_additional_intents", [])
+    print(f"  Calls with secondary intents: {len(intents)}")
+    if intents:
+        for i in intents[:3]:
+            intent = i.get("intent", "")
+            if len(intent) > 60:
+                intent = intent[:60] + "..."
+            print(f'    - "{intent}"')
+        if len(intents) > 3:
+            print(f"    ... and {len(intents) - 3} more")
 
     print("\n" + "=" * 60)
 
