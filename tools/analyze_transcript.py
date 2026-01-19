@@ -1,9 +1,16 @@
 #!/usr/bin/env python3
 """
-Single Transcript Analyzer for Vacatia AI Voice Agent Analytics (v3)
+Single Transcript Analyzer for Vacatia AI Voice Agent Analytics (v3.6)
 
-Hybrid schema with 18 per-call fields enabling both programmatic analysis
+Hybrid schema with 23 per-call fields enabling both programmatic analysis
 and executive-ready insights through a two-part report architecture.
+
+v3.6 additions (5 new fields):
+- conversation_turns: Total exchange pairs (proxy for call duration)
+- turns_to_failure: When the call started derailing (non-resolved only)
+- clarification_requests: Agent asks customer to repeat/spell/confirm
+- user_corrections: Customer corrects agent's understanding
+- repeated_prompts: Agent says substantially similar things multiple times
 """
 
 import argparse
@@ -15,7 +22,7 @@ from pathlib import Path
 import google.generativeai as genai
 
 
-# v3 Schema - Hybrid metrics + insights (18 fields)
+# v3.6 Schema - Hybrid metrics + insights (23 fields)
 ANALYSIS_SCHEMA = """
 {
   "call_id": "string (UUID from filename)",
@@ -46,7 +53,38 @@ ANALYSIS_SCHEMA = """
 
   "agent_miss_detail": "string or null (what the agent should have said or done differently. Actionable coaching insight. Example: 'Should have offered callback scheduling when customer expressed time constraints instead of continuing verification loop')",
 
-  "resolution_steps": "array of strings or null (sequence of actions taken or attempted during the call. Example: ['greeted customer', 'attempted verification via phone', 'verification failed', 'offered alternative ID method', 'customer declined', 'offered human escalation', 'customer accepted'])"
+  "resolution_steps": "array of strings or null (sequence of actions taken or attempted during the call. Example: ['greeted customer', 'attempted verification via phone', 'verification failed', 'offered alternative ID method', 'customer declined', 'offered human escalation', 'customer accepted'])",
+
+  "conversation_turns": "integer (total user+assistant exchange pairs; count how many times user spoke)",
+
+  "turns_to_failure": "integer or null (for non-resolved calls: turn number where call started derailing; null for resolved calls)",
+
+  "clarification_requests": {
+    "count": "integer (total clarification requests)",
+    "details": [
+      {
+        "type": "enum: 'name_spelling' | 'phone_confirmation' | 'intent_clarification' | 'repeat_request' | 'verification_retry'",
+        "turn": "integer (which turn)",
+        "resolved": "boolean (did clarification succeed?)"
+      }
+    ]
+  },
+
+  "user_corrections": {
+    "count": "integer (total customer corrections)",
+    "details": [
+      {
+        "what_was_wrong": "string (brief: what agent got wrong)",
+        "turn": "integer (which turn)",
+        "frustration_signal": "boolean (did customer show frustration during correction?)"
+      }
+    ]
+  },
+
+  "repeated_prompts": {
+    "count": "integer (total repeated prompts)",
+    "max_consecutive": "integer (longest streak of similar prompts)"
+  }
 }
 """
 
@@ -129,6 +167,35 @@ Set `critical_failure: true` ONLY if:
 **agent_miss_detail**: Describe what the agent should have done differently. Be specific and actionable (e.g., "Should have offered callback scheduling" not "Could have been better"). If agent performed well or no clear miss, use null.
 
 **resolution_steps**: List the key actions in chronological order. Keep each step brief (2-5 words). Include both successful and failed attempts. This creates a call flow timeline.
+
+## Conversation Quality Tracking (v3.6)
+
+**conversation_turns**: Count total exchanges. A "turn" = one user message followed by agent response. Count how many times the user spoke. Example: 15-turn call has 15 user messages.
+
+**turns_to_failure**: For non-resolved calls ONLY, identify which turn the call started going wrong. This helps measure "time to failure" using turns as a proxy for duration (since timestamps aren't available). For resolved calls, use null.
+
+**clarification_requests**: Track EVERY time the agent asks customer to clarify something:
+- **name_spelling**: Agent asks to spell name ("Can you spell your name?")
+- **phone_confirmation**: Agent confirms phone number ("So that's 315-276-0534?")
+- **intent_clarification**: Agent asks what customer needs after intent was given ("What can I help you with?" when customer already stated need)
+- **repeat_request**: Agent asks to repeat ("Can you say that again?", "Sorry, I didn't catch that")
+- **verification_retry**: Agent asks for different verification info ("Can you try a different phone number?")
+
+For each, note: turn number, whether the clarification successfully resolved the confusion.
+
+**user_corrections**: Track when CUSTOMER corrects the agent's understanding:
+- "No, that's not right"
+- "I said X, not Y"
+- "Let me spell that for you" (proactive correction)
+- Direct disagreement with agent's interpretation
+
+Note: turn number, what was wrong, whether customer showed frustration (exasperation, repeating themselves forcefully, expressing annoyance).
+
+**repeated_prompts**: Count when agent says substantially the same thing multiple times. This detects loop behavior.
+- Track total count of repeated prompts
+- Track max consecutive repeats (indicates stuck-in-loop)
+- "Substantially similar" = same intent/request, not exact text match
+- Example: "Can you spell your name?" followed by "Please spell your first name" = 2 consecutive repeats
 
 ## Output Requirements
 - Return ONLY valid JSON
@@ -222,7 +289,7 @@ def analyze_transcript(transcript_path: Path, model_name: str = "gemini-3-flash-
 
     analysis = extract_json_from_response(response.text)
     analysis["call_id"] = call_id
-    analysis["schema_version"] = "v3"
+    analysis["schema_version"] = "v3.6"
 
     return analysis
 
@@ -239,7 +306,7 @@ def save_analysis(analysis: dict, output_dir: Path) -> Path:
 
 
 def main():
-    parser = argparse.ArgumentParser(description="Analyze call transcript (v3 - hybrid metrics + insights schema)")
+    parser = argparse.ArgumentParser(description="Analyze call transcript (v3.6 - hybrid metrics + insights + conversation quality schema)")
     parser.add_argument("transcript", type=Path, help="Path to transcript file")
     parser.add_argument("-o", "--output-dir", type=Path,
                         default=Path(__file__).parent.parent / "analyses",

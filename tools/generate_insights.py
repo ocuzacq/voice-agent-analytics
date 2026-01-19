@@ -1,9 +1,14 @@
 #!/usr/bin/env python3
 """
-LLM Insights Generator for Vacatia AI Voice Agent Analytics (v3.5)
+LLM Insights Generator for Vacatia AI Voice Agent Analytics (v3.6)
 
 Generates Section B: LLM-powered insights by passing Section A metrics
 and the condensed NL summary (from extract_nl_fields.py) to Gemini.
+
+v3.6 additions:
+- conversation_quality_analysis: Friction hotspots, efficiency insights from turn/clarification/correction data
+- Narrative on conversation friction patterns
+- Recommendations for reducing clarification frequency
 
 v3.5 additions:
 - training_analysis: Narrative + priorities + cross-correlations for training gaps
@@ -42,6 +47,7 @@ You will receive:
 2. Aggregated qualitative data: failure descriptions, customer quotes, agent misses (with call_ids for traceability)
 3. Training opportunities grouped by type with failure context (v3.5)
 4. Secondary customer intents for clustering (v3.5)
+5. Conversation quality events: clarifications, corrections, loops, turn outliers (v3.6)
 
 Your task: Generate Section B insights that synthesize the data into strategic recommendations.
 
@@ -150,6 +156,31 @@ Return ONLY valid JSON matching this structure:
         "implication": "What this reveals about customer needs or agent gaps"
       }
     ]
+  },
+
+  "conversation_quality_analysis": {
+    "narrative": "2-3 sentences synthesizing conversation friction patterns: what causes most back-and-forth, which clarification types correlate with poor outcomes",
+
+    "friction_hotspots": [
+      {
+        "pattern": "Pattern name (e.g., 'Name spelling requests')",
+        "frequency": "18% of calls",
+        "impact": "Effect on outcomes and customer experience",
+        "recommendation": "Specific improvement suggestion"
+      }
+    ],
+
+    "efficiency_insights": [
+      "Insight about conversation length vs outcomes",
+      "Insight about early friction predicting failure",
+      "Insight about clarification patterns"
+    ],
+
+    "turn_analysis": {
+      "long_call_patterns": "What's causing unusually long calls?",
+      "short_call_patterns": "What characterizes quick resolutions or early abandonments?",
+      "turns_to_failure_insight": "What do failed calls look like before they derail?"
+    }
   }
 }
 
@@ -205,6 +236,14 @@ Return ONLY valid JSON matching this structure:
     - What additional needs customers have beyond their primary intent
     - Which secondary needs are frequently unmet
     - What this reveals about customer journey gaps
+
+16. **Conversation quality analysis (v3.6)**: Analyze the "Conversation Quality" data to understand:
+    - **Friction hotspots**: Which clarification types cause most friction? Do name spelling requests correlate with escalation? Do phone confirmations lead to verification failures?
+    - **Efficiency insights**: What distinguishes quick resolutions from drawn-out failures? Do calls with early corrections tend to fail?
+    - **Turn analysis**: What patterns characterize long calls vs short calls? How many turns before a call typically derails?
+    - **Correlation opportunities**: Connect clarification types to failure types. Do certain clarifications predict specific outcomes?
+    - Generate 2-4 friction hotspots with specific improvement recommendations
+    - Include 3-5 efficiency insights based on the turn and correction data
 
 Return ONLY the JSON object, no markdown code blocks or additional text.
 """
@@ -358,6 +397,65 @@ def build_insights_prompt(metrics: dict, nl_summary: dict) -> str:
             intent = i.get("intent", "")
             nl_sections.append(f"- [{call_id}] [{outcome}] {intent}")
 
+    # v3.6: Conversation Quality Events
+    clar_events = nl_summary.get("clarification_events", [])
+    corr_events = nl_summary.get("correction_events", [])
+    loop_events = nl_summary.get("loop_events", [])
+    turn_outliers = nl_summary.get("turn_outliers", [])
+
+    if clar_events or corr_events or loop_events or turn_outliers:
+        nl_sections.append("\n## Conversation Quality (v3.6)")
+
+        # Clarification events
+        if clar_events:
+            nl_sections.append(f"\n### Clarification Events ({len(clar_events)} total)")
+            nl_sections.append("Analyze which clarification types cause most friction:")
+
+            # Group by type for analysis
+            from collections import defaultdict
+            by_type = defaultdict(list)
+            for e in clar_events:
+                by_type[e.get("type", "unknown")].append(e)
+
+            for ctype, events in sorted(by_type.items(), key=lambda x: -len(x[1])):
+                resolved_count = sum(1 for e in events if e.get("resolved"))
+                failed_outcomes = sum(1 for e in events if e.get("outcome") != "resolved")
+                nl_sections.append(f"- **{ctype}**: {len(events)} events, {resolved_count} resolved, {failed_outcomes} in failed calls")
+                # Show a few examples
+                for e in events[:3]:
+                    nl_sections.append(f"  - [{e.get('call_id', '?')[:8]}] turn {e.get('turn', '?')} → {e.get('outcome', '?')}")
+
+        # Correction events
+        if corr_events:
+            nl_sections.append(f"\n### User Corrections ({len(corr_events)} total)")
+            frustrated = sum(1 for e in corr_events if e.get("frustrated"))
+            nl_sections.append(f"Corrections with frustration signal: {frustrated}")
+            for e in corr_events[:10]:
+                frust = "😤" if e.get("frustrated") else ""
+                nl_sections.append(f"- [{e.get('call_id', '?')[:8]}] turn {e.get('turn', '?')}: {e.get('what', 'unknown')} [{e.get('outcome', '?')}] {frust}")
+
+        # Loop events
+        if loop_events:
+            nl_sections.append(f"\n### Loop Events ({len(loop_events)} calls with repeated prompts)")
+            sorted_loops = sorted(loop_events, key=lambda x: -x.get("max_consecutive", 0))
+            for e in sorted_loops[:5]:
+                nl_sections.append(f"- [{e.get('call_id', '?')[:8]}] {e.get('count', 0)} repeats, max {e.get('max_consecutive', 0)} consecutive → {e.get('outcome', '?')}")
+
+        # Turn outliers
+        if turn_outliers:
+            long_calls = [e for e in turn_outliers if e.get("type") == "long"]
+            short_calls = [e for e in turn_outliers if e.get("type") == "short"]
+
+            if long_calls:
+                nl_sections.append(f"\n### Unusually Long Calls ({len(long_calls)} calls)")
+                for e in long_calls[:5]:
+                    nl_sections.append(f"- [{e.get('call_id', '?')[:8]}] {e.get('turns', '?')} turns → {e.get('outcome', '?')}")
+
+            if short_calls:
+                nl_sections.append(f"\n### Unusually Short Calls ({len(short_calls)} calls)")
+                for e in short_calls[:5]:
+                    nl_sections.append(f"- [{e.get('call_id', '?')[:8]}] {e.get('turns', '?')} turns → {e.get('outcome', '?')}")
+
     nl_text = "\n".join(nl_sections)
 
     return f"""Analyze this voice agent performance data and generate Section B insights.
@@ -455,7 +553,7 @@ def combine_report(metrics_path: Path, insights: dict, output_path: Path) -> dic
 def print_insights_summary(insights: dict) -> None:
     """Print human-readable summary of insights."""
     print("\n" + "=" * 60)
-    print("VACATIA AI VOICE AGENT - INSIGHTS (v3.5 - Section B)")
+    print("VACATIA AI VOICE AGENT - INSIGHTS (v3.6 - Section B)")
     print("=" * 60)
 
     # Executive Summary
@@ -554,11 +652,41 @@ def print_insights_summary(insights: dict) -> None:
         for c in secondary.get("clusters", [])[:3]:
             print(f"    - {c.get('cluster', 'N/A')} ({c.get('count', 0)})")
 
+    # v3.6: Conversation Quality Analysis
+    cq_analysis = insights.get("conversation_quality_analysis", {})
+    if cq_analysis:
+        print("\n" + "-" * 40)
+        print("CONVERSATION QUALITY ANALYSIS (v3.6)")
+        print("-" * 40)
+        if cq_analysis.get("narrative"):
+            print(f"  {cq_analysis['narrative']}")
+
+        friction_hotspots = cq_analysis.get("friction_hotspots", [])
+        if friction_hotspots:
+            print("\n  Friction Hotspots:")
+            for fh in friction_hotspots[:3]:
+                print(f"    - {fh.get('pattern', 'N/A')} ({fh.get('frequency', 'N/A')})")
+                print(f"      Impact: {fh.get('impact', 'N/A')}")
+
+        efficiency_insights = cq_analysis.get("efficiency_insights", [])
+        if efficiency_insights:
+            print("\n  Efficiency Insights:")
+            for ei in efficiency_insights[:3]:
+                print(f"    - {ei}")
+
+        turn_analysis = cq_analysis.get("turn_analysis", {})
+        if turn_analysis:
+            print("\n  Turn Analysis:")
+            if turn_analysis.get("long_call_patterns"):
+                print(f"    Long calls: {turn_analysis['long_call_patterns']}")
+            if turn_analysis.get("turns_to_failure_insight"):
+                print(f"    Failure pattern: {turn_analysis['turns_to_failure_insight']}")
+
     print("\n" + "=" * 60)
 
 
 def main():
-    parser = argparse.ArgumentParser(description="Generate v3.4 Section B: LLM Insights")
+    parser = argparse.ArgumentParser(description="Generate v3.6 Section B: LLM Insights (incl. conversation quality)")
     parser.add_argument("-m", "--metrics", type=Path,
                         help="Path to Section A metrics JSON file")
     parser.add_argument("-n", "--nl-summary", type=Path,

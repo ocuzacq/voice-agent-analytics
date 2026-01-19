@@ -1,4 +1,4 @@
-# Voice Agent Analytics - Project Instructions (v3.5)
+# Voice Agent Analytics - Project Instructions (v3.6)
 
 ## Versioning Guidelines
 
@@ -32,18 +32,32 @@ Keep archived tool versions in `tools/vX/` directories with their own `VERSION.m
 - Why it was superseded
 - Key differences from current
 
-## Pipeline Architecture (v3.2)
+## Pipeline Architecture (v3.6)
 
 ```
-transcripts/ → sample → analyze (parallel) → metrics → extract_nl → insights → report
+transcripts/ → sample → analyze (parallel) → metrics → extract_nl → insights → report → review
 ```
 
 1. `sample_transcripts.py` - Random stratified sampling
 2. `batch_analyze.py` - LLM analysis with parallel processing (v3.2: default 3 workers)
-3. `compute_metrics.py` - Section A: Deterministic metrics
-4. `extract_nl_fields.py` - Condensed NL data for LLM (v3.1)
-5. `generate_insights.py` - Section B: LLM insights
-6. `render_report.py` - Markdown executive summary
+3. `compute_metrics.py` - Section A: Deterministic metrics (v3.6: +conversation quality)
+4. `extract_nl_fields.py` - Condensed NL data for LLM (v3.6: +clarification/correction events)
+5. `generate_insights.py` - Section B: LLM insights (v3.6: +conversation quality analysis)
+6. `render_report.py` - Markdown executive summary (v3.6: +Conversation Quality section)
+7. `review_report.py` - Editorial review and pipeline suggestions (v3.5.5)
+
+### Report Review (v3.5.5)
+
+```bash
+# Full pipeline with review (default)
+python3 tools/run_analysis.py -n 50
+
+# Skip review for faster runs
+python3 tools/run_analysis.py -n 50 --skip-review
+
+# Review only (no pipeline suggestions)
+python3 tools/run_analysis.py -n 50 --no-suggestions
+```
 
 ### Parallelization (v3.2)
 
@@ -63,6 +77,9 @@ python3 tools/run_analysis.py -n 50 --workers 1
 Always run the test harness before releases:
 ```bash
 python3 tools/test_framework.py
+
+# v3.6: Run conversation quality feature tests
+python3 tools/test_v36_features.py
 ```
 
 ## LLM Provider

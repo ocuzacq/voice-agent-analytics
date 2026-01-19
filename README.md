@@ -8,6 +8,16 @@ Analytical framework to evaluate the Vacatia AI voice agent's performance using 
 - **Section A**: Python-calculated metrics (reproducible, auditable)
 - **Section B**: LLM-generated insights (executive narratives, recommendations)
 
+**v3.6 Enhancements**:
+- Conversation Quality Tracking: Turn counts, clarification requests, user corrections, loop detection
+- Friction Hotspots: Identify which clarification types cause most friction
+- Turn Analysis: Avg turns by outcome, turns-to-failure for failed calls
+
+**v3.5.5 Enhancements**:
+- Report Review: Automated editorial pass with Gemini 3 Pro
+- Pipeline Suggestions: Generated improvement ideas after each run
+- Preserved originals: Both original and refined reports kept
+
 **v3.5 Enhancements**:
 - Training & Development: Narrative-first section with priorities, root causes, and recommended actions
 - Cross-Dimensional Patterns: Training gaps correlated with failure types
@@ -33,12 +43,13 @@ Analytical framework to evaluate the Vacatia AI voice agent's performance using 
 
 ## Overview
 
-- **18-field analysis schema** (v3) - hybrid metrics + insights
+- **23-field analysis schema** (v3.6) - hybrid metrics + insights + conversation quality
 - **3 quality scores** - agent effectiveness, conversation quality, customer effort
 - **Policy gap breakdown** - structured categorization of capability limitations
 - **Customer verbatim** - direct quotes capturing frustration/needs
 - **Agent coaching insights** - specific missed opportunities
 - **Resolution steps** - call flow timeline
+- **Conversation quality tracking** - turns, clarifications, corrections, loops (v3.6)
 - **Executive-ready Markdown reports**
 
 ## Quick Start
@@ -173,14 +184,33 @@ python3 tools/render_report.py
 python3 tools/render_report.py --stdout  # Print to console
 ```
 
+### `review_report.py` (v3.5.5)
+
+Editorial review and refinement of rendered reports.
+
+```bash
+python3 tools/review_report.py                    # Review latest report
+python3 tools/review_report.py -i report.md       # Review specific report
+python3 tools/review_report.py --no-suggestions   # Skip pipeline suggestions
+python3 tools/review_report.py --model gemini-2.5-flash  # Use different model
+```
+
+**Benefits:**
+- Finds inconsistencies and logical gaps
+- Tightens prose and removes redundancies
+- Generates pipeline improvement suggestions
+- Preserves original report alongside refined version
+
 ## Output Files
 
 ```
 reports/
-├── metrics_v3_{timestamp}.json           # Section A: Deterministic metrics
-├── nl_summary_v3_{timestamp}.json        # v3.1: Condensed NL fields for LLM
-├── report_v3_{timestamp}.json            # Combined Section A + B
-└── executive_summary_v3_{timestamp}.md   # Markdown executive report
+├── metrics_v3_{timestamp}.json                    # Section A: Deterministic metrics
+├── nl_summary_v3_{timestamp}.json                 # v3.1: Condensed NL fields for LLM
+├── report_v3_{timestamp}.json                     # Combined Section A + B
+├── executive_summary_v3_{timestamp}.md            # Markdown executive report
+├── executive_summary_v3_{timestamp}_reviewed.md   # v3.5.5: Refined report
+└── pipeline_suggestions_v3_{timestamp}.md         # v3.5.5: Improvement ideas
 ```
 
 ## Directory Structure
@@ -218,7 +248,9 @@ reports/
 | **v3.2** | 18 | Configurable parallel processing (default 3 workers) | Previous | [`README_v3.2.md`](README_v3.2.md) |
 | **v3.3** | 18 | Report quality: clustering, explanations, call IDs | Previous | [`README_v3.3.md`](README_v3.3.md) |
 | **v3.4** | 18 | Inline descriptions, key metrics context, sub-breakdowns | Previous | [`README_v3.4.md`](README_v3.4.md) |
-| **v3.5** | 18 | Training insights, emergent patterns, secondary intents | **Current** | [`README_v3.5.md`](README_v3.5.md) |
+| **v3.5** | 18 | Training insights, emergent patterns, secondary intents | Previous | [`README_v3.5.md`](README_v3.5.md) |
+| **v3.5.5** | 18 | Report review, pipeline suggestions | Previous | [`README_v3.5.5.md`](README_v3.5.5.md) |
+| **v3.6** | 23 | Conversation quality: turns, clarifications, corrections, loops | **Current** | [`README_v3.6.md`](README_v3.6.md) |
 
 ### Versioning Guidelines
 
@@ -229,14 +261,14 @@ reports/
 
 See [`CLAUDE.md`](CLAUDE.md) for full versioning guidelines and project instructions.
 
-## Analysis Schema (v3)
+## Analysis Schema (v3.6)
 
-Each transcript analysis produces a JSON with 18 actionable fields:
+Each transcript analysis produces a JSON with 23 actionable fields:
 
 ```json
 {
   "call_id": "uuid",
-  "schema_version": "v3",
+  "schema_version": "v3.6",
 
   // === OUTCOME ===
   "outcome": "resolved",
@@ -261,11 +293,18 @@ Each transcript analysis produces a JSON with 18 actionable fields:
 
   "summary": "Customer called to make payment. Resolved after brief verification.",
 
-  // === NEW IN v3 ===
+  // === v3 FIELDS ===
   "policy_gap_detail": null,
   "customer_verbatim": null,
   "agent_miss_detail": null,
-  "resolution_steps": ["greeted customer", "verified identity", "processed payment", "confirmed success"]
+  "resolution_steps": ["greeted customer", "verified identity", "processed payment", "confirmed success"],
+
+  // === v3.6 CONVERSATION QUALITY ===
+  "conversation_turns": 12,
+  "turns_to_failure": null,
+  "clarification_requests": {"count": 1, "details": [{"type": "phone_confirmation", "turn": 3, "resolved": true}]},
+  "user_corrections": {"count": 0, "details": []},
+  "repeated_prompts": {"count": 0, "max_consecutive": 0}
 }
 ```
 
@@ -277,6 +316,26 @@ Each transcript analysis produces a JSON with 18 actionable fields:
 | `customer_verbatim` | string | Key quote capturing customer frustration/need |
 | `agent_miss_detail` | string | What agent should have done differently |
 | `resolution_steps` | array | Sequence of actions taken during the call |
+
+### New v3.6 Fields (Conversation Quality)
+
+| Field | Type | Description |
+|-------|------|-------------|
+| `conversation_turns` | integer | Total user+assistant exchange pairs (proxy for call duration) |
+| `turns_to_failure` | integer/null | Turn where call started derailing (non-resolved only) |
+| `clarification_requests` | object | Agent asks customer to repeat/spell/confirm |
+| `user_corrections` | object | Customer corrects agent's understanding |
+| `repeated_prompts` | object | Agent says substantially similar things (loop detection) |
+
+#### Clarification Request Types
+
+| Type | Description | Example |
+|------|-------------|---------|
+| `name_spelling` | Agent asks to spell name | "Can you spell your name?" |
+| `phone_confirmation` | Agent confirms phone number | "So that's 315-276-0534?" |
+| `intent_clarification` | Agent asks what customer needs | "What can I help with?" |
+| `repeat_request` | Agent asks to repeat | "Can you say that again?" |
+| `verification_retry` | Agent asks for different verification | "Try another phone number" |
 
 ### Policy Gap Detail Structure
 

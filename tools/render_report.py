@@ -1,8 +1,13 @@
 #!/usr/bin/env python3
 """
-Markdown Report Renderer for Vacatia AI Voice Agent Analytics (v3.5)
+Markdown Report Renderer for Vacatia AI Voice Agent Analytics (v3.6)
 
 Renders the combined Section A + Section B report as an executive-ready Markdown document.
+
+v3.6 additions:
+- Conversation Quality: Dedicated section with turn stats, clarification friction, user corrections, loops
+- Friction hotspots table with impact and recommendations
+- Turn analysis insights
 
 v3.5 additions:
 - Training & Development: Narrative-first section with priorities, root causes, and actions
@@ -104,6 +109,99 @@ def render_markdown(report: dict) -> str:
     lines.append(f"| Failure Rate | {failure_rate*100:.1f}% | {get_assessment_emoji(failure_rate, 'failure_rate')} | {key_metrics_desc.get('failure_rate', '')} |")
     lines.append(f"| Customer Effort | {customer_effort:.2f}/5 | {get_assessment_emoji(customer_effort, 'customer_effort')} | {key_metrics_desc.get('customer_effort', '')} |")
     lines.append("")
+
+    # v3.6: Conversation Quality Section
+    conv_quality = metrics.get("conversation_quality", {})
+    cq_analysis = insights.get("conversation_quality_analysis", {})
+
+    if conv_quality or cq_analysis:
+        lines.append("## Conversation Quality")
+        lines.append("")
+
+        # Turn stats summary line
+        turn_stats = conv_quality.get("turn_stats", {})
+        if turn_stats.get("avg_turns"):
+            avg = turn_stats.get("avg_turns", "N/A")
+            resolved = turn_stats.get("avg_turns_resolved", "N/A")
+            failed = turn_stats.get("avg_turns_failed", "N/A")
+            ttf = turn_stats.get("avg_turns_to_failure", "N/A")
+            lines.append(f"**Average Length:** {avg} turns | **Resolved:** {resolved} turns | **Failed:** {failed} turns | **Turns to Failure:** {ttf}")
+            lines.append("")
+
+        # v3.6: Narrative from LLM
+        if cq_analysis.get("narrative"):
+            lines.append(cq_analysis["narrative"])
+            lines.append("")
+
+        # Clarification Friction Table
+        clar_stats = conv_quality.get("clarification_stats", {})
+        if clar_stats.get("by_type"):
+            lines.append("### Clarification Friction")
+            lines.append("")
+            lines.append("| Type | Count | % of Calls | Resolution Rate |")
+            lines.append("|------|-------|------------|-----------------|")
+
+            by_type = clar_stats.get("by_type", {})
+            resolution_rate = clar_stats.get("resolution_rate")
+            for ctype, data in by_type.items():
+                count = data.get("count", 0)
+                rate = data.get("rate", 0) or 0
+                # Resolution rate is aggregate; we show it once
+                lines.append(f"| {ctype.replace('_', ' ').title()} | {count} | {rate*100:.1f}% | - |")
+
+            if resolution_rate is not None:
+                lines.append("")
+                lines.append(f"*Overall clarification resolution rate: {resolution_rate*100:.1f}%*")
+            lines.append("")
+
+        # Friction Hotspots from LLM analysis
+        friction_hotspots = cq_analysis.get("friction_hotspots", [])
+        if friction_hotspots:
+            lines.append("### Friction Hotspots")
+            lines.append("")
+            lines.append("| Pattern | Frequency | Impact | Recommendation |")
+            lines.append("|---------|-----------|--------|----------------|")
+            for fh in friction_hotspots:
+                pattern = fh.get("pattern", "N/A")
+                freq = fh.get("frequency", "N/A")
+                impact = fh.get("impact", "N/A")
+                rec = fh.get("recommendation", "N/A")
+                lines.append(f"| {pattern} | {freq} | {impact} | {rec} |")
+            lines.append("")
+
+        # Customer Corrections
+        corr_stats = conv_quality.get("correction_stats", {})
+        if corr_stats.get("calls_with_corrections"):
+            lines.append("### Customer Corrections")
+            lines.append("")
+            calls = corr_stats.get("calls_with_corrections", 0)
+            pct = corr_stats.get("pct_calls_with_corrections", 0) or 0
+            frust = corr_stats.get("with_frustration_signal", 0)
+            frust_rate = corr_stats.get("frustration_rate", 0) or 0
+            lines.append(f"- **{calls} calls** ({pct*100:.1f}%) had customer corrections")
+            lines.append(f"- **{frust}** ({frust_rate*100:.1f}%) showed frustration signals during correction")
+            lines.append("")
+
+        # Loop Detection
+        loop_stats = conv_quality.get("loop_stats", {})
+        if loop_stats.get("calls_with_loops"):
+            lines.append("### Loop Detection")
+            lines.append("")
+            loops = loop_stats.get("calls_with_loops", 0)
+            pct = loop_stats.get("pct_calls_with_loops", 0) or 0
+            max_cons = loop_stats.get("max_consecutive_overall", 0)
+            lines.append(f"- **{loops} calls** ({pct*100:.1f}%) had repeated prompts")
+            lines.append(f"- **Worst case:** {max_cons} consecutive repeats")
+            lines.append("")
+
+        # Efficiency Insights
+        efficiency_insights = cq_analysis.get("efficiency_insights", [])
+        if efficiency_insights:
+            lines.append("### Efficiency Insights")
+            lines.append("")
+            for ei in efficiency_insights:
+                lines.append(f"- {ei}")
+            lines.append("")
 
     # Why Calls Are Failing
     lines.append("## Why Calls Are Failing")
@@ -425,7 +523,7 @@ def render_markdown(report: dict) -> str:
 
     # Footer
     lines.append("---")
-    lines.append(f"*Report generated by Vacatia AI Voice Agent Analytics Framework v3.5*")
+    lines.append(f"*Report generated by Vacatia AI Voice Agent Analytics Framework v3.6*")
 
     return "\n".join(lines)
 

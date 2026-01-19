@@ -1,8 +1,12 @@
 #!/usr/bin/env python3
 """
-Aggregate Metrics Calculator for Vacatia AI Voice Agent Analytics (v3.3)
+Aggregate Metrics Calculator for Vacatia AI Voice Agent Analytics (v3.6)
 
 Computes Section A: Deterministic Metrics - all Python-calculated, reproducible and auditable.
+
+v3.6 additions:
+- conversation_quality_metrics: Turn stats, clarification stats, correction stats, loop stats
+- Aggregation of new v3.6 fields: conversation_turns, clarification_requests, user_corrections, repeated_prompts
 
 v3.3 additions:
 - validate_failure_consistency: Flags failure_point=none for non-resolved calls
@@ -60,8 +64,9 @@ def load_analyses(analyses_dir: Path, schema_version: str = "v3", manifest_ids: 
                 with open(f, 'r', encoding='utf-8') as fp:
                     data = json.load(fp)
                     version = data.get("schema_version", "v2")
-                    # Accept v3 or v2 (v2 is forward-compatible)
-                    if schema_version == "v3" and version in ("v3", "v2"):
+                    # Accept v3.x or v2 (v2 is forward-compatible)
+                    # v3.6, v3.5, v3 all start with "v3"
+                    if schema_version == "v3" and (version.startswith("v3") or version == "v2"):
                         analyses.append(data)
                     elif schema_version == "v2" and version == "v2":
                         analyses.append(data)
@@ -174,6 +179,145 @@ def extract_policy_gap_breakdown(analyses: list[dict]) -> dict:
     }
 
 
+def compute_conversation_quality_metrics(analyses: list[dict]) -> dict:
+    """
+    Compute conversation quality metrics from v3.6 fields.
+
+    Aggregates:
+    - Turn statistics (avg, median, by outcome, turns-to-failure)
+    - Clarification request statistics (by type, resolution rate)
+    - User correction statistics (frustration rate)
+    - Loop detection statistics (calls with loops, max consecutive)
+    """
+    n = len(analyses)
+    if n == 0:
+        return {}
+
+    # === Turn Statistics ===
+    all_turns = []
+    resolved_turns = []
+    failed_turns = []
+    turns_to_failure = []
+
+    for a in analyses:
+        turns = a.get("conversation_turns")
+        if turns is not None and isinstance(turns, (int, float)):
+            all_turns.append(turns)
+            if a.get("outcome") == "resolved":
+                resolved_turns.append(turns)
+            else:
+                failed_turns.append(turns)
+
+        ttf = a.get("turns_to_failure")
+        if ttf is not None and isinstance(ttf, (int, float)):
+            turns_to_failure.append(ttf)
+
+    turn_stats = {
+        "avg_turns": round(statistics.mean(all_turns), 1) if all_turns else None,
+        "median_turns": round(statistics.median(all_turns), 1) if all_turns else None,
+        "avg_turns_resolved": round(statistics.mean(resolved_turns), 1) if resolved_turns else None,
+        "avg_turns_failed": round(statistics.mean(failed_turns), 1) if failed_turns else None,
+        "avg_turns_to_failure": round(statistics.mean(turns_to_failure), 1) if turns_to_failure else None,
+        "calls_with_turn_data": len(all_turns)
+    }
+
+    # === Clarification Statistics ===
+    clarification_counts = []
+    clarification_types = Counter()
+    clarification_resolved = 0
+    clarification_total_details = 0
+    calls_with_clarifications = 0
+
+    for a in analyses:
+        clar = a.get("clarification_requests")
+        if clar and isinstance(clar, dict):
+            count = clar.get("count") or 0
+            if count > 0:
+                calls_with_clarifications += 1
+                clarification_counts.append(count)
+
+            details = clar.get("details", [])
+            if isinstance(details, list):
+                for d in details:
+                    clarification_total_details += 1
+                    ctype = d.get("type")
+                    if ctype:
+                        clarification_types[ctype] += 1
+                    if d.get("resolved"):
+                        clarification_resolved += 1
+
+    clarification_stats = {
+        "calls_with_clarifications": calls_with_clarifications,
+        "pct_calls_with_clarifications": safe_rate(calls_with_clarifications, n),
+        "avg_clarifications_per_call": round(statistics.mean(clarification_counts), 2) if clarification_counts else 0,
+        "by_type": {
+            ctype: {"count": count, "rate": safe_rate(count, n)}
+            for ctype, count in clarification_types.most_common()
+        },
+        "resolution_rate": safe_rate(clarification_resolved, clarification_total_details) if clarification_total_details > 0 else None
+    }
+
+    # === Correction Statistics ===
+    correction_counts = []
+    corrections_with_frustration = 0
+    total_corrections = 0
+    calls_with_corrections = 0
+
+    for a in analyses:
+        corr = a.get("user_corrections")
+        if corr and isinstance(corr, dict):
+            count = corr.get("count") or 0
+            if count > 0:
+                calls_with_corrections += 1
+                correction_counts.append(count)
+
+            details = corr.get("details", [])
+            if isinstance(details, list):
+                for d in details:
+                    total_corrections += 1
+                    if d.get("frustration_signal"):
+                        corrections_with_frustration += 1
+
+    correction_stats = {
+        "calls_with_corrections": calls_with_corrections,
+        "pct_calls_with_corrections": safe_rate(calls_with_corrections, n),
+        "avg_corrections_per_call": round(statistics.mean(correction_counts), 2) if correction_counts else 0,
+        "with_frustration_signal": corrections_with_frustration,
+        "frustration_rate": safe_rate(corrections_with_frustration, total_corrections) if total_corrections > 0 else None
+    }
+
+    # === Loop Statistics ===
+    calls_with_loops = 0
+    all_repeat_counts = []
+    all_max_consecutive = []
+
+    for a in analyses:
+        rp = a.get("repeated_prompts")
+        if rp and isinstance(rp, dict):
+            count = rp.get("count") or 0
+            if count > 0:
+                calls_with_loops += 1
+                all_repeat_counts.append(count)
+
+            max_cons = rp.get("max_consecutive") or 0
+            if max_cons > 0:
+                all_max_consecutive.append(max_cons)
+
+    loop_stats = {
+        "calls_with_loops": calls_with_loops,
+        "pct_calls_with_loops": safe_rate(calls_with_loops, n),
+        "avg_repeats": round(statistics.mean(all_repeat_counts), 2) if all_repeat_counts else 0,
+        "max_consecutive_overall": max(all_max_consecutive) if all_max_consecutive else 0
+    }
+
+    return {
+        "turn_stats": turn_stats,
+        "clarification_stats": clarification_stats,
+        "correction_stats": correction_stats,
+        "loop_stats": loop_stats
+    }
+
+
 def aggregate_natural_language_fields(analyses: list[dict]) -> dict:
     """Aggregate natural language fields for LLM insight generation."""
 
@@ -282,6 +426,9 @@ def generate_report(analyses: list[dict]) -> dict:
     # Policy gap breakdown (v3 feature)
     policy_gap_breakdown = extract_policy_gap_breakdown(analyses)
 
+    # Conversation quality metrics (v3.6 feature)
+    conversation_quality_metrics = compute_conversation_quality_metrics(analyses)
+
     # Calculate key rates
     resolved_count = outcomes.get("resolved", 0)
     escalated_count = outcomes.get("escalated", 0)
@@ -332,6 +479,8 @@ def generate_report(analyses: list[dict]) -> dict:
         },
 
         "policy_gap_breakdown": policy_gap_breakdown,
+
+        "conversation_quality": conversation_quality_metrics,
 
         "actionable_flags": {
             "escalation_requested": {"count": escalation_requested, "rate": safe_rate(escalation_requested, n)},
@@ -433,6 +582,47 @@ def print_summary(report: dict) -> None:
         rate = data.get('rate')
         print(f"  {label}: {data['count']} ({rate*100:.1f}%)" if rate else f"  {label}: {data['count']}")
 
+    # Conversation Quality (v3.6)
+    print("\n" + "-" * 40)
+    print("CONVERSATION QUALITY (v3.6)")
+    print("-" * 40)
+    cq = report.get("conversation_quality", {})
+    if cq:
+        # Turn stats
+        ts = cq.get("turn_stats", {})
+        if ts.get("avg_turns"):
+            print(f"  Avg Turns: {ts['avg_turns']} | Resolved: {ts.get('avg_turns_resolved', 'N/A')} | Failed: {ts.get('avg_turns_failed', 'N/A')}")
+            if ts.get("avg_turns_to_failure"):
+                print(f"  Avg Turns to Failure: {ts['avg_turns_to_failure']}")
+
+        # Clarification stats
+        cs = cq.get("clarification_stats", {})
+        if cs.get("calls_with_clarifications"):
+            print(f"  Calls with Clarifications: {cs['calls_with_clarifications']} ({cs.get('pct_calls_with_clarifications', 0)*100:.1f}%)")
+            print(f"  Avg Clarifications/Call: {cs.get('avg_clarifications_per_call', 0)}")
+            if cs.get("resolution_rate"):
+                print(f"  Clarification Resolution Rate: {cs['resolution_rate']*100:.1f}%")
+            by_type = cs.get("by_type", {})
+            if by_type:
+                print("  By Type:")
+                for ctype, data in by_type.items():
+                    print(f"    {ctype}: {data['count']} ({data.get('rate', 0)*100:.1f}%)")
+
+        # Correction stats
+        cors = cq.get("correction_stats", {})
+        if cors.get("calls_with_corrections"):
+            print(f"  Calls with Corrections: {cors['calls_with_corrections']} ({cors.get('pct_calls_with_corrections', 0)*100:.1f}%)")
+            if cors.get("frustration_rate"):
+                print(f"  Corrections with Frustration: {cors.get('with_frustration_signal', 0)} ({cors['frustration_rate']*100:.1f}%)")
+
+        # Loop stats
+        ls = cq.get("loop_stats", {})
+        if ls.get("calls_with_loops"):
+            print(f"  Calls with Loops: {ls['calls_with_loops']} ({ls.get('pct_calls_with_loops', 0)*100:.1f}%)")
+            print(f"  Max Consecutive Repeats: {ls.get('max_consecutive_overall', 0)}")
+    else:
+        print("  No v3.6 conversation quality data")
+
     # Training Priorities
     print("\n" + "-" * 40)
     print("TRAINING PRIORITIES")
@@ -455,7 +645,7 @@ def print_summary(report: dict) -> None:
 
 
 def main():
-    parser = argparse.ArgumentParser(description="Compute v3.3 Section A: Deterministic Metrics")
+    parser = argparse.ArgumentParser(description="Compute v3.6 Section A: Deterministic Metrics (incl. conversation quality)")
     parser.add_argument("-i", "--input-dir", type=Path,
                         default=Path(__file__).parent.parent / "analyses",
                         help="Directory containing analysis JSON files")

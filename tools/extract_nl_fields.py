@@ -1,9 +1,15 @@
 #!/usr/bin/env python3
 """
-NL Field Extractor for Vacatia AI Voice Agent Analytics (v3.5)
+NL Field Extractor for Vacatia AI Voice Agent Analytics (v3.6)
 
 Extracts natural language fields from v3 analysis JSONs into a condensed
 format optimized for LLM insight generation.
+
+v3.6 additions:
+- clarification_events: Calls with clarification requests + outcomes
+- correction_events: Calls with user corrections + frustration signals
+- loop_events: Calls with repeated prompts
+- conversation_turn_outliers: Unusually long or short calls for analysis
 
 v3.5 additions:
 - training_details: Training opportunities with associated failure context
@@ -66,7 +72,9 @@ def load_v3_analyses(analyses_dir: Path, manifest_ids: set[str] | None = None) -
             try:
                 with open(f, 'r', encoding='utf-8') as fp:
                     data = json.load(fp)
-                    if data.get("schema_version") == "v3":
+                    # Accept v3.x versions (v3, v3.5, v3.6, etc.)
+                    version = data.get("schema_version", "")
+                    if version.startswith("v3"):
                         analyses.append(data)
             except (json.JSONDecodeError, IOError) as e:
                 print(f"Warning: Could not load {f}: {e}", file=sys.stderr)
@@ -229,6 +237,78 @@ def extract_nl_summary(analyses: list[dict]) -> dict:
                 "intent": a.get("additional_intents")
             })
 
+    # v3.6: Clarification events (for friction analysis)
+    clarification_events = []
+    for a in analyses:
+        clar = a.get("clarification_requests")
+        if clar and isinstance(clar, dict) and clar.get("count", 0) > 0:
+            details = clar.get("details", [])
+            for d in details:
+                clarification_events.append({
+                    "call_id": a.get("call_id"),
+                    "type": d.get("type"),
+                    "turn": d.get("turn"),
+                    "resolved": d.get("resolved"),
+                    "outcome": a.get("outcome")
+                })
+
+    # v3.6: Correction events (for agent miss analysis)
+    correction_events = []
+    for a in analyses:
+        corr = a.get("user_corrections")
+        if corr and isinstance(corr, dict) and corr.get("count", 0) > 0:
+            details = corr.get("details", [])
+            for d in details:
+                correction_events.append({
+                    "call_id": a.get("call_id"),
+                    "what": d.get("what_was_wrong"),
+                    "turn": d.get("turn"),
+                    "frustrated": d.get("frustration_signal"),
+                    "outcome": a.get("outcome")
+                })
+
+    # v3.6: Loop events (agent stuck in loop)
+    loop_events = []
+    for a in analyses:
+        rp = a.get("repeated_prompts")
+        if rp and isinstance(rp, dict) and rp.get("count", 0) > 0:
+            loop_events.append({
+                "call_id": a.get("call_id"),
+                "count": rp.get("count"),
+                "max_consecutive": rp.get("max_consecutive"),
+                "outcome": a.get("outcome")
+            })
+
+    # v3.6: Conversation turn outliers (for call length analysis)
+    # Identify unusually long or short calls for analysis
+    turn_data = [(a.get("call_id"), a.get("conversation_turns"), a.get("outcome"))
+                 for a in analyses if a.get("conversation_turns")]
+    turn_values = [t[1] for t in turn_data if t[1] is not None]
+    turn_outliers = []
+    if len(turn_values) >= 5:
+        import statistics
+        avg = statistics.mean(turn_values)
+        std = statistics.stdev(turn_values) if len(turn_values) > 1 else 0
+        threshold_high = avg + 2 * std
+        threshold_low = max(1, avg - 1.5 * std)  # At least 1 turn
+
+        for call_id, turns, outcome in turn_data:
+            if turns is not None:
+                if turns >= threshold_high:
+                    turn_outliers.append({
+                        "call_id": call_id,
+                        "turns": turns,
+                        "type": "long",
+                        "outcome": outcome
+                    })
+                elif turns <= threshold_low:
+                    turn_outliers.append({
+                        "call_id": call_id,
+                        "turns": turns,
+                        "type": "short",
+                        "outcome": outcome
+                    })
+
     return {
         "metadata": {
             "extracted_at": datetime.now().isoformat(),
@@ -242,14 +322,18 @@ def extract_nl_summary(analyses: list[dict]) -> dict:
         "failed_call_flows": failed_call_flows,
         "all_customer_asks": all_customer_asks,  # v3.4: Raw list for LLM clustering
         "training_details": training_details,  # v3.5: Training opportunities with context
-        "all_additional_intents": all_additional_intents  # v3.5: Secondary customer intents
+        "all_additional_intents": all_additional_intents,  # v3.5: Secondary customer intents
+        "clarification_events": clarification_events,  # v3.6: Clarification request details
+        "correction_events": correction_events,  # v3.6: User correction details
+        "loop_events": loop_events,  # v3.6: Repeated prompt events
+        "turn_outliers": turn_outliers  # v3.6: Unusually long/short calls
     }
 
 
 def print_summary(nl_summary: dict) -> None:
     """Print human-readable summary of extracted NL data."""
     print("\n" + "=" * 60)
-    print("NL FIELD EXTRACTION SUMMARY (v3.5)")
+    print("NL FIELD EXTRACTION SUMMARY (v3.6)")
     print("=" * 60)
 
     meta = nl_summary.get("metadata", {})
@@ -335,6 +419,41 @@ def print_summary(nl_summary: dict) -> None:
             print(f'    - "{intent}"')
         if len(intents) > 3:
             print(f"    ... and {len(intents) - 3} more")
+
+    # v3.6: Conversation Quality Events
+    print("\n" + "-" * 40)
+    print("CONVERSATION QUALITY (v3.6)")
+    print("-" * 40)
+
+    # Clarification events
+    clar_events = nl_summary.get("clarification_events", [])
+    print(f"  Clarification events: {len(clar_events)}")
+    if clar_events:
+        from collections import Counter
+        types = Counter(e.get("type") for e in clar_events if e.get("type"))
+        for ctype, count in types.most_common(3):
+            print(f"    {ctype}: {count}")
+
+    # Correction events
+    corr_events = nl_summary.get("correction_events", [])
+    print(f"  Correction events: {len(corr_events)}")
+    frustrated = sum(1 for e in corr_events if e.get("frustrated"))
+    if corr_events:
+        print(f"    With frustration signal: {frustrated}")
+
+    # Loop events
+    loop_events = nl_summary.get("loop_events", [])
+    print(f"  Loop events: {len(loop_events)}")
+    if loop_events:
+        max_cons = max(e.get("max_consecutive", 0) for e in loop_events)
+        print(f"    Worst consecutive repeats: {max_cons}")
+
+    # Turn outliers
+    turn_outliers = nl_summary.get("turn_outliers", [])
+    if turn_outliers:
+        long_calls = [e for e in turn_outliers if e.get("type") == "long"]
+        short_calls = [e for e in turn_outliers if e.get("type") == "short"]
+        print(f"  Turn outliers: {len(long_calls)} long, {len(short_calls)} short")
 
     print("\n" + "=" * 60)
 
