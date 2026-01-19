@@ -1,16 +1,29 @@
 #!/usr/bin/env python3
 """
-Single Transcript Analyzer for Vacatia AI Voice Agent Analytics (v3.6)
+Single Transcript Analyzer for Vacatia AI Voice Agent Analytics (v3.8)
 
 Hybrid schema with 23 per-call fields enabling both programmatic analysis
 and executive-ready insights through a two-part report architecture.
+
+v3.8 additions:
+- agent_loops: Replaces repeated_prompts with clearer terminology and type enum
+- Loop types: info_retry, intent_retry, deflection, comprehension, action_retry
+- Only tracks friction loops (benign repetition excluded)
+- Each loop has type (enum for aggregation) + context (description for understanding)
+
+v3.7 additions:
+- Transcript preprocessing: Deterministic turn counting before LLM analysis
+- clarification_requests.details[].cause: Enum explaining why clarification was needed
+- clarification_requests.details[].context: Concise description (~10-20 words)
+- user_corrections.details[].severity: Enum for correction severity
+- user_corrections.details[].context: Concise description (~10-20 words)
 
 v3.6 additions (5 new fields):
 - conversation_turns: Total exchange pairs (proxy for call duration)
 - turns_to_failure: When the call started derailing (non-resolved only)
 - clarification_requests: Agent asks customer to repeat/spell/confirm
 - user_corrections: Customer corrects agent's understanding
-- repeated_prompts: Agent says substantially similar things multiple times
+- (replaced by agent_loops in v3.8)
 """
 
 import argparse
@@ -21,8 +34,11 @@ from pathlib import Path
 
 import google.generativeai as genai
 
+# Import preprocessing function
+from preprocess_transcript import preprocess_transcript, format_for_llm
 
-# v3.6 Schema - Hybrid metrics + insights (23 fields)
+
+# v3.8 Schema - Hybrid metrics + insights + agent loops (23 fields)
 ANALYSIS_SCHEMA = """
 {
   "call_id": "string (UUID from filename)",
@@ -64,8 +80,10 @@ ANALYSIS_SCHEMA = """
     "details": [
       {
         "type": "enum: 'name_spelling' | 'phone_confirmation' | 'intent_clarification' | 'repeat_request' | 'verification_retry'",
-        "turn": "integer (which turn)",
-        "resolved": "boolean (did clarification succeed?)"
+        "turn": "integer (which turn, use the turn number from the preprocessed transcript)",
+        "resolved": "boolean (did clarification succeed?)",
+        "cause": "enum: 'customer_refused' | 'customer_unclear' | 'agent_misheard' | 'tech_issue' | 'successful'",
+        "context": "string (10-20 words describing what happened)"
       }
     ]
   },
@@ -75,15 +93,22 @@ ANALYSIS_SCHEMA = """
     "details": [
       {
         "what_was_wrong": "string (brief: what agent got wrong)",
-        "turn": "integer (which turn)",
-        "frustration_signal": "boolean (did customer show frustration during correction?)"
+        "turn": "integer (which turn, use the turn number from the preprocessed transcript)",
+        "frustration_signal": "boolean (did customer show frustration during correction?)",
+        "severity": "enum: 'minor' | 'moderate' | 'major'",
+        "context": "string (10-20 words describing what happened)"
       }
     ]
   },
 
-  "repeated_prompts": {
-    "count": "integer (total repeated prompts)",
-    "max_consecutive": "integer (longest streak of similar prompts)"
+  "agent_loops": {
+    "count": "integer (total friction loops detected)",
+    "details": [
+      {
+        "type": "enum: 'info_retry' | 'intent_retry' | 'deflection' | 'comprehension' | 'action_retry'",
+        "context": "string (10-20 words describing what happened and when)"
+      }
+    ]
   }
 }
 """
@@ -94,8 +119,11 @@ SYSTEM_PROMPT = """You are an expert call center quality analyst. Analyze this V
 Vacatia is a timeshare management company. Their AI handles: RCI membership, timeshare deposits, reservations, payments, account verification.
 
 ## Transcript Format
-- `assistant:` = AI voice agent
-- `user:` = Customer
+The transcript has been preprocessed with turn numbers for your reference:
+- [Turn N] AGENT: = AI voice agent
+- [Turn N] USER: = Customer
+
+Use these turn numbers EXACTLY when referencing specific turns in clarification_requests and user_corrections.
 
 ## Outcome Classification Rules
 - **resolved**: Customer's primary need was addressed (even if partially)
@@ -191,11 +219,73 @@ For each, note: turn number, whether the clarification successfully resolved the
 
 Note: turn number, what was wrong, whether customer showed frustration (exasperation, repeating themselves forcefully, expressing annoyance).
 
-**repeated_prompts**: Count when agent says substantially the same thing multiple times. This detects loop behavior.
-- Track total count of repeated prompts
-- Track max consecutive repeats (indicates stuck-in-loop)
-- "Substantially similar" = same intent/request, not exact text match
-- Example: "Can you spell your name?" followed by "Please spell your first name" = 2 consecutive repeats
+## Agent Loops (v3.8)
+
+Detect patterns where the agent repeats similar requests. Track ONLY friction loops (problematic), not benign repetition.
+
+### Loop Types (all are friction)
+
+- **info_retry**: Agent re-asks for information already provided
+  - "Spell your name" asked twice
+  - "What's your phone number?" after customer gave it
+
+- **intent_retry**: Agent re-asks for intent already stated
+  - "How can I help you?" AFTER customer already stated their need
+  - Common pattern: Customer states intent → agent does identity check → agent asks intent again
+
+- **deflection**: Generic questions masking inability to help
+  - "Is there anything else?" while primary request is unresolved
+  - "How else can I help?" when customer's issue wasn't addressed
+
+- **comprehension**: Agent couldn't hear/understand, asks to repeat
+  - "Sorry, can you say that again?"
+  - "One more time please?"
+
+- **action_retry**: Agent retries same action due to system/process failure
+  - "Let me try that again"
+  - "One moment, the system is slow"
+
+### What to EXCLUDE (benign, don't track)
+
+- Greeting after returning from hold
+- Re-engagement after silence/topic change
+- Required compliance disclosures
+- Confirmation before taking action
+
+### Output Format
+
+For each friction loop:
+- `type`: One of [info_retry, intent_retry, deflection, comprehension, action_retry]
+- `context`: 10-20 word description of what happened and when (include turn numbers if helpful)
+
+## Clarification & Correction Details (v3.7)
+
+For each clarification request, provide TWO additional fields:
+
+1. **cause** (enum): Why the clarification was needed
+   - `customer_refused`: Customer declined to provide info ("No", "I already told you", demands human)
+   - `customer_unclear`: Customer provided info but unclear (mumbled, partial, ambiguous)
+   - `agent_misheard`: Agent failed to parse what customer said clearly
+   - `tech_issue`: Audio cut off, connection problem, silence
+   - `successful`: Clarification succeeded (use when resolved=true)
+
+2. **context** (string, 10-20 words): Concise description of what happened
+   - Good: "Customer refused to spell name, said 'I already told you twice'"
+   - Good: "Agent heard 'Butchering' instead of 'Butcherine', customer corrected"
+   - Bad: "The clarification was needed" (too vague)
+   - Bad: Long paragraph describing the whole exchange (too verbose)
+
+For each user correction, provide TWO additional fields:
+
+1. **severity** (enum): How significant was the correction?
+   - `minor`: Simple correction, no frustration, quickly resolved
+   - `moderate`: Correction with mild frustration or took multiple attempts
+   - `major`: Explicit anger, multiple corrections needed, or critical mistake
+
+2. **context** (string, 10-20 words): Concise description of what happened
+   - Good: "Customer corrected 'Grandview' to 'Grand Pacific' with audible frustration"
+   - Good: "Customer spelled name again after agent confirmed wrong spelling"
+   - Bad: "There was a correction" (too vague)
 
 ## Output Requirements
 - Return ONLY valid JSON
@@ -203,18 +293,16 @@ Note: turn number, what was wrong, whether customer showed frustration (exaspera
 - Be concise and actionable
 - Focus on what matters for improving the agent
 - Ensure all validation rules are followed
+- Use the EXACT turn numbers from the preprocessed transcript
 """
 
 USER_PROMPT_TEMPLATE = """Analyze this call transcript and return JSON matching this schema:
 
 {schema}
 
-## Transcript
-Call ID: {call_id}
+## Preprocessed Transcript with Turn Numbers
 
----
 {transcript}
----
 
 Return ONLY the JSON object."""
 
@@ -227,8 +315,43 @@ def configure_genai():
     genai.configure(api_key=api_key)
 
 
-def extract_json_from_response(text: str) -> dict:
-    """Extract JSON from LLM response."""
+def repair_truncated_json(text: str) -> str:
+    """Attempt to repair truncated JSON by closing open structures."""
+    # Find the last complete value
+    # Remove any trailing incomplete string
+    if text.count('"') % 2 == 1:
+        # Odd number of quotes - find last complete string
+        last_quote = text.rfind('"')
+        # Check if this is an opening quote of an incomplete string
+        prev_colon = text.rfind(':', 0, last_quote)
+        prev_comma = text.rfind(',', 0, last_quote)
+        if prev_colon > prev_comma:
+            # Likely an incomplete value after a key - truncate to before the key
+            key_start = text.rfind('"', 0, prev_colon)
+            if key_start > 0:
+                text = text[:key_start].rstrip().rstrip(',')
+
+    # Count open braces and brackets
+    open_braces = text.count('{') - text.count('}')
+    open_brackets = text.count('[') - text.count(']')
+
+    # Remove trailing incomplete content
+    text = text.rstrip()
+    while text and text[-1] not in '{}[],"0123456789truefalsn':
+        text = text[:-1]
+
+    # Handle trailing comma
+    text = text.rstrip(',')
+
+    # Close open structures
+    text += ']' * open_brackets
+    text += '}' * open_braces
+
+    return text
+
+
+def extract_json_from_response(text: str, allow_repair: bool = True) -> dict:
+    """Extract JSON from LLM response, with optional repair for truncated responses."""
     text = text.strip()
 
     # Remove markdown code blocks if present
@@ -260,18 +383,33 @@ def extract_json_from_response(text: str) -> dict:
                     except json.JSONDecodeError:
                         break
 
+        # JSON appears truncated - attempt repair if enabled
+        if allow_repair and depth > 0:
+            json_text = text[brace_start:]
+            repaired = repair_truncated_json(json_text)
+            try:
+                return json.loads(repaired)
+            except json.JSONDecodeError:
+                pass
+
     raise ValueError(f"Could not parse JSON from: {text[:300]}...")
 
 
-def analyze_transcript(transcript_path: Path, model_name: str = "gemini-3-flash-preview") -> dict:
-    """Analyze a single transcript using the LLM."""
-    content = transcript_path.read_text(encoding='utf-8')
-    call_id = transcript_path.stem
+def analyze_transcript(transcript_path: Path, model_name: str = "gemini-2.5-flash") -> dict:
+    """Analyze a single transcript using the LLM.
+
+    v3.7: Uses preprocessing to provide structured input with turn numbers.
+    """
+    # Preprocess transcript for deterministic turn numbers
+    preprocessed = preprocess_transcript(transcript_path)
+    call_id = preprocessed["call_id"]
+
+    # Format for LLM with turn numbers
+    formatted_transcript = format_for_llm(preprocessed)
 
     user_prompt = USER_PROMPT_TEMPLATE.format(
         schema=ANALYSIS_SCHEMA,
-        call_id=call_id,
-        transcript=content
+        transcript=formatted_transcript
     )
 
     model = genai.GenerativeModel(
@@ -283,13 +421,29 @@ def analyze_transcript(transcript_path: Path, model_name: str = "gemini-3-flash-
         user_prompt,
         generation_config=genai.GenerationConfig(
             temperature=0.2,
-            max_output_tokens=4096,
+            max_output_tokens=16384,  # Increased for v3.8 agent_loops with detailed contexts
         )
     )
 
+    # Check finish reason for debugging truncation issues
+    finish_reason = None
+    if response.candidates:
+        finish_reason = response.candidates[0].finish_reason
+        # STOP=1 is normal, MAX_TOKENS=2 indicates truncation
+        if finish_reason == 2:  # MAX_TOKENS
+            import sys
+            print(f"  ⚠ Response truncated (MAX_TOKENS) for {call_id}", file=sys.stderr)
+
     analysis = extract_json_from_response(response.text)
     analysis["call_id"] = call_id
-    analysis["schema_version"] = "v3.6"
+    analysis["schema_version"] = "v3.8"
+
+    # Add preprocessing metadata for reference
+    analysis["_preprocessing"] = {
+        "total_turns": preprocessed["metadata"]["total_turns"],
+        "user_turns": preprocessed["metadata"]["user_turns"],
+        "agent_turns": preprocessed["metadata"]["agent_turns"]
+    }
 
     return analysis
 
@@ -306,13 +460,13 @@ def save_analysis(analysis: dict, output_dir: Path) -> Path:
 
 
 def main():
-    parser = argparse.ArgumentParser(description="Analyze call transcript (v3.6 - hybrid metrics + insights + conversation quality schema)")
+    parser = argparse.ArgumentParser(description="Analyze call transcript (v3.8 - agent_loops replacing repeated_prompts)")
     parser.add_argument("transcript", type=Path, help="Path to transcript file")
     parser.add_argument("-o", "--output-dir", type=Path,
                         default=Path(__file__).parent.parent / "analyses",
                         help="Output directory for analysis JSON")
-    parser.add_argument("--model", type=str, default="gemini-3-flash-preview",
-                        help="Gemini model to use (default: gemini-3-flash-preview)")
+    parser.add_argument("--model", type=str, default="gemini-2.5-flash",
+                        help="Gemini model to use (default: gemini-2.5-flash)")
     parser.add_argument("--stdout", action="store_true",
                         help="Print to stdout instead of saving")
 

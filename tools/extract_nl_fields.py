@@ -1,14 +1,23 @@
 #!/usr/bin/env python3
 """
-NL Field Extractor for Vacatia AI Voice Agent Analytics (v3.6)
+NL Field Extractor for Vacatia AI Voice Agent Analytics (v3.8)
 
 Extracts natural language fields from v3 analysis JSONs into a condensed
 format optimized for LLM insight generation.
 
+v3.8 additions:
+- loop_events: Now extracts from agent_loops with type + context
+- Each loop event includes: type (enum), context (description), call outcome
+- Supports friction loop analysis by type (info_retry, intent_retry, etc.)
+
+v3.7 additions:
+- clarification_events now include: cause (enum) + context (string)
+- correction_events now include: severity (enum) + context (string)
+- These structured fields enable reliable aggregation + nuanced analysis
+
 v3.6 additions:
 - clarification_events: Calls with clarification requests + outcomes
 - correction_events: Calls with user corrections + frustration signals
-- loop_events: Calls with repeated prompts
 - conversation_turn_outliers: Unusually long or short calls for analysis
 
 v3.5 additions:
@@ -237,7 +246,7 @@ def extract_nl_summary(analyses: list[dict]) -> dict:
                 "intent": a.get("additional_intents")
             })
 
-    # v3.6: Clarification events (for friction analysis)
+    # v3.7: Clarification events (for friction analysis) - now with cause + context
     clarification_events = []
     for a in analyses:
         clar = a.get("clarification_requests")
@@ -249,10 +258,12 @@ def extract_nl_summary(analyses: list[dict]) -> dict:
                     "type": d.get("type"),
                     "turn": d.get("turn"),
                     "resolved": d.get("resolved"),
+                    "cause": d.get("cause"),  # v3.7: enum
+                    "context": d.get("context"),  # v3.7: concise description
                     "outcome": a.get("outcome")
                 })
 
-    # v3.6: Correction events (for agent miss analysis)
+    # v3.7: Correction events (for agent miss analysis) - now with severity + context
     correction_events = []
     for a in analyses:
         corr = a.get("user_corrections")
@@ -264,20 +275,37 @@ def extract_nl_summary(analyses: list[dict]) -> dict:
                     "what": d.get("what_was_wrong"),
                     "turn": d.get("turn"),
                     "frustrated": d.get("frustration_signal"),
+                    "severity": d.get("severity"),  # v3.7: enum
+                    "context": d.get("context"),  # v3.7: concise description
                     "outcome": a.get("outcome")
                 })
 
-    # v3.6: Loop events (agent stuck in loop)
+    # v3.8: Loop events (agent_loops with typed detection)
     loop_events = []
     for a in analyses:
-        rp = a.get("repeated_prompts")
-        if rp and isinstance(rp, dict) and rp.get("count", 0) > 0:
-            loop_events.append({
-                "call_id": a.get("call_id"),
-                "count": rp.get("count"),
-                "max_consecutive": rp.get("max_consecutive"),
-                "outcome": a.get("outcome")
-            })
+        # v3.8: Support new agent_loops schema
+        loops = a.get("agent_loops")
+        if loops and isinstance(loops, dict) and loops.get("count", 0) > 0:
+            details = loops.get("details", [])
+            for d in details:
+                loop_events.append({
+                    "call_id": a.get("call_id"),
+                    "type": d.get("type"),  # v3.8: loop type enum
+                    "context": d.get("context"),  # v3.8: description
+                    "outcome": a.get("outcome")
+                })
+        else:
+            # v3.7 backwards compatibility: repeated_prompts
+            rp = a.get("repeated_prompts")
+            if rp and isinstance(rp, dict) and rp.get("count", 0) > 0:
+                loop_events.append({
+                    "call_id": a.get("call_id"),
+                    "count": rp.get("count"),
+                    "max_consecutive": rp.get("max_consecutive"),
+                    "type": None,  # Legacy format
+                    "context": None,
+                    "outcome": a.get("outcome")
+                })
 
     # v3.6: Conversation turn outliers (for call length analysis)
     # Identify unusually long or short calls for analysis
@@ -333,7 +361,7 @@ def extract_nl_summary(analyses: list[dict]) -> dict:
 def print_summary(nl_summary: dict) -> None:
     """Print human-readable summary of extracted NL data."""
     print("\n" + "=" * 60)
-    print("NL FIELD EXTRACTION SUMMARY (v3.6)")
+    print("NL FIELD EXTRACTION SUMMARY (v3.8)")
     print("=" * 60)
 
     meta = nl_summary.get("metadata", {})
@@ -420,9 +448,9 @@ def print_summary(nl_summary: dict) -> None:
         if len(intents) > 3:
             print(f"    ... and {len(intents) - 3} more")
 
-    # v3.6: Conversation Quality Events
+    # v3.8: Conversation Quality Events
     print("\n" + "-" * 40)
-    print("CONVERSATION QUALITY (v3.6)")
+    print("CONVERSATION QUALITY (v3.8)")
     print("-" * 40)
 
     # Clarification events
@@ -433,6 +461,12 @@ def print_summary(nl_summary: dict) -> None:
         types = Counter(e.get("type") for e in clar_events if e.get("type"))
         for ctype, count in types.most_common(3):
             print(f"    {ctype}: {count}")
+        # v3.7: Show cause distribution
+        causes = Counter(e.get("cause") for e in clar_events if e.get("cause"))
+        if causes:
+            print("  By Cause (v3.7):")
+            for cause, count in causes.most_common():
+                print(f"    {cause}: {count}")
 
     # Correction events
     corr_events = nl_summary.get("correction_events", [])
@@ -440,13 +474,29 @@ def print_summary(nl_summary: dict) -> None:
     frustrated = sum(1 for e in corr_events if e.get("frustrated"))
     if corr_events:
         print(f"    With frustration signal: {frustrated}")
+        # v3.7: Show severity distribution
+        from collections import Counter
+        severities = Counter(e.get("severity") for e in corr_events if e.get("severity"))
+        if severities:
+            print("  By Severity (v3.7):")
+            for severity, count in severities.most_common():
+                print(f"    {severity}: {count}")
 
-    # Loop events
+    # Loop events (v3.8: with type + context)
     loop_events = nl_summary.get("loop_events", [])
     print(f"  Loop events: {len(loop_events)}")
     if loop_events:
-        max_cons = max(e.get("max_consecutive", 0) for e in loop_events)
-        print(f"    Worst consecutive repeats: {max_cons}")
+        # v3.8: Show type distribution
+        from collections import Counter
+        types = Counter(e.get("type") for e in loop_events if e.get("type"))
+        if types:
+            print("  By Type (v3.8):")
+            for loop_type, count in types.most_common():
+                print(f"    {loop_type}: {count}")
+        else:
+            # Legacy format
+            max_cons = max((e.get("max_consecutive") or 0) for e in loop_events)
+            print(f"    Worst consecutive repeats: {max_cons}")
 
     # Turn outliers
     turn_outliers = nl_summary.get("turn_outliers", [])

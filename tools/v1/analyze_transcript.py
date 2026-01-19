@@ -349,7 +349,7 @@ def analyze_transcript(
         user_prompt,
         generation_config=genai.GenerationConfig(
             temperature=0.2,
-            max_output_tokens=4096,
+            max_output_tokens=8192,
         )
     )
 

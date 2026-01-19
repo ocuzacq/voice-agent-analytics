@@ -1,9 +1,20 @@
 #!/usr/bin/env python3
 """
-LLM Insights Generator for Vacatia AI Voice Agent Analytics (v3.6)
+LLM Insights Generator for Vacatia AI Voice Agent Analytics (v3.8)
 
 Generates Section B: LLM-powered insights by passing Section A metrics
 and the condensed NL summary (from extract_nl_fields.py) to Gemini.
+
+v3.8 additions:
+- loop_type_analysis: Distribution and impact of agent_loops by type
+- Loop patterns: info_retry, intent_retry, deflection, comprehension, action_retry
+- Intent retry rate: Specifically tracks re-asking for intent after identity check
+- Deflection rate: Tracks generic questions masking inability to help
+
+v3.7 additions:
+- clarification_cause_analysis: Distribution and impact of cause types (customer_refused, agent_misheard, etc.)
+- correction_severity_analysis: Distribution and impact of severity levels (minor, moderate, major)
+- Context sentences for nuanced friction pattern discovery
 
 v3.6 additions:
 - conversation_quality_analysis: Friction hotspots, efficiency insights from turn/clarification/correction data
@@ -47,7 +58,10 @@ You will receive:
 2. Aggregated qualitative data: failure descriptions, customer quotes, agent misses (with call_ids for traceability)
 3. Training opportunities grouped by type with failure context (v3.5)
 4. Secondary customer intents for clustering (v3.5)
-5. Conversation quality events: clarifications, corrections, loops, turn outliers (v3.6)
+5. Conversation quality events: clarifications, corrections, turn outliers (v3.6)
+6. Clarification cause distribution and context sentences (v3.7)
+7. Correction severity distribution and context sentences (v3.7)
+8. Agent loops with type and context for friction analysis (v3.8)
 
 Your task: Generate Section B insights that synthesize the data into strategic recommendations.
 
@@ -170,6 +184,30 @@ Return ONLY valid JSON matching this structure:
       }
     ],
 
+    "cause_analysis": {
+      "narrative": "1-2 sentences explaining the cause distribution pattern",
+      "insights": [
+        {
+          "cause": "customer_refused",
+          "frequency": "15 events (30%)",
+          "correlation": "How this cause type correlates with outcomes",
+          "recommendation": "Specific action to reduce this cause type"
+        }
+      ]
+    },
+
+    "severity_analysis": {
+      "narrative": "1-2 sentences explaining correction severity patterns",
+      "insights": [
+        {
+          "severity": "major",
+          "frequency": "8 events (20%)",
+          "correlation": "How major corrections correlate with outcomes",
+          "recommendation": "Specific action to reduce major corrections"
+        }
+      ]
+    },
+
     "efficiency_insights": [
       "Insight about conversation length vs outcomes",
       "Insight about early friction predicting failure",
@@ -180,6 +218,21 @@ Return ONLY valid JSON matching this structure:
       "long_call_patterns": "What's causing unusually long calls?",
       "short_call_patterns": "What characterizes quick resolutions or early abandonments?",
       "turns_to_failure_insight": "What do failed calls look like before they derail?"
+    },
+
+    "loop_type_analysis": {
+      "narrative": "1-2 sentences explaining agent loop patterns and their impact",
+      "insights": [
+        {
+          "type": "intent_retry",
+          "frequency": "15 events (35%)",
+          "pattern": "Common pattern observed with this loop type",
+          "impact": "How this loop type affects call outcomes",
+          "recommendation": "Specific action to reduce this loop type"
+        }
+      ],
+      "intent_retry_rate": "% of calls with intent re-ask after identity check",
+      "deflection_rate": "% of calls with deflection loops"
     }
   }
 }
@@ -244,6 +297,28 @@ Return ONLY valid JSON matching this structure:
     - **Correlation opportunities**: Connect clarification types to failure types. Do certain clarifications predict specific outcomes?
     - Generate 2-4 friction hotspots with specific improvement recommendations
     - Include 3-5 efficiency insights based on the turn and correction data
+
+17. **Cause analysis (v3.7)**: Analyze clarification cause distribution:
+    - Which causes (customer_refused, agent_misheard, customer_unclear, tech_issue) are most common?
+    - Do certain causes correlate with call failure more than others?
+    - What interventions could reduce the most impactful cause types?
+    - Use the context sentences to identify patterns within each cause type
+
+18. **Severity analysis (v3.7)**: Analyze correction severity distribution:
+    - What's the breakdown between minor, moderate, and major corrections?
+    - Do major corrections predict call failure?
+    - What patterns exist in the context sentences for major corrections?
+    - Recommend specific training or process changes to reduce major corrections
+
+19. **Loop type analysis (v3.8)**: Analyze agent_loops by type:
+    - **info_retry**: Agent re-asks for information already provided (e.g., name, phone number)
+    - **intent_retry**: Agent re-asks for intent after customer already stated it (especially after identity check)
+    - **deflection**: Generic questions while unable to help the primary request
+    - **comprehension**: Agent couldn't hear/understand, asks to repeat
+    - **action_retry**: Agent retries same action due to system failure
+    - Calculate intent_retry_rate: % of calls where agent asks intent again after verification
+    - Calculate deflection_rate: % of calls with deflection loops (signals capability gaps)
+    - Focus on actionable recommendations: which loop types could be reduced by prompt improvements vs capability additions
 
 Return ONLY the JSON object, no markdown code blocks or additional text.
 """
@@ -414,32 +489,84 @@ def build_insights_prompt(metrics: dict, nl_summary: dict) -> str:
             # Group by type for analysis
             from collections import defaultdict
             by_type = defaultdict(list)
+            by_cause = defaultdict(list)  # v3.7: Group by cause
             for e in clar_events:
                 by_type[e.get("type", "unknown")].append(e)
+                cause = e.get("cause")
+                if cause:
+                    by_cause[cause].append(e)
 
             for ctype, events in sorted(by_type.items(), key=lambda x: -len(x[1])):
                 resolved_count = sum(1 for e in events if e.get("resolved"))
                 failed_outcomes = sum(1 for e in events if e.get("outcome") != "resolved")
                 nl_sections.append(f"- **{ctype}**: {len(events)} events, {resolved_count} resolved, {failed_outcomes} in failed calls")
-                # Show a few examples
+                # Show a few examples with context (v3.7)
                 for e in events[:3]:
-                    nl_sections.append(f"  - [{e.get('call_id', '?')[:8]}] turn {e.get('turn', '?')} → {e.get('outcome', '?')}")
+                    context = e.get("context", "")
+                    context_str = f" - {context}" if context else ""
+                    nl_sections.append(f"  - [{e.get('call_id', '?')[:8]}] turn {e.get('turn', '?')} [{e.get('cause', '?')}] → {e.get('outcome', '?')}{context_str}")
+
+            # v3.7: Show cause distribution
+            if by_cause:
+                nl_sections.append("\n### Clarification Causes (v3.7)")
+                nl_sections.append("Analyze root causes of clarification friction:")
+                for cause, events in sorted(by_cause.items(), key=lambda x: -len(x[1])):
+                    failed_outcomes = sum(1 for e in events if e.get("outcome") != "resolved")
+                    nl_sections.append(f"- **{cause}**: {len(events)} events, {failed_outcomes} in failed calls")
+                    # Show context sentences for pattern discovery
+                    contexts = [e.get("context") for e in events if e.get("context")][:3]
+                    for ctx in contexts:
+                        nl_sections.append(f"  - \"{ctx}\"")
 
         # Correction events
         if corr_events:
             nl_sections.append(f"\n### User Corrections ({len(corr_events)} total)")
             frustrated = sum(1 for e in corr_events if e.get("frustrated"))
             nl_sections.append(f"Corrections with frustration signal: {frustrated}")
-            for e in corr_events[:10]:
-                frust = "😤" if e.get("frustrated") else ""
-                nl_sections.append(f"- [{e.get('call_id', '?')[:8]}] turn {e.get('turn', '?')}: {e.get('what', 'unknown')} [{e.get('outcome', '?')}] {frust}")
 
-        # Loop events
+            # v3.7: Group by severity
+            from collections import defaultdict
+            by_severity = defaultdict(list)
+            for e in corr_events:
+                severity = e.get("severity", "unknown")
+                by_severity[severity].append(e)
+
+            for severity, events in sorted(by_severity.items(), key=lambda x: ({"major": 0, "moderate": 1, "minor": 2}.get(x[0], 3))):
+                failed_outcomes = sum(1 for e in events if e.get("outcome") != "resolved")
+                nl_sections.append(f"\n**{severity.upper()}** ({len(events)} events, {failed_outcomes} in failed calls):")
+                for e in events[:5]:
+                    frust = "😤" if e.get("frustrated") else ""
+                    context = e.get("context", "")
+                    context_str = f" - {context}" if context else ""
+                    nl_sections.append(f"  - [{e.get('call_id', '?')[:8]}] turn {e.get('turn', '?')}: {e.get('what', 'unknown')} [{e.get('outcome', '?')}] {frust}{context_str}")
+
+        # Loop events (v3.8: agent_loops with type + context)
         if loop_events:
-            nl_sections.append(f"\n### Loop Events ({len(loop_events)} calls with repeated prompts)")
-            sorted_loops = sorted(loop_events, key=lambda x: -x.get("max_consecutive", 0))
-            for e in sorted_loops[:5]:
-                nl_sections.append(f"- [{e.get('call_id', '?')[:8]}] {e.get('count', 0)} repeats, max {e.get('max_consecutive', 0)} consecutive → {e.get('outcome', '?')}")
+            # Check if using v3.8 format (has type field) or legacy format
+            v38_events = [e for e in loop_events if e.get("type")]
+            if v38_events:
+                nl_sections.append(f"\n### Agent Loops ({len(v38_events)} friction loops)")
+                nl_sections.append("Analyze loop types and their patterns:")
+
+                # Group by type for analysis
+                from collections import defaultdict
+                by_type = defaultdict(list)
+                for e in v38_events:
+                    by_type[e.get("type", "unknown")].append(e)
+
+                for loop_type, events in sorted(by_type.items(), key=lambda x: -len(x[1])):
+                    failed_outcomes = sum(1 for e in events if e.get("outcome") != "resolved")
+                    nl_sections.append(f"\n**{loop_type}** ({len(events)} events, {failed_outcomes} in failed calls):")
+                    for e in events[:5]:
+                        context = e.get("context", "")
+                        context_str = f" - {context}" if context else ""
+                        nl_sections.append(f"  - [{e.get('call_id', '?')[:8]}] → {e.get('outcome', '?')}{context_str}")
+            else:
+                # Legacy format (repeated_prompts)
+                nl_sections.append(f"\n### Loop Events ({len(loop_events)} calls with repeated prompts)")
+                sorted_loops = sorted(loop_events, key=lambda x: -(x.get("max_consecutive") or 0))
+                for e in sorted_loops[:5]:
+                    nl_sections.append(f"- [{e.get('call_id', '?')[:8]}] {e.get('count', 0)} repeats, max {e.get('max_consecutive', 0)} consecutive → {e.get('outcome', '?')}")
 
         # Turn outliers
         if turn_outliers:
@@ -553,7 +680,7 @@ def combine_report(metrics_path: Path, insights: dict, output_path: Path) -> dic
 def print_insights_summary(insights: dict) -> None:
     """Print human-readable summary of insights."""
     print("\n" + "=" * 60)
-    print("VACATIA AI VOICE AGENT - INSIGHTS (v3.6 - Section B)")
+    print("VACATIA AI VOICE AGENT - INSIGHTS (v3.8 - Section B)")
     print("=" * 60)
 
     # Executive Summary
@@ -652,11 +779,11 @@ def print_insights_summary(insights: dict) -> None:
         for c in secondary.get("clusters", [])[:3]:
             print(f"    - {c.get('cluster', 'N/A')} ({c.get('count', 0)})")
 
-    # v3.6: Conversation Quality Analysis
+    # v3.7: Conversation Quality Analysis
     cq_analysis = insights.get("conversation_quality_analysis", {})
     if cq_analysis:
         print("\n" + "-" * 40)
-        print("CONVERSATION QUALITY ANALYSIS (v3.6)")
+        print("CONVERSATION QUALITY ANALYSIS (v3.7)")
         print("-" * 40)
         if cq_analysis.get("narrative"):
             print(f"  {cq_analysis['narrative']}")
@@ -667,6 +794,24 @@ def print_insights_summary(insights: dict) -> None:
             for fh in friction_hotspots[:3]:
                 print(f"    - {fh.get('pattern', 'N/A')} ({fh.get('frequency', 'N/A')})")
                 print(f"      Impact: {fh.get('impact', 'N/A')}")
+
+        # v3.7: Cause analysis
+        cause_analysis = cq_analysis.get("cause_analysis", {})
+        if cause_analysis.get("insights"):
+            print("\n  Clarification Cause Analysis (v3.7):")
+            if cause_analysis.get("narrative"):
+                print(f"    {cause_analysis['narrative']}")
+            for ci in cause_analysis.get("insights", [])[:3]:
+                print(f"    - {ci.get('cause', 'N/A')} ({ci.get('frequency', 'N/A')}): {ci.get('recommendation', 'N/A')}")
+
+        # v3.7: Severity analysis
+        severity_analysis = cq_analysis.get("severity_analysis", {})
+        if severity_analysis.get("insights"):
+            print("\n  Correction Severity Analysis (v3.7):")
+            if severity_analysis.get("narrative"):
+                print(f"    {severity_analysis['narrative']}")
+            for si in severity_analysis.get("insights", [])[:3]:
+                print(f"    - {si.get('severity', 'N/A')} ({si.get('frequency', 'N/A')}): {si.get('recommendation', 'N/A')}")
 
         efficiency_insights = cq_analysis.get("efficiency_insights", [])
         if efficiency_insights:
@@ -682,11 +827,24 @@ def print_insights_summary(insights: dict) -> None:
             if turn_analysis.get("turns_to_failure_insight"):
                 print(f"    Failure pattern: {turn_analysis['turns_to_failure_insight']}")
 
+        # v3.8: Loop type analysis
+        loop_analysis = cq_analysis.get("loop_type_analysis", {})
+        if loop_analysis.get("insights"):
+            print("\n  Loop Type Analysis (v3.8):")
+            if loop_analysis.get("narrative"):
+                print(f"    {loop_analysis['narrative']}")
+            for li in loop_analysis.get("insights", [])[:3]:
+                print(f"    - {li.get('type', 'N/A')} ({li.get('frequency', 'N/A')}): {li.get('recommendation', 'N/A')}")
+            if loop_analysis.get("intent_retry_rate"):
+                print(f"    Intent Retry Rate: {loop_analysis['intent_retry_rate']}")
+            if loop_analysis.get("deflection_rate"):
+                print(f"    Deflection Rate: {loop_analysis['deflection_rate']}")
+
     print("\n" + "=" * 60)
 
 
 def main():
-    parser = argparse.ArgumentParser(description="Generate v3.6 Section B: LLM Insights (incl. conversation quality)")
+    parser = argparse.ArgumentParser(description="Generate v3.8 Section B: LLM Insights (incl. loop type analysis)")
     parser.add_argument("-m", "--metrics", type=Path,
                         help="Path to Section A metrics JSON file")
     parser.add_argument("-n", "--nl-summary", type=Path,

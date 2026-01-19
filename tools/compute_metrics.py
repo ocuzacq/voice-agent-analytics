@@ -1,12 +1,22 @@
 #!/usr/bin/env python3
 """
-Aggregate Metrics Calculator for Vacatia AI Voice Agent Analytics (v3.6)
+Aggregate Metrics Calculator for Vacatia AI Voice Agent Analytics (v3.8)
 
 Computes Section A: Deterministic Metrics - all Python-calculated, reproducible and auditable.
 
+v3.8 additions:
+- agent_loops: Replaces repeated_prompts with typed loop detection
+- loop_stats.by_type: Aggregation by loop type (info_retry, intent_retry, deflection, etc.)
+- Loop density metric: loops / total turns (normalized for call length)
+
+v3.7 additions:
+- clarification_stats.by_cause: Aggregation by cause enum (customer_refused, agent_misheard, etc.)
+- correction_stats.by_severity: Aggregation by severity enum (minor, moderate, major)
+- v3.7 schema support for new cause/severity/context fields
+
 v3.6 additions:
 - conversation_quality_metrics: Turn stats, clarification stats, correction stats, loop stats
-- Aggregation of new v3.6 fields: conversation_turns, clarification_requests, user_corrections, repeated_prompts
+- Aggregation of new v3.6 fields: conversation_turns, clarification_requests, user_corrections
 
 v3.3 additions:
 - validate_failure_consistency: Flags failure_point=none for non-resolved calls
@@ -224,6 +234,7 @@ def compute_conversation_quality_metrics(analyses: list[dict]) -> dict:
     # === Clarification Statistics ===
     clarification_counts = []
     clarification_types = Counter()
+    clarification_causes = Counter()  # v3.7: Aggregate by cause
     clarification_resolved = 0
     clarification_total_details = 0
     calls_with_clarifications = 0
@@ -245,6 +256,10 @@ def compute_conversation_quality_metrics(analyses: list[dict]) -> dict:
                         clarification_types[ctype] += 1
                     if d.get("resolved"):
                         clarification_resolved += 1
+                    # v3.7: Track cause enum
+                    cause = d.get("cause")
+                    if cause:
+                        clarification_causes[cause] += 1
 
     clarification_stats = {
         "calls_with_clarifications": calls_with_clarifications,
@@ -254,12 +269,17 @@ def compute_conversation_quality_metrics(analyses: list[dict]) -> dict:
             ctype: {"count": count, "rate": safe_rate(count, n)}
             for ctype, count in clarification_types.most_common()
         },
+        "by_cause": {  # v3.7: Cause distribution
+            cause: {"count": count, "rate": safe_rate(count, clarification_total_details)}
+            for cause, count in clarification_causes.most_common()
+        },
         "resolution_rate": safe_rate(clarification_resolved, clarification_total_details) if clarification_total_details > 0 else None
     }
 
     # === Correction Statistics ===
     correction_counts = []
     corrections_with_frustration = 0
+    correction_severities = Counter()  # v3.7: Aggregate by severity
     total_corrections = 0
     calls_with_corrections = 0
 
@@ -277,37 +297,76 @@ def compute_conversation_quality_metrics(analyses: list[dict]) -> dict:
                     total_corrections += 1
                     if d.get("frustration_signal"):
                         corrections_with_frustration += 1
+                    # v3.7: Track severity enum
+                    severity = d.get("severity")
+                    if severity:
+                        correction_severities[severity] += 1
 
     correction_stats = {
         "calls_with_corrections": calls_with_corrections,
         "pct_calls_with_corrections": safe_rate(calls_with_corrections, n),
         "avg_corrections_per_call": round(statistics.mean(correction_counts), 2) if correction_counts else 0,
         "with_frustration_signal": corrections_with_frustration,
-        "frustration_rate": safe_rate(corrections_with_frustration, total_corrections) if total_corrections > 0 else None
+        "frustration_rate": safe_rate(corrections_with_frustration, total_corrections) if total_corrections > 0 else None,
+        "by_severity": {  # v3.7: Severity distribution
+            severity: {"count": count, "rate": safe_rate(count, total_corrections)}
+            for severity, count in correction_severities.most_common()
+        }
     }
 
-    # === Loop Statistics ===
+    # === Loop Statistics (v3.8: agent_loops with typed detection) ===
     calls_with_loops = 0
-    all_repeat_counts = []
-    all_max_consecutive = []
+    all_loop_counts = []
+    loop_types = Counter()  # v3.8: Aggregate by loop type
+    total_loops = 0
+    total_turns_in_calls_with_loops = 0
 
     for a in analyses:
-        rp = a.get("repeated_prompts")
-        if rp and isinstance(rp, dict):
-            count = rp.get("count") or 0
+        # v3.8: Support new agent_loops schema
+        loops = a.get("agent_loops")
+        if loops and isinstance(loops, dict):
+            count = loops.get("count") or 0
             if count > 0:
                 calls_with_loops += 1
-                all_repeat_counts.append(count)
+                all_loop_counts.append(count)
+                total_loops += count
 
-            max_cons = rp.get("max_consecutive") or 0
-            if max_cons > 0:
-                all_max_consecutive.append(max_cons)
+                # Track turns for loop density calculation
+                turns = a.get("conversation_turns")
+                if turns and isinstance(turns, (int, float)):
+                    total_turns_in_calls_with_loops += turns
+
+                # v3.8: Track loop types
+                details = loops.get("details", [])
+                if isinstance(details, list):
+                    for d in details:
+                        loop_type = d.get("type")
+                        if loop_type:
+                            loop_types[loop_type] += 1
+        else:
+            # v3.7 backwards compatibility: repeated_prompts
+            rp = a.get("repeated_prompts")
+            if rp and isinstance(rp, dict):
+                count = rp.get("count") or 0
+                if count > 0:
+                    calls_with_loops += 1
+                    all_loop_counts.append(count)
+
+    # Calculate loop density (loops per turn for calls with loops)
+    loop_density = None
+    if total_turns_in_calls_with_loops > 0:
+        loop_density = round(total_loops / total_turns_in_calls_with_loops, 4)
 
     loop_stats = {
         "calls_with_loops": calls_with_loops,
         "pct_calls_with_loops": safe_rate(calls_with_loops, n),
-        "avg_repeats": round(statistics.mean(all_repeat_counts), 2) if all_repeat_counts else 0,
-        "max_consecutive_overall": max(all_max_consecutive) if all_max_consecutive else 0
+        "avg_loops_per_call": round(statistics.mean(all_loop_counts), 2) if all_loop_counts else 0,
+        "total_loops": total_loops,
+        "loop_density": loop_density,  # v3.8: loops / turns (normalized)
+        "by_type": {  # v3.8: Type distribution
+            loop_type: {"count": count, "rate": safe_rate(count, total_loops)}
+            for loop_type, count in loop_types.most_common()
+        }
     }
 
     return {
@@ -582,9 +641,9 @@ def print_summary(report: dict) -> None:
         rate = data.get('rate')
         print(f"  {label}: {data['count']} ({rate*100:.1f}%)" if rate else f"  {label}: {data['count']}")
 
-    # Conversation Quality (v3.6)
+    # Conversation Quality (v3.8)
     print("\n" + "-" * 40)
-    print("CONVERSATION QUALITY (v3.6)")
+    print("CONVERSATION QUALITY (v3.8)")
     print("-" * 40)
     cq = report.get("conversation_quality", {})
     if cq:
@@ -607,6 +666,12 @@ def print_summary(report: dict) -> None:
                 print("  By Type:")
                 for ctype, data in by_type.items():
                     print(f"    {ctype}: {data['count']} ({data.get('rate', 0)*100:.1f}%)")
+            # v3.7: By cause
+            by_cause = cs.get("by_cause", {})
+            if by_cause:
+                print("  By Cause (v3.7):")
+                for cause, data in by_cause.items():
+                    print(f"    {cause}: {data['count']} ({data.get('rate', 0)*100:.1f}%)")
 
         # Correction stats
         cors = cq.get("correction_stats", {})
@@ -614,14 +679,28 @@ def print_summary(report: dict) -> None:
             print(f"  Calls with Corrections: {cors['calls_with_corrections']} ({cors.get('pct_calls_with_corrections', 0)*100:.1f}%)")
             if cors.get("frustration_rate"):
                 print(f"  Corrections with Frustration: {cors.get('with_frustration_signal', 0)} ({cors['frustration_rate']*100:.1f}%)")
+            # v3.7: By severity
+            by_severity = cors.get("by_severity", {})
+            if by_severity:
+                print("  By Severity (v3.7):")
+                for severity, data in by_severity.items():
+                    print(f"    {severity}: {data['count']} ({data.get('rate', 0)*100:.1f}%)")
 
-        # Loop stats
+        # Loop stats (v3.8: agent_loops with typed detection)
         ls = cq.get("loop_stats", {})
         if ls.get("calls_with_loops"):
             print(f"  Calls with Loops: {ls['calls_with_loops']} ({ls.get('pct_calls_with_loops', 0)*100:.1f}%)")
-            print(f"  Max Consecutive Repeats: {ls.get('max_consecutive_overall', 0)}")
+            print(f"  Total Loops: {ls.get('total_loops', 0)} | Avg per Call: {ls.get('avg_loops_per_call', 0)}")
+            if ls.get("loop_density"):
+                print(f"  Loop Density: {ls['loop_density']} loops/turn")
+            # v3.8: By type distribution
+            by_type = ls.get("by_type", {})
+            if by_type:
+                print("  By Type (v3.8):")
+                for loop_type, data in by_type.items():
+                    print(f"    {loop_type}: {data['count']} ({data.get('rate', 0)*100:.1f}%)")
     else:
-        print("  No v3.6 conversation quality data")
+        print("  No v3.8 conversation quality data")
 
     # Training Priorities
     print("\n" + "-" * 40)
@@ -645,7 +724,7 @@ def print_summary(report: dict) -> None:
 
 
 def main():
-    parser = argparse.ArgumentParser(description="Compute v3.6 Section A: Deterministic Metrics (incl. conversation quality)")
+    parser = argparse.ArgumentParser(description="Compute v3.8 Section A: Deterministic Metrics (incl. agent_loops by type)")
     parser.add_argument("-i", "--input-dir", type=Path,
                         default=Path(__file__).parent.parent / "analyses",
                         help="Directory containing analysis JSON files")

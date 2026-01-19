@@ -8,6 +8,18 @@ Analytical framework to evaluate the Vacatia AI voice agent's performance using 
 - **Section A**: Python-calculated metrics (reproducible, auditable)
 - **Section B**: LLM-generated insights (executive narratives, recommendations)
 
+**v3.8 Enhancements**:
+- Agent Loops: Replaces `repeated_prompts` with typed `agent_loops` schema
+- Loop Types: info_retry, intent_retry, deflection, comprehension, action_retry
+- Only friction loops tracked (benign repetition excluded)
+- Loop density metric: loops / total turns (normalized for call length)
+
+**v3.7 Enhancements**:
+- Transcript Preprocessing: Deterministic turn counting before LLM analysis
+- Structured Event Context: `cause` enum + `context` for clarifications
+- Structured Event Context: `severity` enum + `context` for corrections
+- Cause/severity aggregation and analysis in reports
+
 **v3.6 Enhancements**:
 - Conversation Quality Tracking: Turn counts, clarification requests, user corrections, loop detection
 - Friction Hotspots: Identify which clarification types cause most friction
@@ -250,7 +262,9 @@ reports/
 | **v3.4** | 18 | Inline descriptions, key metrics context, sub-breakdowns | Previous | [`README_v3.4.md`](README_v3.4.md) |
 | **v3.5** | 18 | Training insights, emergent patterns, secondary intents | Previous | [`README_v3.5.md`](README_v3.5.md) |
 | **v3.5.5** | 18 | Report review, pipeline suggestions | Previous | [`README_v3.5.5.md`](README_v3.5.5.md) |
-| **v3.6** | 23 | Conversation quality: turns, clarifications, corrections, loops | **Current** | [`README_v3.6.md`](README_v3.6.md) |
+| **v3.6** | 23 | Conversation quality: turns, clarifications, corrections, loops | Previous | [`README_v3.6.md`](README_v3.6.md) |
+| **v3.7** | 23 | Preprocessing + structured event context (cause/severity) | Previous | [`README_v3.7.md`](README_v3.7.md) |
+| **v3.8** | 23 | Agent loops: typed detection replacing repeated_prompts | **Current** | [`README_v3.8.md`](README_v3.8.md) |
 
 ### Versioning Guidelines
 
@@ -261,14 +275,14 @@ reports/
 
 See [`CLAUDE.md`](CLAUDE.md) for full versioning guidelines and project instructions.
 
-## Analysis Schema (v3.6)
+## Analysis Schema (v3.8)
 
 Each transcript analysis produces a JSON with 23 actionable fields:
 
 ```json
 {
   "call_id": "uuid",
-  "schema_version": "v3.6",
+  "schema_version": "v3.7",
 
   // === OUTCOME ===
   "outcome": "resolved",
@@ -302,9 +316,9 @@ Each transcript analysis produces a JSON with 23 actionable fields:
   // === v3.6 CONVERSATION QUALITY ===
   "conversation_turns": 12,
   "turns_to_failure": null,
-  "clarification_requests": {"count": 1, "details": [{"type": "phone_confirmation", "turn": 3, "resolved": true}]},
-  "user_corrections": {"count": 0, "details": []},
-  "repeated_prompts": {"count": 0, "max_consecutive": 0}
+  "clarification_requests": {"count": 1, "details": [{"type": "phone_confirmation", "turn": 3, "resolved": true, "cause": "successful", "context": "Customer confirmed phone number after agent repeated it"}]},
+  "user_corrections": {"count": 0, "details": []},  // v3.7: details include severity + context
+  "agent_loops": {"count": 0, "details": []}  // v3.8: replaces repeated_prompts
 }
 ```
 
@@ -325,7 +339,7 @@ Each transcript analysis produces a JSON with 23 actionable fields:
 | `turns_to_failure` | integer/null | Turn where call started derailing (non-resolved only) |
 | `clarification_requests` | object | Agent asks customer to repeat/spell/confirm |
 | `user_corrections` | object | Customer corrects agent's understanding |
-| `repeated_prompts` | object | Agent says substantially similar things (loop detection) |
+| `agent_loops` | object | v3.8: Typed friction loop detection (replaces repeated_prompts) |
 
 #### Clarification Request Types
 
@@ -336,6 +350,36 @@ Each transcript analysis produces a JSON with 23 actionable fields:
 | `intent_clarification` | Agent asks what customer needs | "What can I help with?" |
 | `repeat_request` | Agent asks to repeat | "Can you say that again?" |
 | `verification_retry` | Agent asks for different verification | "Try another phone number" |
+
+#### Clarification Cause Types (v3.7)
+
+| Cause | Description |
+|-------|-------------|
+| `customer_refused` | Customer declined to provide info |
+| `customer_unclear` | Customer provided but unclear |
+| `agent_misheard` | Agent failed to understand |
+| `tech_issue` | Audio/connection problem |
+| `successful` | Clarification worked |
+
+#### Correction Severity Types (v3.7)
+
+| Severity | Description |
+|----------|-------------|
+| `minor` | Simple correction, no frustration |
+| `moderate` | Correction with mild frustration |
+| `major` | Explicit anger, multiple corrections |
+
+#### Agent Loop Types (v3.8)
+
+| Type | Description | Example |
+|------|-------------|---------|
+| `info_retry` | Re-asked for info already provided | "Spell your name" twice |
+| `intent_retry` | Re-asked for intent already stated | "How can I help?" after customer stated need |
+| `deflection` | Generic questions while unable to help | "Anything else?" while stuck |
+| `comprehension` | Couldn't hear, asked to repeat | "Sorry, one more time?" |
+| `action_retry` | System/process retries | "Let me try that again" |
+
+**Note:** Only friction loops are tracked. Benign repetition (greeting after hold, compliance disclosures) is excluded.
 
 ### Policy Gap Detail Structure
 

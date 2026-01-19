@@ -1,8 +1,18 @@
 #!/usr/bin/env python3
 """
-Markdown Report Renderer for Vacatia AI Voice Agent Analytics (v3.6)
+Markdown Report Renderer for Vacatia AI Voice Agent Analytics (v3.8)
 
 Renders the combined Section A + Section B report as an executive-ready Markdown document.
+
+v3.8 additions:
+- Agent Loops: Replaces repeated prompts with typed loop detection
+- Loop Type Breakdown: Distribution by type (info_retry, intent_retry, deflection, etc.)
+- Loop Type Analysis: LLM insights on loop patterns and recommendations
+
+v3.7 additions:
+- Clarification Cause Breakdown: Distribution by cause type (customer_refused, agent_misheard, etc.)
+- Correction Severity Breakdown: Distribution by severity (minor, moderate, major)
+- Cause/severity analysis insights from LLM
 
 v3.6 additions:
 - Conversation Quality: Dedicated section with turn stats, clarification friction, user corrections, loops
@@ -154,6 +164,19 @@ def render_markdown(report: dict) -> str:
                 lines.append(f"*Overall clarification resolution rate: {resolution_rate*100:.1f}%*")
             lines.append("")
 
+            # v3.7: Clarification Cause Breakdown
+            by_cause = clar_stats.get("by_cause", {})
+            if by_cause:
+                lines.append("#### By Cause (v3.7)")
+                lines.append("")
+                lines.append("| Cause | Count | % of Clarifications |")
+                lines.append("|-------|-------|---------------------|")
+                for cause, data in by_cause.items():
+                    count = data.get("count", 0)
+                    rate = data.get("rate", 0) or 0
+                    lines.append(f"| {cause.replace('_', ' ').title()} | {count} | {rate*100:.1f}% |")
+                lines.append("")
+
         # Friction Hotspots from LLM analysis
         friction_hotspots = cq_analysis.get("friction_hotspots", [])
         if friction_hotspots:
@@ -169,6 +192,42 @@ def render_markdown(report: dict) -> str:
                 lines.append(f"| {pattern} | {freq} | {impact} | {rec} |")
             lines.append("")
 
+        # v3.7: Cause Analysis from LLM
+        cause_analysis = cq_analysis.get("cause_analysis", {})
+        if cause_analysis.get("insights"):
+            lines.append("### Clarification Cause Analysis (v3.7)")
+            lines.append("")
+            if cause_analysis.get("narrative"):
+                lines.append(cause_analysis["narrative"])
+                lines.append("")
+            lines.append("| Cause | Frequency | Correlation | Recommendation |")
+            lines.append("|-------|-----------|-------------|----------------|")
+            for ci in cause_analysis.get("insights", []):
+                cause = ci.get("cause", "N/A")
+                freq = ci.get("frequency", "N/A")
+                corr = ci.get("correlation", "N/A")
+                rec = ci.get("recommendation", "N/A")
+                lines.append(f"| {cause.replace('_', ' ').title()} | {freq} | {corr} | {rec} |")
+            lines.append("")
+
+        # v3.7: Severity Analysis from LLM
+        severity_analysis = cq_analysis.get("severity_analysis", {})
+        if severity_analysis.get("insights"):
+            lines.append("### Correction Severity Analysis (v3.7)")
+            lines.append("")
+            if severity_analysis.get("narrative"):
+                lines.append(severity_analysis["narrative"])
+                lines.append("")
+            lines.append("| Severity | Frequency | Correlation | Recommendation |")
+            lines.append("|----------|-----------|-------------|----------------|")
+            for si in severity_analysis.get("insights", []):
+                sev = si.get("severity", "N/A")
+                freq = si.get("frequency", "N/A")
+                corr = si.get("correlation", "N/A")
+                rec = si.get("recommendation", "N/A")
+                lines.append(f"| {sev.title()} | {freq} | {corr} | {rec} |")
+            lines.append("")
+
         # Customer Corrections
         corr_stats = conv_quality.get("correction_stats", {})
         if corr_stats.get("calls_with_corrections"):
@@ -182,17 +241,72 @@ def render_markdown(report: dict) -> str:
             lines.append(f"- **{frust}** ({frust_rate*100:.1f}%) showed frustration signals during correction")
             lines.append("")
 
-        # Loop Detection
+            # v3.7: Correction Severity Breakdown
+            by_severity = corr_stats.get("by_severity", {})
+            if by_severity:
+                lines.append("#### By Severity (v3.7)")
+                lines.append("")
+                lines.append("| Severity | Count | % of Corrections |")
+                lines.append("|----------|-------|------------------|")
+                for severity, data in by_severity.items():
+                    count = data.get("count", 0)
+                    rate = data.get("rate", 0) or 0
+                    lines.append(f"| {severity.title()} | {count} | {rate*100:.1f}% |")
+                lines.append("")
+
+        # Agent Loops (v3.8: typed loop detection)
         loop_stats = conv_quality.get("loop_stats", {})
         if loop_stats.get("calls_with_loops"):
-            lines.append("### Loop Detection")
+            lines.append("### Agent Loops")
             lines.append("")
             loops = loop_stats.get("calls_with_loops", 0)
             pct = loop_stats.get("pct_calls_with_loops", 0) or 0
-            max_cons = loop_stats.get("max_consecutive_overall", 0)
-            lines.append(f"- **{loops} calls** ({pct*100:.1f}%) had repeated prompts")
-            lines.append(f"- **Worst case:** {max_cons} consecutive repeats")
+            total_loops = loop_stats.get("total_loops", 0)
+            avg_loops = loop_stats.get("avg_loops_per_call", 0)
+            loop_density = loop_stats.get("loop_density")
+            lines.append(f"- **{loops} calls** ({pct*100:.1f}%) had friction loops")
+            lines.append(f"- **{total_loops} total loops** ({avg_loops} avg per affected call)")
+            if loop_density:
+                lines.append(f"- **Loop density:** {loop_density} loops/turn")
             lines.append("")
+
+            # v3.8: Loop type breakdown
+            by_type = loop_stats.get("by_type", {})
+            if by_type:
+                lines.append("#### By Type (v3.8)")
+                lines.append("")
+                lines.append("| Type | Count | % of Loops |")
+                lines.append("|------|-------|------------|")
+                for loop_type, data in by_type.items():
+                    count = data.get("count", 0)
+                    rate = data.get("rate", 0) or 0
+                    lines.append(f"| {loop_type.replace('_', ' ').title()} | {count} | {rate*100:.1f}% |")
+                lines.append("")
+
+        # v3.8: Loop Type Analysis from LLM
+        loop_analysis = cq_analysis.get("loop_type_analysis", {})
+        if loop_analysis.get("insights"):
+            lines.append("### Loop Type Analysis (v3.8)")
+            lines.append("")
+            if loop_analysis.get("narrative"):
+                lines.append(loop_analysis["narrative"])
+                lines.append("")
+            lines.append("| Type | Frequency | Impact | Recommendation |")
+            lines.append("|------|-----------|--------|----------------|")
+            for li in loop_analysis.get("insights", []):
+                loop_type = li.get("type", "N/A")
+                freq = li.get("frequency", "N/A")
+                impact = li.get("impact", "N/A")
+                rec = li.get("recommendation", "N/A")
+                lines.append(f"| {loop_type.replace('_', ' ').title()} | {freq} | {impact} | {rec} |")
+            lines.append("")
+            if loop_analysis.get("intent_retry_rate") or loop_analysis.get("deflection_rate"):
+                lines.append("**Key Rates:**")
+                if loop_analysis.get("intent_retry_rate"):
+                    lines.append(f"- Intent Retry Rate: {loop_analysis['intent_retry_rate']}")
+                if loop_analysis.get("deflection_rate"):
+                    lines.append(f"- Deflection Rate: {loop_analysis['deflection_rate']}")
+                lines.append("")
 
         # Efficiency Insights
         efficiency_insights = cq_analysis.get("efficiency_insights", [])
@@ -523,7 +637,7 @@ def render_markdown(report: dict) -> str:
 
     # Footer
     lines.append("---")
-    lines.append(f"*Report generated by Vacatia AI Voice Agent Analytics Framework v3.6*")
+    lines.append(f"*Report generated by Vacatia AI Voice Agent Analytics Framework v3.8*")
 
     return "\n".join(lines)
 

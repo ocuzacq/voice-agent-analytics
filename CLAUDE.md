@@ -1,4 +1,4 @@
-# Voice Agent Analytics - Project Instructions (v3.6)
+# Voice Agent Analytics - Project Instructions (v3.7)
 
 ## Versioning Guidelines
 
@@ -32,19 +32,20 @@ Keep archived tool versions in `tools/vX/` directories with their own `VERSION.m
 - Why it was superseded
 - Key differences from current
 
-## Pipeline Architecture (v3.6)
+## Pipeline Architecture (v3.7)
 
 ```
-transcripts/ → sample → analyze (parallel) → metrics → extract_nl → insights → report → review
+transcripts/ → sample → preprocess → analyze (parallel) → metrics → extract_nl → insights → report → review
 ```
 
 1. `sample_transcripts.py` - Random stratified sampling
-2. `batch_analyze.py` - LLM analysis with parallel processing (v3.2: default 3 workers)
-3. `compute_metrics.py` - Section A: Deterministic metrics (v3.6: +conversation quality)
-4. `extract_nl_fields.py` - Condensed NL data for LLM (v3.6: +clarification/correction events)
-5. `generate_insights.py` - Section B: LLM insights (v3.6: +conversation quality analysis)
-6. `render_report.py` - Markdown executive summary (v3.6: +Conversation Quality section)
-7. `review_report.py` - Editorial review and pipeline suggestions (v3.5.5)
+2. `preprocess_transcript.py` - Deterministic turn counting (v3.7: integrated into analyze)
+3. `batch_analyze.py` - LLM analysis with parallel processing (v3.2: default 3 workers)
+4. `compute_metrics.py` - Section A: Deterministic metrics (v3.7: +cause/severity aggregation)
+5. `extract_nl_fields.py` - Condensed NL data for LLM (v3.7: +cause/severity/context)
+6. `generate_insights.py` - Section B: LLM insights (v3.7: +cause/severity analysis)
+7. `render_report.py` - Markdown executive summary (v3.7: +cause/severity breakdowns)
+8. `review_report.py` - Editorial review and pipeline suggestions (v3.5.5)
 
 ### Report Review (v3.5.5)
 
@@ -78,11 +79,15 @@ Always run the test harness before releases:
 ```bash
 python3 tools/test_framework.py
 
+# v3.7: Run preprocessing + structured event context tests
+python3 tools/test_v37_features.py
+
 # v3.6: Run conversation quality feature tests
 python3 tools/test_v36_features.py
 ```
 
 ## LLM Provider
 
-- Use `gemini-2.5-flash` for all LLM calls
+- **Call analysis**: Use `gemini-3-flash-preview` for per-transcript analysis
+- **Aggregate analysis/reporting**: Use `gemini-3-pro-preview` for insights, review, and reporting
 - API key: `GOOGLE_API_KEY` or `GEMINI_API_KEY`
