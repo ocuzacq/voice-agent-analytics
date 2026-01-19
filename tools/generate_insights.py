@@ -1,9 +1,14 @@
 #!/usr/bin/env python3
 """
-LLM Insights Generator for Vacatia AI Voice Agent Analytics (v3.8)
+LLM Insights Generator for Vacatia AI Voice Agent Analytics (v3.8.5)
 
 Generates Section B: LLM-powered insights by passing Section A metrics
 and the condensed NL summary (from extract_nl_fields.py) to Gemini.
+
+v3.8.5 additions:
+- Backwards-compatible with both v3.8.5 (compact friction) and v3.8 formats
+- Loop events now include turn numbers when available
+- All friction data extracted via extract_nl_fields.py helper functions
 
 v3.8 additions:
 - loop_type_analysis: Distribution and impact of agent_loops by type
@@ -61,7 +66,7 @@ You will receive:
 5. Conversation quality events: clarifications, corrections, turn outliers (v3.6)
 6. Clarification cause distribution and context sentences (v3.7)
 7. Correction severity distribution and context sentences (v3.7)
-8. Agent loops with type and context for friction analysis (v3.8)
+8. Agent loops with type, context, and turns for friction analysis (v3.8.5)
 
 Your task: Generate Section B insights that synthesize the data into strategic recommendations.
 
@@ -650,6 +655,9 @@ def generate_insights(
         generation_config=genai.GenerationConfig(
             temperature=0.3,
             max_output_tokens=32000,  # v3.3: High limit for expanded schema with large datasets
+            thinking_config=genai.types.ThinkingConfig(
+                thinking_level="MEDIUM"  # Balanced thinking for aggregate insights
+            )
         )
     )
 
@@ -680,7 +688,7 @@ def combine_report(metrics_path: Path, insights: dict, output_path: Path) -> dic
 def print_insights_summary(insights: dict) -> None:
     """Print human-readable summary of insights."""
     print("\n" + "=" * 60)
-    print("VACATIA AI VOICE AGENT - INSIGHTS (v3.8 - Section B)")
+    print("VACATIA AI VOICE AGENT - INSIGHTS (v3.8.5 - Section B)")
     print("=" * 60)
 
     # Executive Summary
@@ -844,7 +852,7 @@ def print_insights_summary(insights: dict) -> None:
 
 
 def main():
-    parser = argparse.ArgumentParser(description="Generate v3.8 Section B: LLM Insights (incl. loop type analysis)")
+    parser = argparse.ArgumentParser(description="Generate v3.8.5 Section B: LLM Insights (streamlined friction tracking)")
     parser.add_argument("-m", "--metrics", type=Path,
                         help="Path to Section A metrics JSON file")
     parser.add_argument("-n", "--nl-summary", type=Path,

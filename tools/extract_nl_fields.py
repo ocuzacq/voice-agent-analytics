@@ -1,9 +1,15 @@
 #!/usr/bin/env python3
 """
-NL Field Extractor for Vacatia AI Voice Agent Analytics (v3.8)
+NL Field Extractor for Vacatia AI Voice Agent Analytics (v3.8.5)
 
 Extracts natural language fields from v3 analysis JSONs into a condensed
 format optimized for LLM insight generation.
+
+v3.8.5 additions:
+- Backwards-compatible extraction from both v3.8.5 (friction) and v3.8 formats
+- Extracts from friction.clarifications, friction.corrections, friction.loops
+- Maps short enum values to canonical values for consistent aggregation
+- Loops now include turn numbers (t array) when available
 
 v3.8 additions:
 - loop_events: Now extracts from agent_loops with type + context
@@ -92,6 +98,157 @@ def load_v3_analyses(analyses_dir: Path, manifest_ids: set[str] | None = None) -
         print(f"Scope filter: Skipped {skipped_not_in_manifest} analyses not in manifest", file=sys.stderr)
 
     return analyses
+
+
+# v3.8.5 Enum mapping: short values → canonical values
+CLARIFICATION_TYPE_MAP = {
+    "name": "name_spelling", "phone": "phone_confirmation",
+    "intent": "intent_clarification", "repeat": "repeat_request", "verify": "verification_retry",
+    "name_spelling": "name_spelling", "phone_confirmation": "phone_confirmation",
+    "intent_clarification": "intent_clarification", "repeat_request": "repeat_request",
+    "verification_retry": "verification_retry",
+}
+
+CLARIFICATION_CAUSE_MAP = {
+    "misheard": "agent_misheard", "unclear": "customer_unclear",
+    "refused": "customer_refused", "tech": "tech_issue", "ok": "successful",
+    "agent_misheard": "agent_misheard", "customer_unclear": "customer_unclear",
+    "customer_refused": "customer_refused", "tech_issue": "tech_issue", "successful": "successful",
+}
+
+
+def get_conversation_turns(analysis: dict) -> int | None:
+    """Get conversation turns from v3.8.5 (friction.turns) or v3.8 (conversation_turns)."""
+    friction = analysis.get("friction")
+    if friction and isinstance(friction, dict):
+        turns = friction.get("turns")
+        if turns is not None:
+            return turns
+    return analysis.get("conversation_turns")
+
+
+def extract_clarification_events(analysis: dict) -> list[dict]:
+    """Extract clarification events from both v3.8.5 and v3.8 formats."""
+    events = []
+    call_id = analysis.get("call_id")
+    outcome = analysis.get("outcome")
+
+    # v3.8.5 format: friction.clarifications
+    friction = analysis.get("friction")
+    if friction and isinstance(friction, dict):
+        for c in friction.get("clarifications", []):
+            events.append({
+                "call_id": call_id,
+                "type": CLARIFICATION_TYPE_MAP.get(c.get("type"), c.get("type")),
+                "turn": c.get("t"),
+                "resolved": None,  # v3.8.5 doesn't track resolved
+                "cause": CLARIFICATION_CAUSE_MAP.get(c.get("cause"), c.get("cause")),
+                "context": c.get("ctx"),
+                "outcome": outcome
+            })
+        return events
+
+    # v3.8 format: clarification_requests.details
+    clar = analysis.get("clarification_requests")
+    if clar and isinstance(clar, dict) and clar.get("count", 0) > 0:
+        for d in clar.get("details", []):
+            events.append({
+                "call_id": call_id,
+                "type": d.get("type"),
+                "turn": d.get("turn"),
+                "resolved": d.get("resolved"),
+                "cause": d.get("cause"),
+                "context": d.get("context"),
+                "outcome": outcome
+            })
+
+    return events
+
+
+def extract_correction_events(analysis: dict) -> list[dict]:
+    """Extract correction events from both v3.8.5 and v3.8 formats."""
+    events = []
+    call_id = analysis.get("call_id")
+    outcome = analysis.get("outcome")
+
+    # v3.8.5 format: friction.corrections
+    friction = analysis.get("friction")
+    if friction and isinstance(friction, dict):
+        for c in friction.get("corrections", []):
+            sev = c.get("sev")
+            events.append({
+                "call_id": call_id,
+                "what": None,  # v3.8.5 doesn't track what_was_wrong
+                "turn": c.get("t"),
+                "frustrated": sev == "major",  # Infer from severity
+                "severity": sev,
+                "context": c.get("ctx"),
+                "outcome": outcome
+            })
+        return events
+
+    # v3.8 format: user_corrections.details
+    corr = analysis.get("user_corrections")
+    if corr and isinstance(corr, dict) and corr.get("count", 0) > 0:
+        for d in corr.get("details", []):
+            events.append({
+                "call_id": call_id,
+                "what": d.get("what_was_wrong"),
+                "turn": d.get("turn"),
+                "frustrated": d.get("frustration_signal"),
+                "severity": d.get("severity"),
+                "context": d.get("context"),
+                "outcome": outcome
+            })
+
+    return events
+
+
+def extract_loop_events(analysis: dict) -> list[dict]:
+    """Extract loop events from both v3.8.5 and v3.8 formats."""
+    events = []
+    call_id = analysis.get("call_id")
+    outcome = analysis.get("outcome")
+
+    # v3.8.5 format: friction.loops
+    friction = analysis.get("friction")
+    if friction and isinstance(friction, dict):
+        for l in friction.get("loops", []):
+            events.append({
+                "call_id": call_id,
+                "turns": l.get("t", []),  # v3.8.5: array of turn numbers
+                "type": l.get("type"),
+                "context": l.get("ctx"),
+                "outcome": outcome
+            })
+        return events
+
+    # v3.8 format: agent_loops.details
+    loops = analysis.get("agent_loops")
+    if loops and isinstance(loops, dict) and loops.get("count", 0) > 0:
+        for d in loops.get("details", []):
+            events.append({
+                "call_id": call_id,
+                "turns": None,  # v3.8 has no turn numbers in loops
+                "type": d.get("type"),
+                "context": d.get("context"),
+                "outcome": outcome
+            })
+        return events
+
+    # v3.7 format: repeated_prompts (legacy)
+    rp = analysis.get("repeated_prompts")
+    if rp and isinstance(rp, dict) and rp.get("count", 0) > 0:
+        events.append({
+            "call_id": call_id,
+            "count": rp.get("count"),
+            "max_consecutive": rp.get("max_consecutive"),
+            "type": None,  # Legacy format
+            "context": None,
+            "outcome": outcome
+        })
+
+    return events
 
 
 def extract_condensed_call(analysis: dict) -> dict:
@@ -246,71 +403,25 @@ def extract_nl_summary(analyses: list[dict]) -> dict:
                 "intent": a.get("additional_intents")
             })
 
-    # v3.7: Clarification events (for friction analysis) - now with cause + context
+    # v3.8.5: Clarification events (using backwards-compatible extraction)
     clarification_events = []
     for a in analyses:
-        clar = a.get("clarification_requests")
-        if clar and isinstance(clar, dict) and clar.get("count", 0) > 0:
-            details = clar.get("details", [])
-            for d in details:
-                clarification_events.append({
-                    "call_id": a.get("call_id"),
-                    "type": d.get("type"),
-                    "turn": d.get("turn"),
-                    "resolved": d.get("resolved"),
-                    "cause": d.get("cause"),  # v3.7: enum
-                    "context": d.get("context"),  # v3.7: concise description
-                    "outcome": a.get("outcome")
-                })
+        clarification_events.extend(extract_clarification_events(a))
 
-    # v3.7: Correction events (for agent miss analysis) - now with severity + context
+    # v3.8.5: Correction events (using backwards-compatible extraction)
     correction_events = []
     for a in analyses:
-        corr = a.get("user_corrections")
-        if corr and isinstance(corr, dict) and corr.get("count", 0) > 0:
-            details = corr.get("details", [])
-            for d in details:
-                correction_events.append({
-                    "call_id": a.get("call_id"),
-                    "what": d.get("what_was_wrong"),
-                    "turn": d.get("turn"),
-                    "frustrated": d.get("frustration_signal"),
-                    "severity": d.get("severity"),  # v3.7: enum
-                    "context": d.get("context"),  # v3.7: concise description
-                    "outcome": a.get("outcome")
-                })
+        correction_events.extend(extract_correction_events(a))
 
-    # v3.8: Loop events (agent_loops with typed detection)
+    # v3.8.5: Loop events (using backwards-compatible extraction)
     loop_events = []
     for a in analyses:
-        # v3.8: Support new agent_loops schema
-        loops = a.get("agent_loops")
-        if loops and isinstance(loops, dict) and loops.get("count", 0) > 0:
-            details = loops.get("details", [])
-            for d in details:
-                loop_events.append({
-                    "call_id": a.get("call_id"),
-                    "type": d.get("type"),  # v3.8: loop type enum
-                    "context": d.get("context"),  # v3.8: description
-                    "outcome": a.get("outcome")
-                })
-        else:
-            # v3.7 backwards compatibility: repeated_prompts
-            rp = a.get("repeated_prompts")
-            if rp and isinstance(rp, dict) and rp.get("count", 0) > 0:
-                loop_events.append({
-                    "call_id": a.get("call_id"),
-                    "count": rp.get("count"),
-                    "max_consecutive": rp.get("max_consecutive"),
-                    "type": None,  # Legacy format
-                    "context": None,
-                    "outcome": a.get("outcome")
-                })
+        loop_events.extend(extract_loop_events(a))
 
-    # v3.6: Conversation turn outliers (for call length analysis)
+    # v3.8.5: Conversation turn outliers (using backwards-compatible extraction)
     # Identify unusually long or short calls for analysis
-    turn_data = [(a.get("call_id"), a.get("conversation_turns"), a.get("outcome"))
-                 for a in analyses if a.get("conversation_turns")]
+    turn_data = [(a.get("call_id"), get_conversation_turns(a), a.get("outcome"))
+                 for a in analyses if get_conversation_turns(a)]
     turn_values = [t[1] for t in turn_data if t[1] is not None]
     turn_outliers = []
     if len(turn_values) >= 5:
@@ -361,7 +472,7 @@ def extract_nl_summary(analyses: list[dict]) -> dict:
 def print_summary(nl_summary: dict) -> None:
     """Print human-readable summary of extracted NL data."""
     print("\n" + "=" * 60)
-    print("NL FIELD EXTRACTION SUMMARY (v3.8)")
+    print("NL FIELD EXTRACTION SUMMARY (v3.8.5)")
     print("=" * 60)
 
     meta = nl_summary.get("metadata", {})
@@ -448,9 +559,9 @@ def print_summary(nl_summary: dict) -> None:
         if len(intents) > 3:
             print(f"    ... and {len(intents) - 3} more")
 
-    # v3.8: Conversation Quality Events
+    # v3.8.5: Conversation Quality Events
     print("\n" + "-" * 40)
-    print("CONVERSATION QUALITY (v3.8)")
+    print("CONVERSATION QUALITY (v3.8.5)")
     print("-" * 40)
 
     # Clarification events
@@ -482,15 +593,15 @@ def print_summary(nl_summary: dict) -> None:
             for severity, count in severities.most_common():
                 print(f"    {severity}: {count}")
 
-    # Loop events (v3.8: with type + context)
+    # Loop events (v3.8.5: with type + context + turns)
     loop_events = nl_summary.get("loop_events", [])
     print(f"  Loop events: {len(loop_events)}")
     if loop_events:
-        # v3.8: Show type distribution
+        # v3.8.5: Show type distribution
         from collections import Counter
         types = Counter(e.get("type") for e in loop_events if e.get("type"))
         if types:
-            print("  By Type (v3.8):")
+            print("  By Type (v3.8.5):")
             for loop_type, count in types.most_common():
                 print(f"    {loop_type}: {count}")
         else:

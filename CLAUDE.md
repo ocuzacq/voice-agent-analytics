@@ -1,4 +1,4 @@
-# Voice Agent Analytics - Project Instructions (v3.7)
+# Voice Agent Analytics - Project Instructions (v3.8.5)
 
 ## Versioning Guidelines
 
@@ -32,7 +32,7 @@ Keep archived tool versions in `tools/vX/` directories with their own `VERSION.m
 - Why it was superseded
 - Key differences from current
 
-## Pipeline Architecture (v3.7)
+## Pipeline Architecture (v3.8.5)
 
 ```
 transcripts/ → sample → preprocess → analyze (parallel) → metrics → extract_nl → insights → report → review
@@ -79,6 +79,9 @@ Always run the test harness before releases:
 ```bash
 python3 tools/test_framework.py
 
+# v3.8.5: Run streamlined friction tracking tests
+python3 tools/test_v385_features.py
+
 # v3.7: Run preprocessing + structured event context tests
 python3 tools/test_v37_features.py
 
@@ -88,6 +91,37 @@ python3 tools/test_v36_features.py
 
 ## LLM Provider
 
-- **Call analysis**: Use `gemini-3-flash-preview` for per-transcript analysis
-- **Aggregate analysis/reporting**: Use `gemini-3-pro-preview` for insights, review, and reporting
-- API key: `GOOGLE_API_KEY` or `GEMINI_API_KEY`
+**CRITICAL: Always use Gemini 3 models. Never use older models (gemini-2.5-flash, etc.)**
+
+| Use Case | Model | Thinking Level |
+|----------|-------|----------------|
+| Per-transcript analysis | `gemini-3-flash-preview` | MEDIUM |
+| Aggregate insights | `gemini-3-pro-preview` | MEDIUM |
+| Report review | `gemini-3-pro-preview` | MEDIUM |
+| Report rendering | `gemini-3-pro-preview` | MEDIUM |
+
+### Thinking Configuration
+
+Gemini 3 models support thinking levels. Use `MEDIUM` for balanced latency/quality:
+
+```python
+generation_config=genai.GenerationConfig(
+    temperature=0.2,
+    max_output_tokens=16384,
+    thinking_config=genai.types.ThinkingConfig(
+        thinking_level="MEDIUM"
+    )
+)
+```
+
+**Thinking Levels (Gemini 3 Flash):**
+- `minimal`: No thinking, fastest latency
+- `low`: Minimal reasoning, fast
+- `medium`: Balanced (recommended for structured output)
+- `high`: Deep reasoning, slower
+
+**Note:** Thinking tokens count against `max_output_tokens`. Use higher limits (16384+) to prevent truncation.
+
+### API Key
+
+Set `GOOGLE_API_KEY` or `GEMINI_API_KEY` environment variable.

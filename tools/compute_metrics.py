@@ -1,8 +1,13 @@
 #!/usr/bin/env python3
 """
-Aggregate Metrics Calculator for Vacatia AI Voice Agent Analytics (v3.8)
+Aggregate Metrics Calculator for Vacatia AI Voice Agent Analytics (v3.8.5)
 
 Computes Section A: Deterministic Metrics - all Python-calculated, reproducible and auditable.
+
+v3.8.5 additions:
+- Backwards-compatible parsing for both v3.8.5 (compact friction) and v3.8 (verbose) formats
+- Parsing helpers: parse_clarifications(), parse_corrections(), parse_loops()
+- Supports both friction.turns and conversation_turns for turn stats
 
 v3.8 additions:
 - agent_loops: Replaces repeated_prompts with typed loop detection
@@ -116,6 +121,166 @@ def safe_stats(values: list) -> dict:
     return result
 
 
+# v3.8.5 Enum mapping: short values → canonical values for aggregation
+CLARIFICATION_TYPE_MAP = {
+    # v3.8.5 short values
+    "name": "name_spelling",
+    "phone": "phone_confirmation",
+    "intent": "intent_clarification",
+    "repeat": "repeat_request",
+    "verify": "verification_retry",
+    # v3.8 long values (pass through)
+    "name_spelling": "name_spelling",
+    "phone_confirmation": "phone_confirmation",
+    "intent_clarification": "intent_clarification",
+    "repeat_request": "repeat_request",
+    "verification_retry": "verification_retry",
+}
+
+CLARIFICATION_CAUSE_MAP = {
+    # v3.8.5 short values
+    "misheard": "agent_misheard",
+    "unclear": "customer_unclear",
+    "refused": "customer_refused",
+    "tech": "tech_issue",
+    "ok": "successful",
+    # v3.8 long values (pass through)
+    "agent_misheard": "agent_misheard",
+    "customer_unclear": "customer_unclear",
+    "customer_refused": "customer_refused",
+    "tech_issue": "tech_issue",
+    "successful": "successful",
+}
+
+
+def parse_clarifications(analysis: dict) -> list[tuple]:
+    """
+    Parse clarifications from both v3.8.5 (compact) and v3.8 (verbose) formats.
+
+    Returns: list of (turn, type, cause, context) tuples with canonical enum values.
+    """
+    results = []
+
+    # v3.8.5 format: friction.clarifications
+    friction = analysis.get("friction")
+    if friction and isinstance(friction, dict):
+        for c in friction.get("clarifications", []):
+            turn = c.get("t")
+            ctype = CLARIFICATION_TYPE_MAP.get(c.get("type"), c.get("type"))
+            cause = CLARIFICATION_CAUSE_MAP.get(c.get("cause"), c.get("cause"))
+            ctx = c.get("ctx")
+            results.append((turn, ctype, cause, ctx))
+        return results
+
+    # v3.8 format: clarification_requests.details
+    clar = analysis.get("clarification_requests")
+    if clar and isinstance(clar, dict):
+        for d in clar.get("details", []):
+            turn = d.get("turn")
+            ctype = CLARIFICATION_TYPE_MAP.get(d.get("type"), d.get("type"))
+            cause = CLARIFICATION_CAUSE_MAP.get(d.get("cause"), d.get("cause"))
+            ctx = d.get("context")
+            results.append((turn, ctype, cause, ctx))
+
+    return results
+
+
+def parse_corrections(analysis: dict) -> list[tuple]:
+    """
+    Parse corrections from both v3.8.5 (compact) and v3.8 (verbose) formats.
+
+    Returns: list of (turn, severity, context, frustrated) tuples.
+    """
+    results = []
+
+    # v3.8.5 format: friction.corrections
+    friction = analysis.get("friction")
+    if friction and isinstance(friction, dict):
+        for c in friction.get("corrections", []):
+            turn = c.get("t")
+            sev = c.get("sev")
+            ctx = c.get("ctx")
+            # v3.8.5 doesn't track frustrated separately - infer from severity
+            frustrated = sev == "major"
+            results.append((turn, sev, ctx, frustrated))
+        return results
+
+    # v3.8 format: user_corrections.details
+    corr = analysis.get("user_corrections")
+    if corr and isinstance(corr, dict):
+        for d in corr.get("details", []):
+            turn = d.get("turn")
+            sev = d.get("severity")
+            ctx = d.get("context")
+            frustrated = d.get("frustration_signal", False)
+            results.append((turn, sev, ctx, frustrated))
+
+    return results
+
+
+def parse_loops(analysis: dict) -> list[tuple]:
+    """
+    Parse loops from both v3.8.5 (compact) and v3.8 (verbose) formats.
+
+    Returns: list of (turns, type, context) tuples.
+    - turns: list of turn numbers (v3.8.5) or None (v3.8)
+    """
+    results = []
+
+    # v3.8.5 format: friction.loops
+    friction = analysis.get("friction")
+    if friction and isinstance(friction, dict):
+        for l in friction.get("loops", []):
+            turns = l.get("t", [])  # Array of turn numbers
+            loop_type = l.get("type")
+            ctx = l.get("ctx")
+            results.append((turns, loop_type, ctx))
+        return results
+
+    # v3.8 format: agent_loops.details
+    loops = analysis.get("agent_loops")
+    if loops and isinstance(loops, dict):
+        for d in loops.get("details", []):
+            loop_type = d.get("type")
+            ctx = d.get("context")
+            results.append((None, loop_type, ctx))  # v3.8 has no turn numbers
+        return results
+
+    # v3.7 format: repeated_prompts (legacy)
+    rp = analysis.get("repeated_prompts")
+    if rp and isinstance(rp, dict):
+        count = rp.get("count", 0)
+        if count > 0:
+            # Legacy format: single entry with count info
+            results.append((None, None, f"Legacy: {count} repeats"))
+
+    return results
+
+
+def get_conversation_turns(analysis: dict) -> int | None:
+    """Get conversation turns from v3.8.5 (friction.turns) or v3.8 (conversation_turns)."""
+    # v3.8.5 format
+    friction = analysis.get("friction")
+    if friction and isinstance(friction, dict):
+        turns = friction.get("turns")
+        if turns is not None:
+            return turns
+
+    # v3.8 format
+    return analysis.get("conversation_turns")
+
+
+def get_turns_to_failure(analysis: dict) -> int | None:
+    """Get turns_to_failure from v3.8.5 (friction.derailed_at) or v3.8 (turns_to_failure)."""
+    # v3.8.5 format
+    friction = analysis.get("friction")
+    if friction and isinstance(friction, dict):
+        return friction.get("derailed_at")
+
+    # v3.8 format
+    return analysis.get("turns_to_failure")
+
+
 def validate_failure_consistency(analyses: list[dict]) -> dict:
     """
     Flag failure_point inconsistencies (v3.3).
@@ -191,13 +356,16 @@ def extract_policy_gap_breakdown(analyses: list[dict]) -> dict:
 
 def compute_conversation_quality_metrics(analyses: list[dict]) -> dict:
     """
-    Compute conversation quality metrics from v3.6 fields.
+    Compute conversation quality metrics from v3.8.5/v3.8/v3.6 fields.
+
+    v3.8.5: Uses parse_clarifications(), parse_corrections(), parse_loops() for
+    backwards-compatible parsing of both compact (friction) and verbose formats.
 
     Aggregates:
     - Turn statistics (avg, median, by outcome, turns-to-failure)
-    - Clarification request statistics (by type, resolution rate)
-    - User correction statistics (frustration rate)
-    - Loop detection statistics (calls with loops, max consecutive)
+    - Clarification request statistics (by type, by cause)
+    - User correction statistics (frustration rate, by severity)
+    - Loop detection statistics (calls with loops, by type, loop density)
     """
     n = len(analyses)
     if n == 0:
@@ -207,10 +375,10 @@ def compute_conversation_quality_metrics(analyses: list[dict]) -> dict:
     all_turns = []
     resolved_turns = []
     failed_turns = []
-    turns_to_failure = []
+    turns_to_failure_list = []
 
     for a in analyses:
-        turns = a.get("conversation_turns")
+        turns = get_conversation_turns(a)
         if turns is not None and isinstance(turns, (int, float)):
             all_turns.append(turns)
             if a.get("outcome") == "resolved":
@@ -218,49 +386,40 @@ def compute_conversation_quality_metrics(analyses: list[dict]) -> dict:
             else:
                 failed_turns.append(turns)
 
-        ttf = a.get("turns_to_failure")
+        ttf = get_turns_to_failure(a)
         if ttf is not None and isinstance(ttf, (int, float)):
-            turns_to_failure.append(ttf)
+            turns_to_failure_list.append(ttf)
 
     turn_stats = {
         "avg_turns": round(statistics.mean(all_turns), 1) if all_turns else None,
         "median_turns": round(statistics.median(all_turns), 1) if all_turns else None,
         "avg_turns_resolved": round(statistics.mean(resolved_turns), 1) if resolved_turns else None,
         "avg_turns_failed": round(statistics.mean(failed_turns), 1) if failed_turns else None,
-        "avg_turns_to_failure": round(statistics.mean(turns_to_failure), 1) if turns_to_failure else None,
+        "avg_turns_to_failure": round(statistics.mean(turns_to_failure_list), 1) if turns_to_failure_list else None,
         "calls_with_turn_data": len(all_turns)
     }
 
-    # === Clarification Statistics ===
+    # === Clarification Statistics (v3.8.5: uses parse_clarifications) ===
     clarification_counts = []
     clarification_types = Counter()
-    clarification_causes = Counter()  # v3.7: Aggregate by cause
-    clarification_resolved = 0
+    clarification_causes = Counter()
     clarification_total_details = 0
     calls_with_clarifications = 0
 
     for a in analyses:
-        clar = a.get("clarification_requests")
-        if clar and isinstance(clar, dict):
-            count = clar.get("count") or 0
-            if count > 0:
-                calls_with_clarifications += 1
-                clarification_counts.append(count)
+        clarifications = parse_clarifications(a)
+        if clarifications:
+            calls_with_clarifications += 1
+            clarification_counts.append(len(clarifications))
 
-            details = clar.get("details", [])
-            if isinstance(details, list):
-                for d in details:
-                    clarification_total_details += 1
-                    ctype = d.get("type")
-                    if ctype:
-                        clarification_types[ctype] += 1
-                    if d.get("resolved"):
-                        clarification_resolved += 1
-                    # v3.7: Track cause enum
-                    cause = d.get("cause")
-                    if cause:
-                        clarification_causes[cause] += 1
+            for turn, ctype, cause, ctx in clarifications:
+                clarification_total_details += 1
+                if ctype:
+                    clarification_types[ctype] += 1
+                if cause:
+                    clarification_causes[cause] += 1
 
+    # v3.8.5: resolution_rate not tracked (resolved boolean removed)
     clarification_stats = {
         "calls_with_clarifications": calls_with_clarifications,
         "pct_calls_with_clarifications": safe_rate(calls_with_clarifications, n),
@@ -269,38 +428,32 @@ def compute_conversation_quality_metrics(analyses: list[dict]) -> dict:
             ctype: {"count": count, "rate": safe_rate(count, n)}
             for ctype, count in clarification_types.most_common()
         },
-        "by_cause": {  # v3.7: Cause distribution
+        "by_cause": {
             cause: {"count": count, "rate": safe_rate(count, clarification_total_details)}
             for cause, count in clarification_causes.most_common()
         },
-        "resolution_rate": safe_rate(clarification_resolved, clarification_total_details) if clarification_total_details > 0 else None
+        "resolution_rate": None  # v3.8.5: removed resolved tracking
     }
 
-    # === Correction Statistics ===
+    # === Correction Statistics (v3.8.5: uses parse_corrections) ===
     correction_counts = []
     corrections_with_frustration = 0
-    correction_severities = Counter()  # v3.7: Aggregate by severity
+    correction_severities = Counter()
     total_corrections = 0
     calls_with_corrections = 0
 
     for a in analyses:
-        corr = a.get("user_corrections")
-        if corr and isinstance(corr, dict):
-            count = corr.get("count") or 0
-            if count > 0:
-                calls_with_corrections += 1
-                correction_counts.append(count)
+        corrections = parse_corrections(a)
+        if corrections:
+            calls_with_corrections += 1
+            correction_counts.append(len(corrections))
 
-            details = corr.get("details", [])
-            if isinstance(details, list):
-                for d in details:
-                    total_corrections += 1
-                    if d.get("frustration_signal"):
-                        corrections_with_frustration += 1
-                    # v3.7: Track severity enum
-                    severity = d.get("severity")
-                    if severity:
-                        correction_severities[severity] += 1
+            for turn, severity, ctx, frustrated in corrections:
+                total_corrections += 1
+                if frustrated:
+                    corrections_with_frustration += 1
+                if severity:
+                    correction_severities[severity] += 1
 
     correction_stats = {
         "calls_with_corrections": calls_with_corrections,
@@ -308,49 +461,34 @@ def compute_conversation_quality_metrics(analyses: list[dict]) -> dict:
         "avg_corrections_per_call": round(statistics.mean(correction_counts), 2) if correction_counts else 0,
         "with_frustration_signal": corrections_with_frustration,
         "frustration_rate": safe_rate(corrections_with_frustration, total_corrections) if total_corrections > 0 else None,
-        "by_severity": {  # v3.7: Severity distribution
+        "by_severity": {
             severity: {"count": count, "rate": safe_rate(count, total_corrections)}
             for severity, count in correction_severities.most_common()
         }
     }
 
-    # === Loop Statistics (v3.8: agent_loops with typed detection) ===
+    # === Loop Statistics (v3.8.5: uses parse_loops) ===
     calls_with_loops = 0
     all_loop_counts = []
-    loop_types = Counter()  # v3.8: Aggregate by loop type
+    loop_types = Counter()
     total_loops = 0
     total_turns_in_calls_with_loops = 0
 
     for a in analyses:
-        # v3.8: Support new agent_loops schema
-        loops = a.get("agent_loops")
-        if loops and isinstance(loops, dict):
-            count = loops.get("count") or 0
-            if count > 0:
-                calls_with_loops += 1
-                all_loop_counts.append(count)
-                total_loops += count
+        loops = parse_loops(a)
+        if loops:
+            calls_with_loops += 1
+            all_loop_counts.append(len(loops))
+            total_loops += len(loops)
 
-                # Track turns for loop density calculation
-                turns = a.get("conversation_turns")
-                if turns and isinstance(turns, (int, float)):
-                    total_turns_in_calls_with_loops += turns
+            # Track turns for loop density calculation
+            turns = get_conversation_turns(a)
+            if turns and isinstance(turns, (int, float)):
+                total_turns_in_calls_with_loops += turns
 
-                # v3.8: Track loop types
-                details = loops.get("details", [])
-                if isinstance(details, list):
-                    for d in details:
-                        loop_type = d.get("type")
-                        if loop_type:
-                            loop_types[loop_type] += 1
-        else:
-            # v3.7 backwards compatibility: repeated_prompts
-            rp = a.get("repeated_prompts")
-            if rp and isinstance(rp, dict):
-                count = rp.get("count") or 0
-                if count > 0:
-                    calls_with_loops += 1
-                    all_loop_counts.append(count)
+            for turn_list, loop_type, ctx in loops:
+                if loop_type:
+                    loop_types[loop_type] += 1
 
     # Calculate loop density (loops per turn for calls with loops)
     loop_density = None
@@ -362,8 +500,8 @@ def compute_conversation_quality_metrics(analyses: list[dict]) -> dict:
         "pct_calls_with_loops": safe_rate(calls_with_loops, n),
         "avg_loops_per_call": round(statistics.mean(all_loop_counts), 2) if all_loop_counts else 0,
         "total_loops": total_loops,
-        "loop_density": loop_density,  # v3.8: loops / turns (normalized)
-        "by_type": {  # v3.8: Type distribution
+        "loop_density": loop_density,
+        "by_type": {
             loop_type: {"count": count, "rate": safe_rate(count, total_loops)}
             for loop_type, count in loop_types.most_common()
         }
@@ -641,9 +779,9 @@ def print_summary(report: dict) -> None:
         rate = data.get('rate')
         print(f"  {label}: {data['count']} ({rate*100:.1f}%)" if rate else f"  {label}: {data['count']}")
 
-    # Conversation Quality (v3.8)
+    # Conversation Quality (v3.8.5)
     print("\n" + "-" * 40)
-    print("CONVERSATION QUALITY (v3.8)")
+    print("CONVERSATION QUALITY (v3.8.5)")
     print("-" * 40)
     cq = report.get("conversation_quality", {})
     if cq:
@@ -700,7 +838,7 @@ def print_summary(report: dict) -> None:
                 for loop_type, data in by_type.items():
                     print(f"    {loop_type}: {data['count']} ({data.get('rate', 0)*100:.1f}%)")
     else:
-        print("  No v3.8 conversation quality data")
+        print("  No v3.8.5 conversation quality data")
 
     # Training Priorities
     print("\n" + "-" * 40)
@@ -724,7 +862,7 @@ def print_summary(report: dict) -> None:
 
 
 def main():
-    parser = argparse.ArgumentParser(description="Compute v3.8 Section A: Deterministic Metrics (incl. agent_loops by type)")
+    parser = argparse.ArgumentParser(description="Compute v3.8.5 Section A: Deterministic Metrics (streamlined friction tracking)")
     parser.add_argument("-i", "--input-dir", type=Path,
                         default=Path(__file__).parent.parent / "analyses",
                         help="Directory containing analysis JSON files")

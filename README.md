@@ -8,6 +8,14 @@ Analytical framework to evaluate the Vacatia AI voice agent's performance using 
 - **Section A**: Python-calculated metrics (reproducible, auditable)
 - **Section B**: LLM-generated insights (executive narratives, recommendations)
 
+**v3.8.5 Enhancements**:
+- Streamlined friction tracking: Single compact `friction` object
+- Shorter enum values (name vs name_spelling, misheard vs agent_misheard)
+- Compact keys (t, ctx, sev) and telegraph-style context (5-8 words)
+- Loops now include turn numbers in `t` array
+- ~31% output size reduction (2,906 → ~2,000 bytes/call)
+- Full backwards compatibility with v3.8 format
+
 **v3.8 Enhancements**:
 - Agent Loops: Replaces `repeated_prompts` with typed `agent_loops` schema
 - Loop Types: info_retry, intent_retry, deflection, comprehension, action_retry
@@ -55,7 +63,7 @@ Analytical framework to evaluate the Vacatia AI voice agent's performance using 
 
 ## Overview
 
-- **23-field analysis schema** (v3.6) - hybrid metrics + insights + conversation quality
+- **19-field analysis schema** (v3.8.5) - hybrid metrics + insights + streamlined friction tracking
 - **3 quality scores** - agent effectiveness, conversation quality, customer effort
 - **Policy gap breakdown** - structured categorization of capability limitations
 - **Customer verbatim** - direct quotes capturing frustration/needs
@@ -184,7 +192,7 @@ Generates Section B: LLM-powered insights from metrics + NL summary.
 
 ```bash
 python3 tools/generate_insights.py
-python3 tools/generate_insights.py --model gemini-2.5-flash
+python3 tools/generate_insights.py --model gemini-3-pro-preview  # Default
 ```
 
 ### `render_report.py`
@@ -204,7 +212,7 @@ Editorial review and refinement of rendered reports.
 python3 tools/review_report.py                    # Review latest report
 python3 tools/review_report.py -i report.md       # Review specific report
 python3 tools/review_report.py --no-suggestions   # Skip pipeline suggestions
-python3 tools/review_report.py --model gemini-2.5-flash  # Use different model
+python3 tools/review_report.py --model gemini-3-pro-preview  # Default
 ```
 
 **Benefits:**
@@ -264,7 +272,8 @@ reports/
 | **v3.5.5** | 18 | Report review, pipeline suggestions | Previous | [`README_v3.5.5.md`](README_v3.5.5.md) |
 | **v3.6** | 23 | Conversation quality: turns, clarifications, corrections, loops | Previous | [`README_v3.6.md`](README_v3.6.md) |
 | **v3.7** | 23 | Preprocessing + structured event context (cause/severity) | Previous | [`README_v3.7.md`](README_v3.7.md) |
-| **v3.8** | 23 | Agent loops: typed detection replacing repeated_prompts | **Current** | [`README_v3.8.md`](README_v3.8.md) |
+| **v3.8** | 23 | Agent loops: typed detection replacing repeated_prompts | Previous | [`README_v3.8.md`](README_v3.8.md) |
+| **v3.8.5** | 19 | Streamlined friction: compact object, shorter enums, ~31% size reduction | **Current** | [`README_v3.8.5.md`](README_v3.8.5.md) |
 
 ### Versioning Guidelines
 
@@ -275,14 +284,14 @@ reports/
 
 See [`CLAUDE.md`](CLAUDE.md) for full versioning guidelines and project instructions.
 
-## Analysis Schema (v3.8)
+## Analysis Schema (v3.8.5)
 
-Each transcript analysis produces a JSON with 23 actionable fields:
+Each transcript analysis produces a JSON with 19 fields (consolidated from 23 in v3.8):
 
 ```json
 {
   "call_id": "uuid",
-  "schema_version": "v3.7",
+  "schema_version": "v3.8.5",
 
   // === OUTCOME ===
   "outcome": "resolved",
@@ -313,12 +322,14 @@ Each transcript analysis produces a JSON with 23 actionable fields:
   "agent_miss_detail": null,
   "resolution_steps": ["greeted customer", "verified identity", "processed payment", "confirmed success"],
 
-  // === v3.6 CONVERSATION QUALITY ===
-  "conversation_turns": 12,
-  "turns_to_failure": null,
-  "clarification_requests": {"count": 1, "details": [{"type": "phone_confirmation", "turn": 3, "resolved": true, "cause": "successful", "context": "Customer confirmed phone number after agent repeated it"}]},
-  "user_corrections": {"count": 0, "details": []},  // v3.7: details include severity + context
-  "agent_loops": {"count": 0, "details": []}  // v3.8: replaces repeated_prompts
+  // === v3.8.5 FRICTION (consolidated from v3.6-v3.8) ===
+  "friction": {
+    "turns": 12,
+    "derailed_at": null,
+    "clarifications": [{"t": 3, "type": "phone", "cause": "ok", "ctx": "confirmed number"}],
+    "corrections": [],
+    "loops": []
+  }
 }
 ```
 
@@ -331,35 +342,35 @@ Each transcript analysis produces a JSON with 23 actionable fields:
 | `agent_miss_detail` | string | What agent should have done differently |
 | `resolution_steps` | array | Sequence of actions taken during the call |
 
-### New v3.6 Fields (Conversation Quality)
+### v3.8.5 Friction Object (consolidated from v3.6-v3.8)
 
 | Field | Type | Description |
 |-------|------|-------------|
-| `conversation_turns` | integer | Total user+assistant exchange pairs (proxy for call duration) |
-| `turns_to_failure` | integer/null | Turn where call started derailing (non-resolved only) |
-| `clarification_requests` | object | Agent asks customer to repeat/spell/confirm |
-| `user_corrections` | object | Customer corrects agent's understanding |
-| `agent_loops` | object | v3.8: Typed friction loop detection (replaces repeated_prompts) |
+| `friction.turns` | integer | Total conversation turns (proxy for call duration) |
+| `friction.derailed_at` | integer/null | Turn where call started failing (non-resolved only) |
+| `friction.clarifications` | array | Agent asks customer to clarify [{t, type, cause, ctx}] |
+| `friction.corrections` | array | Customer corrects agent [{t, sev, ctx}] |
+| `friction.loops` | array | Agent friction loops [{t, type, ctx}] with turn array |
 
-#### Clarification Request Types
+#### Clarification Types (v3.8.5 short enums)
 
 | Type | Description | Example |
 |------|-------------|---------|
-| `name_spelling` | Agent asks to spell name | "Can you spell your name?" |
-| `phone_confirmation` | Agent confirms phone number | "So that's 315-276-0534?" |
-| `intent_clarification` | Agent asks what customer needs | "What can I help with?" |
-| `repeat_request` | Agent asks to repeat | "Can you say that again?" |
-| `verification_retry` | Agent asks for different verification | "Try another phone number" |
+| `name` | Agent asks to spell name | "Can you spell your name?" |
+| `phone` | Agent confirms phone number | "So that's 315-276-0534?" |
+| `intent` | Agent asks what customer needs | "What can I help with?" |
+| `repeat` | Agent asks to repeat | "Can you say that again?" |
+| `verify` | Agent asks for different verification | "Try another phone number" |
 
-#### Clarification Cause Types (v3.7)
+#### Clarification Cause Types (v3.8.5 short enums)
 
 | Cause | Description |
 |-------|-------------|
-| `customer_refused` | Customer declined to provide info |
-| `customer_unclear` | Customer provided but unclear |
-| `agent_misheard` | Agent failed to understand |
-| `tech_issue` | Audio/connection problem |
-| `successful` | Clarification worked |
+| `refused` | Customer declined to provide info |
+| `unclear` | Customer provided but unclear |
+| `misheard` | Agent failed to understand |
+| `tech` | Audio/connection problem |
+| `ok` | Clarification worked |
 
 #### Correction Severity Types (v3.7)
 
@@ -475,6 +486,8 @@ pip install google-generativeai
 
 ## Configuration
 
+### API Key
+
 Set your Google AI API key:
 
 ```bash
@@ -482,6 +495,18 @@ export GOOGLE_API_KEY="your-key"
 # or
 export GEMINI_API_KEY="your-key"
 ```
+
+### LLM Models
+
+**Always use Gemini 3 models.** Never use older models (gemini-2.5-flash, etc.)
+
+| Use Case | Model | Description |
+|----------|-------|-------------|
+| Transcript analysis | `gemini-3-flash-preview` | Fast, cost-effective per-call analysis |
+| Aggregate insights | `gemini-3-pro-preview` | Deep reasoning for patterns/recommendations |
+| Report review | `gemini-3-pro-preview` | Editorial quality and consistency |
+
+All models use `thinking_level="MEDIUM"` for balanced latency and quality.
 
 ## Sample Output
 

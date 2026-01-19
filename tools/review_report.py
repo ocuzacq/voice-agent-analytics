@@ -26,7 +26,7 @@ Usage:
     python3 tools/review_report.py --no-suggestions
 
     # Use different model
-    python3 tools/review_report.py --model gemini-2.5-flash
+    python3 tools/review_report.py --model gemini-3-pro-preview
 """
 
 import argparse
@@ -308,6 +308,9 @@ def review_report(
         generation_config=genai.GenerationConfig(
             temperature=0.2,  # Lower temperature for editorial consistency
             max_output_tokens=100000,  # Very large limit to accommodate full report + suggestions
+            thinking_config=genai.types.ThinkingConfig(
+                thinking_level="MEDIUM"  # Balanced thinking for editorial review
+            )
         )
     )
 
@@ -323,6 +326,9 @@ def review_report(
                 generation_config=genai.GenerationConfig(
                     temperature=0.2,
                     max_output_tokens=100000,
+                    thinking_config=genai.types.ThinkingConfig(
+                        thinking_level="MEDIUM"
+                    )
                 )
             )
             result = extract_json_from_response(response2.text)
