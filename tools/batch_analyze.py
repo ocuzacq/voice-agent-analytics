@@ -113,7 +113,10 @@ def analyze_single(
     max_retries: int
 ) -> bool:
     """Analyze a single transcript with retries. Thread-safe."""
-    for retry in range(max_retries):
+    # v3.4.1: Extra retries for JSON parse errors (usually transient API issues)
+    json_parse_retries = max_retries + 2
+
+    for retry in range(json_parse_retries):
         try:
             analysis = analyze_transcript(transcript, model_name)
             save_analysis(analysis, output_dir)
@@ -126,6 +129,17 @@ def analyze_single(
                 time.sleep(rate_limit)
 
             return True
+        except ValueError as e:
+            # JSON parse errors are usually transient - use more aggressive backoff
+            if "Could not parse JSON" in str(e) and retry < json_parse_retries - 1:
+                wait_time = max(rate_limit, 2.0) * (2 ** (retry + 1))
+                time.sleep(wait_time)
+            elif retry < max_retries - 1:
+                wait_time = rate_limit * (2 ** (retry + 1))
+                time.sleep(wait_time)
+            else:
+                tracker.record_failure(transcript.name, str(e))
+                return False
         except Exception as e:
             if retry < max_retries - 1:
                 # Exponential backoff on retry
