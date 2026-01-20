@@ -1,4 +1,4 @@
-# Voice Agent Analytics - Project Instructions (v3.8.6)
+# Voice Agent Analytics - Project Instructions (v3.9)
 
 ## Environment
 
@@ -40,7 +40,7 @@ Keep archived tool versions in `tools/vX/` directories with their own `VERSION.m
 - Why it was superseded
 - Key differences from current
 
-## Pipeline Architecture (v3.8.5)
+## Pipeline Architecture (v3.9)
 
 ```
 transcripts/ → sample → preprocess → analyze (parallel) → metrics → extract_nl → insights → report → review
@@ -49,10 +49,10 @@ transcripts/ → sample → preprocess → analyze (parallel) → metrics → ex
 1. `sample_transcripts.py` - Random stratified sampling
 2. `preprocess_transcript.py` - Deterministic turn counting (v3.7: integrated into analyze)
 3. `batch_analyze.py` - LLM analysis with parallel processing (v3.2: default 3 workers)
-4. `compute_metrics.py` - Section A: Deterministic metrics (v3.7: +cause/severity aggregation)
-5. `extract_nl_fields.py` - Condensed NL data for LLM (v3.7: +cause/severity/context)
-6. `generate_insights.py` - Section B: LLM insights (v3.7: +cause/severity analysis)
-7. `render_report.py` - Markdown executive summary (v3.7: +cause/severity breakdowns)
+4. `compute_metrics.py` - Section A: Deterministic metrics (v3.9: +disposition breakdown)
+5. `extract_nl_fields.py` - Condensed NL data for LLM (v3.9: +disposition summary)
+6. `generate_insights.py` - Section B: LLM insights (v3.9: +disposition analysis)
+7. `render_report.py` - Markdown executive summary (v3.9: +disposition breakdown)
 8. `review_report.py` - Editorial review and pipeline suggestions (v3.5.5)
 
 ### Report Review (v3.5.5)
@@ -86,6 +86,9 @@ python3 tools/run_analysis.py -n 50 --workers 1
 Always run the test harness before releases:
 ```bash
 python3 tools/test_framework.py
+
+# v3.9: Run call disposition classification tests
+python3 tools/test_v39_features.py
 
 # v3.8.5: Run streamlined friction tracking tests
 python3 tools/test_v385_features.py

@@ -8,6 +8,20 @@ Analytical framework to evaluate the Vacatia AI voice agent's performance using 
 - **Section A**: Python-calculated metrics (reproducible, auditable)
 - **Section B**: LLM-generated insights (executive narratives, recommendations)
 
+**v3.9.1 Enhancements**:
+- Loop Subject Granularity: New `subject` field in friction loops identifies WHAT is being looped on
+- Guided values by loop type (info_retry: name, phone; intent_retry: fee_info, balance; etc.)
+- Subject aggregation: breakdown per loop type for targeted improvements
+- LLM semantic clustering of loop subjects for pattern discovery
+- Report includes Loop Subject Analysis section with high-impact patterns
+
+**v3.9 Enhancements**:
+- Call Disposition Classification: Single `call_disposition` field for funnel analysis
+- 6 disposition values: pre_intent, out_of_scope_handled, out_of_scope_abandoned, in_scope_success, in_scope_partial, in_scope_failed
+- Decision tree for classification based on customer intent, agent scope, and completion status
+- Funnel metrics: In-scope success rate, out-of-scope recovery rate, pre-intent rate
+- Actionable insights by disposition (e.g., in_scope_partial → add confirmation prompts)
+
 **v3.8.5 Enhancements**:
 - Streamlined friction tracking: Single compact `friction` object
 - Shorter enum values (name vs name_spelling, misheard vs agent_misheard)
@@ -87,12 +101,15 @@ python3 tools/run_analysis.py --quick
 # OR larger batch with more parallelization
 python3 tools/run_analysis.py -n 200 --workers 5
 
+# OR with custom questions (v3.9.1)
+python3 tools/run_analysis.py -n 50 --questions questions.txt
+
 # OR step-by-step:
 python3 tools/sample_transcripts.py -n 50
 python3 tools/batch_analyze.py --workers 3   # v3.2: Parallel processing
 python3 tools/compute_metrics.py
 python3 tools/extract_nl_fields.py           # v3.1: Condensed NL data for LLM
-python3 tools/generate_insights.py
+python3 tools/generate_insights.py --questions questions.txt  # v3.9.1: Custom questions
 python3 tools/render_report.py
 ```
 
@@ -117,6 +134,12 @@ python3 tools/run_analysis.py -n 100 --seed 42
 
 # Resume an interrupted run (uses existing manifest)
 python3 tools/run_analysis.py --resume
+
+# v3.9.1: Custom questions (answered in report)
+python3 tools/run_analysis.py -n 50 --questions questions.txt
+
+# v3.9.1: Enable report review (disabled by default)
+python3 tools/run_analysis.py -n 50 --enable-review
 
 # Append to existing samples (don't clear sampled/)
 python3 tools/run_analysis.py -n 50 --no-clear
@@ -273,7 +296,9 @@ reports/
 | **v3.6** | 23 | Conversation quality: turns, clarifications, corrections, loops | Previous | [`README_v3.6.md`](README_v3.6.md) |
 | **v3.7** | 23 | Preprocessing + structured event context (cause/severity) | Previous | [`README_v3.7.md`](README_v3.7.md) |
 | **v3.8** | 23 | Agent loops: typed detection replacing repeated_prompts | Previous | [`README_v3.8.md`](README_v3.8.md) |
-| **v3.8.5** | 19 | Streamlined friction: compact object, shorter enums, ~31% size reduction | **Current** | [`README_v3.8.5.md`](README_v3.8.5.md) |
+| **v3.8.5** | 19 | Streamlined friction: compact object, shorter enums, ~31% size reduction | Previous | [`README_v3.8.5.md`](README_v3.8.5.md) |
+| **v3.9** | 20 | Call disposition classification for funnel analysis | Previous | [`README_v3.9.md`](README_v3.9.md) |
+| **v3.9.1** | 20 | Loop subject granularity: subject field for targeted friction analysis | **Current** | [`README_v3.9.1.md`](README_v3.9.1.md) |
 
 ### Versioning Guidelines
 
@@ -350,7 +375,7 @@ Each transcript analysis produces a JSON with 19 fields (consolidated from 23 in
 | `friction.derailed_at` | integer/null | Turn where call started failing (non-resolved only) |
 | `friction.clarifications` | array | Agent asks customer to clarify [{t, type, cause, ctx}] |
 | `friction.corrections` | array | Customer corrects agent [{t, sev, ctx}] |
-| `friction.loops` | array | Agent friction loops [{t, type, ctx}] with turn array |
+| `friction.loops` | array | Agent friction loops [{t, type, subject, ctx}] with turn array |
 
 #### Clarification Types (v3.8.5 short enums)
 
@@ -391,6 +416,20 @@ Each transcript analysis produces a JSON with 19 fields (consolidated from 23 in
 | `action_retry` | System/process retries | "Let me try that again" |
 
 **Note:** Only friction loops are tracked. Benign repetition (greeting after hold, compliance disclosures) is excluded.
+
+#### Loop Subject Values (v3.9.1)
+
+The `subject` field identifies WHAT is being looped on. Use guided values per loop type:
+
+| Loop Type | Guided Subjects |
+|-----------|-----------------|
+| `info_retry` | name, phone, address, zip, state, account, email |
+| `intent_retry` | fee_info, balance, payment_link, autopay_link, history_link, rental_link, clubhouse_link, rci_link, transfer, callback |
+| `deflection` | anything_else, other_help, clarify_request |
+| `comprehension` | unclear_speech, background_noise, connection |
+| `action_retry` | verification, link_send, lookup, transfer_attempt |
+
+For edge cases not in these lists, use descriptive `lowercase_with_underscores`.
 
 ### Policy Gap Detail Structure
 

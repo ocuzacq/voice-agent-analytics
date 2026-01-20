@@ -1,9 +1,17 @@
 #!/usr/bin/env python3
 """
-NL Field Extractor for Vacatia AI Voice Agent Analytics (v3.8.5)
+NL Field Extractor for Vacatia AI Voice Agent Analytics (v3.9.1)
 
 Extracts natural language fields from v3 analysis JSONs into a condensed
 format optimized for LLM insight generation.
+
+v3.9.1 additions:
+- loop_subjects: Extracts subject field from loops for granular analysis
+- loop_subject_pairs: (loop_type, subject) pairs for LLM semantic clustering
+
+v3.9 additions:
+- call_disposition extraction for funnel analysis insights
+- disposition_summary: Groups calls by disposition for LLM narrative generation
 
 v3.8.5 additions:
 - Backwards-compatible extraction from both v3.8.5 (friction) and v3.8 formats
@@ -205,19 +213,23 @@ def extract_correction_events(analysis: dict) -> list[dict]:
 
 
 def extract_loop_events(analysis: dict) -> list[dict]:
-    """Extract loop events from both v3.8.5 and v3.8 formats."""
+    """Extract loop events from both v3.9.1/v3.8.5 and v3.8 formats.
+
+    v3.9.1: Includes subject field for granular loop analysis.
+    """
     events = []
     call_id = analysis.get("call_id")
     outcome = analysis.get("outcome")
 
-    # v3.8.5 format: friction.loops
+    # v3.9.1/v3.8.5 format: friction.loops
     friction = analysis.get("friction")
     if friction and isinstance(friction, dict):
         for l in friction.get("loops", []):
             events.append({
                 "call_id": call_id,
-                "turns": l.get("t", []),  # v3.8.5: array of turn numbers
+                "turns": l.get("t", []),  # v3.8.5+: array of turn numbers
                 "type": l.get("type"),
+                "subject": l.get("subject"),  # v3.9.1: what is being looped on
                 "context": l.get("ctx"),
                 "outcome": outcome
             })
@@ -231,6 +243,7 @@ def extract_loop_events(analysis: dict) -> list[dict]:
                 "call_id": call_id,
                 "turns": None,  # v3.8 has no turn numbers in loops
                 "type": d.get("type"),
+                "subject": None,  # v3.8 has no subject
                 "context": d.get("context"),
                 "outcome": outcome
             })
@@ -244,6 +257,7 @@ def extract_loop_events(analysis: dict) -> list[dict]:
             "count": rp.get("count"),
             "max_consecutive": rp.get("max_consecutive"),
             "type": None,  # Legacy format
+            "subject": None,
             "context": None,
             "outcome": outcome
         })
@@ -258,6 +272,10 @@ def extract_condensed_call(analysis: dict) -> dict:
         "outcome": analysis.get("outcome"),
         "failure_point": analysis.get("failure_point"),
     }
+
+    # v3.9: Include call disposition
+    if analysis.get("call_disposition"):
+        condensed["call_disposition"] = analysis["call_disposition"]
 
     # Only include non-null NL fields
     if analysis.get("failure_description"):
@@ -413,10 +431,23 @@ def extract_nl_summary(analyses: list[dict]) -> dict:
     for a in analyses:
         correction_events.extend(extract_correction_events(a))
 
-    # v3.8.5: Loop events (using backwards-compatible extraction)
+    # v3.8.5/v3.9.1: Loop events (using backwards-compatible extraction)
     loop_events = []
     for a in analyses:
         loop_events.extend(extract_loop_events(a))
+
+    # v3.9.1: Extract (type, subject) pairs for LLM semantic clustering
+    loop_subject_pairs = []
+    for event in loop_events:
+        loop_type = event.get("type")
+        subject = event.get("subject")
+        if loop_type and subject:
+            loop_subject_pairs.append({
+                "call_id": event.get("call_id"),
+                "loop_type": loop_type,
+                "subject": subject,
+                "outcome": event.get("outcome")
+            })
 
     # v3.8.5: Conversation turn outliers (using backwards-compatible extraction)
     # Identify unusually long or short calls for analysis
@@ -448,6 +479,23 @@ def extract_nl_summary(analyses: list[dict]) -> dict:
                         "outcome": outcome
                     })
 
+    # v3.9: Extract disposition summary for LLM narrative generation
+    disposition_summary = defaultdict(list)
+    for a in analyses:
+        disposition = a.get("call_disposition")
+        if disposition:
+            entry = {
+                "call_id": a.get("call_id"),
+                "outcome": a.get("outcome"),
+            }
+            if a.get("failure_description"):
+                entry["description"] = a["failure_description"]
+            if a.get("customer_verbatim"):
+                entry["verbatim"] = a["customer_verbatim"]
+            if a.get("summary"):
+                entry["summary"] = a["summary"]
+            disposition_summary[disposition].append(entry)
+
     return {
         "metadata": {
             "extracted_at": datetime.now().isoformat(),
@@ -465,14 +513,16 @@ def extract_nl_summary(analyses: list[dict]) -> dict:
         "clarification_events": clarification_events,  # v3.6: Clarification request details
         "correction_events": correction_events,  # v3.6: User correction details
         "loop_events": loop_events,  # v3.6: Repeated prompt events
-        "turn_outliers": turn_outliers  # v3.6: Unusually long/short calls
+        "loop_subject_pairs": loop_subject_pairs,  # v3.9.1: (type, subject) pairs for clustering
+        "turn_outliers": turn_outliers,  # v3.6: Unusually long/short calls
+        "disposition_summary": dict(disposition_summary)  # v3.9: Calls by disposition
     }
 
 
 def print_summary(nl_summary: dict) -> None:
     """Print human-readable summary of extracted NL data."""
     print("\n" + "=" * 60)
-    print("NL FIELD EXTRACTION SUMMARY (v3.8.5)")
+    print("NL FIELD EXTRACTION SUMMARY (v3.9.1)")
     print("=" * 60)
 
     meta = nl_summary.get("metadata", {})
@@ -593,15 +643,15 @@ def print_summary(nl_summary: dict) -> None:
             for severity, count in severities.most_common():
                 print(f"    {severity}: {count}")
 
-    # Loop events (v3.8.5: with type + context + turns)
+    # Loop events (v3.9.1: with type + subject + context + turns)
     loop_events = nl_summary.get("loop_events", [])
     print(f"  Loop events: {len(loop_events)}")
     if loop_events:
-        # v3.8.5: Show type distribution
+        # v3.8.5+: Show type distribution
         from collections import Counter
         types = Counter(e.get("type") for e in loop_events if e.get("type"))
         if types:
-            print("  By Type (v3.8.5):")
+            print("  By Type:")
             for loop_type, count in types.most_common():
                 print(f"    {loop_type}: {count}")
         else:
@@ -609,12 +659,37 @@ def print_summary(nl_summary: dict) -> None:
             max_cons = max((e.get("max_consecutive") or 0) for e in loop_events)
             print(f"    Worst consecutive repeats: {max_cons}")
 
+    # v3.9.1: Loop subject pairs
+    loop_subject_pairs = nl_summary.get("loop_subject_pairs", [])
+    if loop_subject_pairs:
+        print(f"  Loop subject pairs (v3.9.1): {len(loop_subject_pairs)}")
+        from collections import Counter
+        type_subject_pairs = Counter(
+            (p.get("loop_type"), p.get("subject"))
+            for p in loop_subject_pairs
+        )
+        for (loop_type, subject), count in type_subject_pairs.most_common(5):
+            print(f"    {loop_type}/{subject}: {count}")
+
     # Turn outliers
     turn_outliers = nl_summary.get("turn_outliers", [])
     if turn_outliers:
         long_calls = [e for e in turn_outliers if e.get("type") == "long"]
         short_calls = [e for e in turn_outliers if e.get("type") == "short"]
         print(f"  Turn outliers: {len(long_calls)} long, {len(short_calls)} short")
+
+    # v3.9: Disposition Summary
+    print("\n" + "-" * 40)
+    print("DISPOSITION SUMMARY (v3.9)")
+    print("-" * 40)
+    disp_summary = nl_summary.get("disposition_summary", {})
+    if disp_summary:
+        total_with_disp = sum(len(entries) for entries in disp_summary.values())
+        print(f"  Total calls with disposition: {total_with_disp}")
+        for disp, entries in sorted(disp_summary.items(), key=lambda x: -len(x[1])):
+            print(f"    {disp}: {len(entries)} calls")
+    else:
+        print("  No disposition data (pre-v3.9 analyses)")
 
     print("\n" + "=" * 60)
 

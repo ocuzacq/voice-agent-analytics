@@ -1,9 +1,21 @@
 #!/usr/bin/env python3
 """
-LLM Insights Generator for Vacatia AI Voice Agent Analytics (v3.8.5)
+LLM Insights Generator for Vacatia AI Voice Agent Analytics (v3.9.1)
 
 Generates Section B: LLM-powered insights by passing Section A metrics
 and the condensed NL summary (from extract_nl_fields.py) to Gemini.
+
+v3.9.1 additions:
+- loop_subject_clusters: Semantic clustering of loop subjects by type
+- Loop subject analysis narrative and insights
+- Subject distribution breakdown per loop type
+- Custom questions: --questions flag to answer user-provided analytical questions
+- custom_analysis section in report with question/answer pairs
+
+v3.9 additions:
+- disposition_analysis: Insights on call disposition patterns
+- Funnel analysis recommendations based on disposition breakdown
+- Actionable insights by disposition type (in_scope_partial → confirmation prompts, etc.)
 
 v3.8.5 additions:
 - Backwards-compatible with both v3.8.5 (compact friction) and v3.8 formats
@@ -240,6 +252,49 @@ Return ONLY valid JSON matching this structure:
       "intent_retry_rate": "% of calls with intent re-ask after identity check",
       "deflection_rate": "% of calls with deflection loops"
     }
+  },
+
+  "disposition_analysis": {
+    "narrative": "2-3 sentences synthesizing the call disposition distribution and what it reveals about agent effectiveness",
+    "actionable_insights": [
+      {
+        "disposition": "in_scope_partial | in_scope_failed | out_of_scope_abandoned | pre_intent",
+        "frequency": "count and percentage string",
+        "root_cause": "Why calls end up in this disposition",
+        "recommendation": "Specific action to improve this metric"
+      }
+    ],
+    "funnel_health": {
+      "assessment": "healthy | needs_attention | critical",
+      "explanation": "Brief explanation of overall funnel health",
+      "priority_focus": "Which disposition category needs most attention and why"
+    }
+  },
+
+  "loop_subject_clusters": {
+    "narrative": "2-3 sentences synthesizing loop subject patterns and what they reveal about friction points",
+    "by_loop_type": {
+      "<loop_type>": {
+        "top_subjects": [
+          {
+            "subject": "canonical_subject_name",
+            "count": 10,
+            "pct": "25%",
+            "insight": "Why this subject is frequently looped (optional)"
+          }
+        ],
+        "recommendation": "Specific action to reduce loops for this type"
+      }
+    },
+    "high_impact_patterns": [
+      {
+        "loop_type": "info_retry | intent_retry | etc.",
+        "subject": "name | phone | etc.",
+        "frequency": "count or percentage",
+        "impact": "How this pattern affects call outcomes",
+        "recommendation": "Specific fix"
+      }
+    ]
   }
 }
 
@@ -326,6 +381,24 @@ Return ONLY valid JSON matching this structure:
     - Calculate deflection_rate: % of calls with deflection loops (signals capability gaps)
     - Focus on actionable recommendations: which loop types could be reduced by prompt improvements vs capability additions
 
+20. **Disposition analysis (v3.9)**: Analyze call_disposition patterns to understand call funnel:
+    - **pre_intent**: Calls ending before customer states request (possible IVR/routing issues)
+    - **out_of_scope_handled**: Out-of-scope requests gracefully redirected (measure of deflection quality)
+    - **out_of_scope_abandoned**: Out-of-scope where customer gave up (capability expansion opportunities)
+    - **in_scope_success**: Request completed with explicit satisfaction (gold standard)
+    - **in_scope_partial**: Completed but no confirmation (opportunity for confirmation prompts)
+    - **in_scope_failed**: In-scope requests that couldn't be completed (training/capability gaps)
+    - Provide actionable_insights for each disposition with high count
+    - Assess overall funnel_health based on distribution
+    - Focus on actionable recommendations: what would move in_scope_partial → in_scope_success?
+
+21. **Loop subject clustering (v3.9.1)**: Analyze loop subject patterns for granular friction analysis:
+    - Group subjects semantically within each loop type (e.g., "name", "customer_name", "spelling" → "name")
+    - Calculate subject distribution per loop type (e.g., info_retry: name 45%, phone 30%, other 25%)
+    - Identify high-impact patterns: which (loop_type, subject) combinations correlate with failed outcomes?
+    - Provide actionable recommendations: e.g., "45% of info_retry loops involve name re-asking, suggesting ASR/name recognition as improvement area"
+    - The narrative should explain WHAT subjects are causing friction and WHY
+
 Return ONLY the JSON object, no markdown code blocks or additional text.
 """
 
@@ -378,6 +451,114 @@ def extract_json_from_response(text: str) -> dict:
                         break
 
     raise ValueError(f"Could not parse JSON from: {text[:500]}...")
+
+
+def load_questions(questions_path: Path) -> list[str]:
+    """Load custom questions from a file (one question per line).
+
+    v3.9.1: Supports questions.txt or questions.json format.
+    """
+    if not questions_path.exists():
+        return []
+
+    content = questions_path.read_text(encoding='utf-8').strip()
+
+    # Try JSON format first
+    if questions_path.suffix == '.json':
+        try:
+            data = json.loads(content)
+            if isinstance(data, list):
+                return [q.strip() for q in data if q.strip()]
+            elif isinstance(data, dict) and 'questions' in data:
+                return [q.strip() for q in data['questions'] if q.strip()]
+        except json.JSONDecodeError:
+            pass
+
+    # Default: one question per line
+    questions = []
+    for line in content.split('\n'):
+        line = line.strip()
+        # Skip empty lines and comments
+        if line and not line.startswith('#'):
+            questions.append(line)
+
+    return questions
+
+
+CUSTOM_QUESTIONS_SYSTEM_PROMPT = """You are a senior call center analytics consultant. You have access to comprehensive data about voice agent performance including metrics, failure patterns, customer verbatims, and conversation quality data.
+
+Your task is to answer custom analytical questions based on the data provided. Each answer should:
+1. Be specific and grounded in the data
+2. Include relevant metrics or evidence when available
+3. Be concise but complete (2-5 sentences per answer)
+4. Acknowledge limitations if the data doesn't fully address the question
+
+Return your answers as a JSON object with this structure:
+{
+  "custom_analysis": [
+    {
+      "question": "The original question",
+      "answer": "Your data-driven answer",
+      "evidence": ["supporting fact 1", "supporting fact 2"],
+      "confidence": "high | medium | low"
+    }
+  ]
+}
+
+Return ONLY the JSON object, no markdown code blocks or additional text."""
+
+
+def generate_custom_answers(
+    questions: list[str],
+    metrics: dict,
+    nl_summary: dict,
+    model_name: str = "gemini-3-pro-preview"
+) -> list[dict]:
+    """Generate answers to custom analytical questions using LLM.
+
+    v3.9.1: Uses the same data context as generate_insights but answers
+    specific user-provided questions.
+    """
+    if not questions:
+        return []
+
+    # Build context from metrics and NL summary (reuse build_insights_prompt structure)
+    context_prompt = build_insights_prompt(metrics, nl_summary)
+
+    # Format questions
+    questions_text = "\n".join(f"{i+1}. {q}" for i, q in enumerate(questions))
+
+    prompt = f"""Based on the following voice agent performance data, answer these custom analytical questions:
+
+## QUESTIONS TO ANSWER
+
+{questions_text}
+
+---
+
+{context_prompt}
+
+---
+
+Now answer each question based on the data above. Be specific and cite evidence from the data."""
+
+    # Call LLM
+    client = get_genai_client()
+
+    config = types.GenerateContentConfig(
+        temperature=0.3,
+        max_output_tokens=16000,
+        system_instruction=CUSTOM_QUESTIONS_SYSTEM_PROMPT,
+    )
+
+    response = client.models.generate_content(
+        model=model_name,
+        contents=prompt,
+        config=config,
+    )
+
+    result = extract_json_from_response(response.text)
+    return result.get("custom_analysis", [])
 
 
 def build_insights_prompt(metrics: dict, nl_summary: dict) -> str:
@@ -540,21 +721,22 @@ def build_insights_prompt(metrics: dict, nl_summary: dict) -> str:
             from collections import defaultdict
             by_severity = defaultdict(list)
             for e in corr_events:
-                severity = e.get("severity", "unknown")
+                severity = e.get("severity") or "unknown"
                 by_severity[severity].append(e)
 
             for severity, events in sorted(by_severity.items(), key=lambda x: ({"major": 0, "moderate": 1, "minor": 2}.get(x[0], 3))):
                 failed_outcomes = sum(1 for e in events if e.get("outcome") != "resolved")
-                nl_sections.append(f"\n**{severity.upper()}** ({len(events)} events, {failed_outcomes} in failed calls):")
+                severity_label = (severity or "unknown").upper()
+                nl_sections.append(f"\n**{severity_label}** ({len(events)} events, {failed_outcomes} in failed calls):")
                 for e in events[:5]:
                     frust = "😤" if e.get("frustrated") else ""
                     context = e.get("context", "")
                     context_str = f" - {context}" if context else ""
                     nl_sections.append(f"  - [{e.get('call_id', '?')[:8]}] turn {e.get('turn', '?')}: {e.get('what', 'unknown')} [{e.get('outcome', '?')}] {frust}{context_str}")
 
-        # Loop events (v3.8: agent_loops with type + context)
+        # Loop events (v3.9.1: agent_loops with type + subject + context)
         if loop_events:
-            # Check if using v3.8 format (has type field) or legacy format
+            # Check if using v3.8+ format (has type field) or legacy format
             v38_events = [e for e in loop_events if e.get("type")]
             if v38_events:
                 nl_sections.append(f"\n### Agent Loops ({len(v38_events)} friction loops)")
@@ -571,14 +753,40 @@ def build_insights_prompt(metrics: dict, nl_summary: dict) -> str:
                     nl_sections.append(f"\n**{loop_type}** ({len(events)} events, {failed_outcomes} in failed calls):")
                     for e in events[:5]:
                         context = e.get("context", "")
+                        subject = e.get("subject", "")
+                        subject_str = f" [{subject}]" if subject else ""
                         context_str = f" - {context}" if context else ""
-                        nl_sections.append(f"  - [{e.get('call_id', '?')[:8]}] → {e.get('outcome', '?')}{context_str}")
+                        nl_sections.append(f"  - [{e.get('call_id', '?')[:8]}]{subject_str} → {e.get('outcome', '?')}{context_str}")
             else:
                 # Legacy format (repeated_prompts)
                 nl_sections.append(f"\n### Loop Events ({len(loop_events)} calls with repeated prompts)")
                 sorted_loops = sorted(loop_events, key=lambda x: -(x.get("max_consecutive") or 0))
                 for e in sorted_loops[:5]:
                     nl_sections.append(f"- [{e.get('call_id', '?')[:8]}] {e.get('count', 0)} repeats, max {e.get('max_consecutive', 0)} consecutive → {e.get('outcome', '?')}")
+
+        # v3.9.1: Loop Subject Pairs for clustering
+        loop_subject_pairs = nl_summary.get("loop_subject_pairs", [])
+        if loop_subject_pairs:
+            nl_sections.append(f"\n### Loop Subject Data for Clustering ({len(loop_subject_pairs)} pairs)")
+            nl_sections.append("Cluster these (loop_type, subject) pairs and identify high-impact patterns:")
+
+            from collections import defaultdict, Counter
+            # Group by loop_type
+            by_type = defaultdict(list)
+            for p in loop_subject_pairs:
+                by_type[p.get("loop_type", "unknown")].append(p)
+
+            for loop_type, pairs in sorted(by_type.items(), key=lambda x: -len(x[1])):
+                nl_sections.append(f"\n**{loop_type}** ({len(pairs)} events):")
+                # Show subject distribution
+                subjects = Counter(p.get("subject") for p in pairs if p.get("subject"))
+                failed_by_subject = Counter(
+                    p.get("subject") for p in pairs
+                    if p.get("subject") and p.get("outcome") != "resolved"
+                )
+                for subject, count in subjects.most_common(5):
+                    failed = failed_by_subject.get(subject, 0)
+                    nl_sections.append(f"  - {subject}: {count} events ({failed} in failed calls)")
 
         # Turn outliers
         if turn_outliers:
@@ -594,6 +802,24 @@ def build_insights_prompt(metrics: dict, nl_summary: dict) -> str:
                 nl_sections.append(f"\n### Unusually Short Calls ({len(short_calls)} calls)")
                 for e in short_calls[:5]:
                     nl_sections.append(f"- [{e.get('call_id', '?')[:8]}] {e.get('turns', '?')} turns → {e.get('outcome', '?')}")
+
+    # v3.9: Disposition Summary
+    disp_summary = nl_summary.get("disposition_summary", {})
+    if disp_summary:
+        nl_sections.append("\n## Call Disposition (v3.9)")
+        nl_sections.append("Analyze disposition patterns for funnel insights:")
+
+        for disposition, entries in sorted(disp_summary.items(), key=lambda x: -len(x[1])):
+            nl_sections.append(f"\n### {disposition} ({len(entries)} calls)")
+            for entry in entries[:8]:  # Sample per disposition
+                parts = [f"[{entry.get('call_id', '?')[:8]}]"]
+                if entry.get("summary"):
+                    parts.append(entry["summary"][:100])
+                elif entry.get("description"):
+                    parts.append(entry["description"][:100])
+                if entry.get("verbatim"):
+                    parts.append(f'"{entry["verbatim"][:60]}..."' if len(entry.get("verbatim", "")) > 60 else f'"{entry["verbatim"]}"')
+                nl_sections.append(f"- {' | '.join(parts)}")
 
     nl_text = "\n".join(nl_sections)
 
@@ -672,8 +898,16 @@ def generate_insights(
     return insights
 
 
-def combine_report(metrics_path: Path, insights: dict, output_path: Path) -> dict:
-    """Combine Section A metrics and Section B insights into final report."""
+def combine_report(
+    metrics_path: Path,
+    insights: dict,
+    output_path: Path,
+    custom_analysis: list[dict] = None
+) -> dict:
+    """Combine Section A metrics, Section B insights, and custom analysis into final report.
+
+    v3.9.1: Added custom_analysis parameter for user-provided questions.
+    """
 
     with open(metrics_path, 'r', encoding='utf-8') as f:
         report_data = json.load(f)
@@ -685,6 +919,10 @@ def combine_report(metrics_path: Path, insights: dict, output_path: Path) -> dic
         "llm_insights": insights
     }
 
+    # v3.9.1: Include custom analysis if provided
+    if custom_analysis:
+        full_report["custom_analysis"] = custom_analysis
+
     with open(output_path, 'w', encoding='utf-8') as f:
         json.dump(full_report, f, indent=2)
 
@@ -694,7 +932,7 @@ def combine_report(metrics_path: Path, insights: dict, output_path: Path) -> dic
 def print_insights_summary(insights: dict) -> None:
     """Print human-readable summary of insights."""
     print("\n" + "=" * 60)
-    print("VACATIA AI VOICE AGENT - INSIGHTS (v3.8.5 - Section B)")
+    print("VACATIA AI VOICE AGENT - INSIGHTS (v3.9.1 - Section B)")
     print("=" * 60)
 
     # Executive Summary
@@ -854,11 +1092,92 @@ def print_insights_summary(insights: dict) -> None:
             if loop_analysis.get("deflection_rate"):
                 print(f"    Deflection Rate: {loop_analysis['deflection_rate']}")
 
+    # v3.9: Disposition Analysis
+    disp_analysis = insights.get("disposition_analysis", {})
+    if disp_analysis:
+        print("\n" + "-" * 40)
+        print("DISPOSITION ANALYSIS (v3.9)")
+        print("-" * 40)
+        if disp_analysis.get("narrative"):
+            print(f"  {disp_analysis['narrative']}")
+
+        actionable_insights = disp_analysis.get("actionable_insights", [])
+        if actionable_insights:
+            print("\n  Actionable Insights:")
+            for ai in actionable_insights[:4]:
+                print(f"    - {ai.get('disposition', 'N/A')} ({ai.get('frequency', 'N/A')})")
+                print(f"      Root cause: {ai.get('root_cause', 'N/A')}")
+                print(f"      Recommendation: {ai.get('recommendation', 'N/A')}")
+
+        funnel_health = disp_analysis.get("funnel_health", {})
+        if funnel_health:
+            assessment = funnel_health.get('assessment') or 'N/A'
+            print(f"\n  Funnel Health: {assessment.upper()}")
+            if funnel_health.get("priority_focus"):
+                print(f"    Priority Focus: {funnel_health['priority_focus']}")
+
+    # v3.9.1: Loop Subject Clusters
+    loop_subject = insights.get("loop_subject_clusters", {})
+    if loop_subject:
+        print("\n" + "-" * 40)
+        print("LOOP SUBJECT ANALYSIS (v3.9.1)")
+        print("-" * 40)
+        if loop_subject.get("narrative"):
+            print(f"  {loop_subject['narrative']}")
+
+        by_loop_type = loop_subject.get("by_loop_type", {})
+        if by_loop_type:
+            print("\n  By Loop Type:")
+            for loop_type, data in by_loop_type.items():
+                top_subjects = data.get("top_subjects", [])
+                if top_subjects:
+                    subjects_str = ", ".join(
+                        f"{s.get('subject', 'N/A')} ({s.get('pct', 'N/A')})"
+                        for s in top_subjects[:3]
+                    )
+                    print(f"    {loop_type}: {subjects_str}")
+
+        high_impact = loop_subject.get("high_impact_patterns", [])
+        if high_impact:
+            print("\n  High-Impact Patterns:")
+            for p in high_impact[:3]:
+                print(f"    - {p.get('loop_type', 'N/A')}/{p.get('subject', 'N/A')}: {p.get('recommendation', 'N/A')}")
+
+    print("\n" + "=" * 60)
+
+
+def print_custom_analysis(custom_analysis: list[dict]) -> None:
+    """Print custom analysis section.
+
+    v3.9.1: Displays answers to user-provided questions.
+    """
+    if not custom_analysis:
+        return
+
+    print("\n" + "=" * 60)
+    print("CUSTOM ANALYSIS (v3.9.1)")
+    print("=" * 60)
+
+    for i, qa in enumerate(custom_analysis, 1):
+        question = qa.get("question", "N/A")
+        answer = qa.get("answer", "N/A")
+        confidence = qa.get("confidence", "medium")
+        evidence = qa.get("evidence", [])
+
+        print(f"\n{i}. {question}")
+        print(f"   [{confidence.upper()}]")
+        print(f"   {answer}")
+
+        if evidence:
+            print("\n   Evidence:")
+            for e in evidence[:3]:
+                print(f"     - {e}")
+
     print("\n" + "=" * 60)
 
 
 def main():
-    parser = argparse.ArgumentParser(description="Generate v3.8.5 Section B: LLM Insights (streamlined friction tracking)")
+    parser = argparse.ArgumentParser(description="Generate v3.9.1 Section B: LLM Insights (loop subject granularity)")
     parser.add_argument("-m", "--metrics", type=Path,
                         help="Path to Section A metrics JSON file")
     parser.add_argument("-n", "--nl-summary", type=Path,
@@ -870,6 +1189,8 @@ def main():
                         help="Gemini model to use (default: gemini-3-pro-preview)")
     parser.add_argument("--json-only", action="store_true",
                         help="Output only JSON")
+    parser.add_argument("--questions", type=Path,
+                        help="Path to questions file (one question per line) for custom analysis")
 
     args = parser.parse_args()
 
@@ -916,19 +1237,49 @@ def main():
         print(f"Error generating insights: {e}", file=sys.stderr)
         return 1
 
+    # v3.9.1: Process custom questions if provided
+    custom_analysis = None
+    if args.questions:
+        questions = load_questions(args.questions)
+        if questions:
+            print(f"Processing {len(questions)} custom questions...", file=sys.stderr)
+
+            # Load metrics and NL summary for custom questions
+            with open(args.metrics, 'r', encoding='utf-8') as f:
+                metrics_data = json.load(f)
+            metrics = metrics_data.get("deterministic_metrics", metrics_data)
+
+            nl_summary = {}
+            if args.nl_summary and args.nl_summary.exists():
+                with open(args.nl_summary, 'r', encoding='utf-8') as f:
+                    nl_summary = json.load(f)
+
+            try:
+                custom_analysis = generate_custom_answers(
+                    questions, metrics, nl_summary, args.model
+                )
+                print(f"Generated {len(custom_analysis)} custom answers", file=sys.stderr)
+            except Exception as e:
+                print(f"Warning: Failed to generate custom answers: {e}", file=sys.stderr)
+        else:
+            print(f"Warning: No questions found in {args.questions}", file=sys.stderr)
+
     # Create output path
     args.output_dir.mkdir(parents=True, exist_ok=True)
     timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
     output_path = args.output_dir / f"report_v3_{timestamp}.json"
 
-    # Combine and save
-    full_report = combine_report(args.metrics, insights, output_path)
+    # Combine and save (v3.9.1: includes custom_analysis)
+    full_report = combine_report(args.metrics, insights, output_path, custom_analysis)
     print(f"Full report saved: {output_path}", file=sys.stderr)
 
     if args.json_only:
         print(json.dumps(full_report, indent=2))
     else:
         print_insights_summary(insights)
+        # v3.9.1: Print custom analysis if available
+        if custom_analysis:
+            print_custom_analysis(custom_analysis)
         print(f"\nFull report: {output_path}")
 
     return 0

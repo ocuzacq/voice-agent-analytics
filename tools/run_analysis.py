@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """
-End-to-End Analysis Pipeline for Vacatia AI Voice Agent Analytics (v3.5.5)
+End-to-End Analysis Pipeline for Vacatia AI Voice Agent Analytics (v3.9.1)
 
 Orchestrates the complete analysis workflow:
 1. sample_transcripts.py → Sample transcripts from corpus
@@ -9,7 +9,12 @@ Orchestrates the complete analysis workflow:
 4. extract_nl_fields.py → Extract condensed NL data for LLM (v3.1)
 5. generate_insights.py → Generate Section B LLM insights
 6. render_report.py → Render Markdown executive summary
-7. review_report.py → Editorial review and pipeline suggestions (v3.5.5)
+7. review_report.py → Editorial review and pipeline suggestions (v3.5.5) [optional]
+
+v3.9.1 Features:
+- Custom questions: --questions flag to provide questions file for LLM to answer
+- Questions answered in dedicated "Custom Analysis" section after Executive Summary
+- Review step disabled by default (use --enable-review to run it)
 
 v3.5.5 Features:
 - Report review pass with Gemini 3 Pro for editorial refinement
@@ -122,13 +127,19 @@ Examples:
     parser.add_argument("--output-dir", type=Path,
                         help="Custom output directory for all outputs")
 
-    # v3.5.5: Report review options
+    # v3.5.5: Report review options (disabled by default in v3.9.1)
+    parser.add_argument("--enable-review", action="store_true",
+                        help="Enable report review step (disabled by default)")
     parser.add_argument("--skip-review", action="store_true",
-                        help="Skip report review step (v3.5.5)")
+                        help="[DEPRECATED] Skip report review step (now default behavior)")
     parser.add_argument("--review-model", type=str, default="gemini-3-pro-preview",
                         help="Gemini model for report review (default: gemini-3-pro-preview)")
     parser.add_argument("--no-suggestions", action="store_true",
                         help="Skip pipeline suggestions in review (review only)")
+
+    # v3.9.1: Custom questions
+    parser.add_argument("--questions", type=Path,
+                        help="Path to questions file (one question per line) for custom analysis")
 
     args = parser.parse_args()
 
@@ -162,8 +173,11 @@ Examples:
     # Generate run ID for logging
     run_id = datetime.now().strftime("%Y%m%d_%H%M%S")
 
+    # v3.9.1: Review disabled by default
+    run_review = args.enable_review and not args.skip_review
+
     print("=" * 60)
-    print("VACATIA AI VOICE AGENT ANALYTICS - v3.5.5 PIPELINE")
+    print("VACATIA AI VOICE AGENT ANALYTICS - v3.9.1 PIPELINE")
     print("=" * 60)
     print(f"Run ID: {run_id}")
     print(f"Started: {datetime.now().isoformat()}")
@@ -171,11 +185,13 @@ Examples:
     print(f"  Sample size: {args.sample_size}")
     print(f"  Analysis model: {args.analysis_model}")
     print(f"  Insights model: {args.insights_model}")
-    print(f"  Review model: {args.review_model}{' (skipped)' if args.skip_review else ''}")
+    print(f"  Review: {'enabled' if run_review else 'disabled'}{' (use --enable-review to enable)' if not run_review else ''}")
     print(f"  Workers: {args.workers}")
     print(f"  Rate limit: {args.rate_limit}s per worker")
     print(f"  Transcripts: {transcripts_dir}")
     print(f"  Output: {reports_dir}")
+    if args.questions:
+        print(f"  Custom questions: {args.questions}")
     if args.resume:
         print(f"  Mode: RESUME (using existing manifest)")
     elif args.no_clear:
@@ -281,7 +297,18 @@ Examples:
             "--model", args.insights_model
         ]
 
-        if run_step("Generate LLM Insights (Section B)", cmd):
+        # v3.9.1: Pass custom questions file if provided
+        if args.questions:
+            if not args.questions.exists():
+                print(f"\n⚠️ Questions file not found: {args.questions}")
+            else:
+                cmd.extend(["--questions", str(args.questions)])
+
+        step_name = "Generate LLM Insights (Section B)"
+        if args.questions and args.questions.exists():
+            step_name += " + Custom Questions"
+
+        if run_step(step_name, cmd):
             steps_completed.append("insights")
         else:
             steps_failed.append("insights")
@@ -306,8 +333,8 @@ Examples:
     else:
         print("\n⏭️ Skipping report rendering (no insights available)")
 
-    # Step 7: Review and refine report (v3.5.5)
-    if not args.skip_review and "report" in steps_completed:
+    # Step 7: Review and refine report (v3.5.5) - disabled by default in v3.9.1
+    if run_review and "report" in steps_completed:
         cmd = [
             sys.executable,
             str(tools_dir / "review_report.py"),
@@ -323,8 +350,8 @@ Examples:
         else:
             steps_failed.append("review")
             print("\n⚠️ Report review failed. Original report still available.")
-    elif args.skip_review:
-        print("\n⏭️ Skipping report review (--skip-review)")
+    elif not run_review:
+        print("\n⏭️ Skipping report review (disabled by default, use --enable-review)")
         steps_completed.append("review (skipped)")
     elif "report" not in steps_completed:
         print("\n⏭️ Skipping report review (no report available)")

@@ -1,0 +1,32 @@
+# Example Questions File for Custom Analysis (v3.9.1)
+#
+# Add one question per line. Lines starting with # are ignored.
+# These questions will be answered by the LLM using the analyzed call data.
+#
+# Usage:
+#   python3 tools/run_analysis.py -n 50 --questions questions.txt
+#
+# Tips:
+# - Ask specific, data-driven questions
+# - Questions about patterns, correlations, and root causes work well
+# - The LLM has access to metrics, failure details, customer verbatims, and conversation quality data
+
+# Agent Understanding Issues
+What are the main cases where the agent struggles understanding the user?
+In which situations does the agent ask the customer to repeat themselves most often?
+
+# Verification & Authentication
+How effective is the verification process? What causes verification failures?
+What percentage of calls fail during the identity verification step?
+
+# Customer Experience
+What are the most common sources of customer frustration?
+Which types of requests lead to the longest call durations?
+
+# Capability Gaps
+What capabilities are customers most frequently asking for that the agent cannot handle?
+Which out-of-scope requests could potentially be added to the agent's capabilities?
+
+# Conversation Quality
+What patterns distinguish successful calls from failed calls?
+At what point in the conversation do most failures occur?

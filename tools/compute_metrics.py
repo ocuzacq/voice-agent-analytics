@@ -1,8 +1,19 @@
 #!/usr/bin/env python3
 """
-Aggregate Metrics Calculator for Vacatia AI Voice Agent Analytics (v3.8.5)
+Aggregate Metrics Calculator for Vacatia AI Voice Agent Analytics (v3.9.1)
 
 Computes Section A: Deterministic Metrics - all Python-calculated, reproducible and auditable.
+
+v3.9.1 additions:
+- loop_subject_stats: Aggregation of subject field from friction loops
+- by_subject: Subject distribution per loop type
+- total_loops_with_subject: Count of loops that have subject data
+
+v3.9 additions:
+- disposition_breakdown: Aggregation of call_disposition values for funnel analysis
+- in_scope_success_rate: Success rate among in-scope calls
+- out_of_scope_recovery_rate: Rate of graceful handling for out-of-scope requests
+- pre_intent_rate: Rate of calls ending before customer stated need
 
 v3.8.5 additions:
 - Backwards-compatible parsing for both v3.8.5 (compact friction) and v3.8 (verbose) formats
@@ -220,21 +231,23 @@ def parse_corrections(analysis: dict) -> list[tuple]:
 
 def parse_loops(analysis: dict) -> list[tuple]:
     """
-    Parse loops from both v3.8.5 (compact) and v3.8 (verbose) formats.
+    Parse loops from both v3.9.1/v3.8.5 (compact) and v3.8 (verbose) formats.
 
-    Returns: list of (turns, type, context) tuples.
-    - turns: list of turn numbers (v3.8.5) or None (v3.8)
+    Returns: list of (turns, type, subject, context) tuples.
+    - turns: list of turn numbers (v3.8.5+) or None (v3.8)
+    - subject: what is being looped on (v3.9.1) or None (earlier versions)
     """
     results = []
 
-    # v3.8.5 format: friction.loops
+    # v3.9.1/v3.8.5 format: friction.loops
     friction = analysis.get("friction")
     if friction and isinstance(friction, dict):
         for l in friction.get("loops", []):
             turns = l.get("t", [])  # Array of turn numbers
             loop_type = l.get("type")
+            subject = l.get("subject")  # v3.9.1: what is being looped on
             ctx = l.get("ctx")
-            results.append((turns, loop_type, ctx))
+            results.append((turns, loop_type, subject, ctx))
         return results
 
     # v3.8 format: agent_loops.details
@@ -243,7 +256,7 @@ def parse_loops(analysis: dict) -> list[tuple]:
         for d in loops.get("details", []):
             loop_type = d.get("type")
             ctx = d.get("context")
-            results.append((None, loop_type, ctx))  # v3.8 has no turn numbers
+            results.append((None, loop_type, None, ctx))  # v3.8 has no turn numbers or subject
         return results
 
     # v3.7 format: repeated_prompts (legacy)
@@ -252,7 +265,7 @@ def parse_loops(analysis: dict) -> list[tuple]:
         count = rp.get("count", 0)
         if count > 0:
             # Legacy format: single entry with count info
-            results.append((None, None, f"Legacy: {count} repeats"))
+            results.append((None, None, None, f"Legacy: {count} repeats"))
 
     return results
 
@@ -351,6 +364,71 @@ def extract_policy_gap_breakdown(analyses: list[dict]) -> dict:
             {"ask": ask, "count": count}
             for ask, count in customer_asks.most_common(10)
         ]
+    }
+
+
+def compute_disposition_breakdown(analyses: list[dict]) -> dict:
+    """
+    Compute call disposition breakdown for funnel analysis (v3.9).
+
+    Aggregates call_disposition values and computes key funnel metrics:
+    - in_scope_success_rate: Success among in-scope calls
+    - out_of_scope_recovery_rate: Graceful handling of out-of-scope requests
+    - pre_intent_rate: Calls ending before customer stated need
+    """
+    n = len(analyses)
+    if n == 0:
+        return {}
+
+    # Valid disposition values
+    valid_dispositions = [
+        "pre_intent",
+        "out_of_scope_handled",
+        "out_of_scope_abandoned",
+        "in_scope_success",
+        "in_scope_partial",
+        "in_scope_failed"
+    ]
+
+    # Count dispositions
+    dispositions = Counter()
+    for a in analyses:
+        disposition = a.get("call_disposition")
+        if disposition and disposition in valid_dispositions:
+            dispositions[disposition] += 1
+        else:
+            # Track unknown/missing for backwards compatibility
+            dispositions["unknown"] = dispositions.get("unknown", 0) + 1
+
+    # Calculate funnel metrics
+    in_scope_total = (
+        dispositions.get("in_scope_success", 0) +
+        dispositions.get("in_scope_partial", 0) +
+        dispositions.get("in_scope_failed", 0)
+    )
+    in_scope_confirmed = dispositions.get("in_scope_success", 0)
+
+    out_of_scope_total = (
+        dispositions.get("out_of_scope_handled", 0) +
+        dispositions.get("out_of_scope_abandoned", 0)
+    )
+    out_of_scope_handled = dispositions.get("out_of_scope_handled", 0)
+
+    pre_intent_count = dispositions.get("pre_intent", 0)
+
+    return {
+        "by_disposition": {
+            k: {"count": v, "rate": safe_rate(v, n)}
+            for k, v in dispositions.most_common()
+        },
+        "funnel_metrics": {
+            "in_scope_success_rate": safe_rate(in_scope_confirmed, in_scope_total),
+            "out_of_scope_recovery_rate": safe_rate(out_of_scope_handled, out_of_scope_total),
+            "pre_intent_rate": safe_rate(pre_intent_count, n),
+            "in_scope_total": in_scope_total,
+            "out_of_scope_total": out_of_scope_total,
+            "calls_with_disposition": n - dispositions.get("unknown", 0)
+        }
     }
 
 
@@ -467,11 +545,14 @@ def compute_conversation_quality_metrics(analyses: list[dict]) -> dict:
         }
     }
 
-    # === Loop Statistics (v3.8.5: uses parse_loops) ===
+    # === Loop Statistics (v3.9.1: uses parse_loops with subject) ===
     calls_with_loops = 0
     all_loop_counts = []
     loop_types = Counter()
+    loop_subjects = Counter()  # v3.9.1: subject aggregation
+    loop_type_subjects = {}  # v3.9.1: subjects by loop type
     total_loops = 0
+    loops_with_subject = 0
     total_turns_in_calls_with_loops = 0
 
     for a in analyses:
@@ -486,14 +567,31 @@ def compute_conversation_quality_metrics(analyses: list[dict]) -> dict:
             if turns and isinstance(turns, (int, float)):
                 total_turns_in_calls_with_loops += turns
 
-            for turn_list, loop_type, ctx in loops:
+            for turn_list, loop_type, subject, ctx in loops:
                 if loop_type:
                     loop_types[loop_type] += 1
+
+                    # v3.9.1: Track subject by loop type
+                    if subject:
+                        loops_with_subject += 1
+                        loop_subjects[subject] += 1
+                        if loop_type not in loop_type_subjects:
+                            loop_type_subjects[loop_type] = Counter()
+                        loop_type_subjects[loop_type][subject] += 1
 
     # Calculate loop density (loops per turn for calls with loops)
     loop_density = None
     if total_turns_in_calls_with_loops > 0:
         loop_density = round(total_loops / total_turns_in_calls_with_loops, 4)
+
+    # v3.9.1: Build subject stats by loop type
+    by_subject = {}
+    for loop_type, subjects in loop_type_subjects.items():
+        type_total = sum(subjects.values())
+        by_subject[loop_type] = {
+            subj: {"count": count, "rate": safe_rate(count, type_total)}
+            for subj, count in subjects.most_common()
+        }
 
     loop_stats = {
         "calls_with_loops": calls_with_loops,
@@ -504,7 +602,14 @@ def compute_conversation_quality_metrics(analyses: list[dict]) -> dict:
         "by_type": {
             loop_type: {"count": count, "rate": safe_rate(count, total_loops)}
             for loop_type, count in loop_types.most_common()
-        }
+        },
+        # v3.9.1: Subject statistics
+        "loops_with_subject": loops_with_subject,
+        "by_subject": by_subject,
+        "top_subjects": [
+            {"subject": subj, "count": count}
+            for subj, count in loop_subjects.most_common(10)
+        ]
     }
 
     return {
@@ -623,6 +728,9 @@ def generate_report(analyses: list[dict]) -> dict:
     # Policy gap breakdown (v3 feature)
     policy_gap_breakdown = extract_policy_gap_breakdown(analyses)
 
+    # Call disposition breakdown (v3.9 feature)
+    disposition_breakdown = compute_disposition_breakdown(analyses)
+
     # Conversation quality metrics (v3.6 feature)
     conversation_quality_metrics = compute_conversation_quality_metrics(analyses)
 
@@ -676,6 +784,8 @@ def generate_report(analyses: list[dict]) -> dict:
         },
 
         "policy_gap_breakdown": policy_gap_breakdown,
+
+        "disposition_breakdown": disposition_breakdown,
 
         "conversation_quality": conversation_quality_metrics,
 
@@ -769,6 +879,29 @@ def print_summary(report: dict) -> None:
         for item in top_asks[:5]:
             print(f"    - {item['ask']}: {item['count']}")
 
+    # Disposition Breakdown (v3.9)
+    print("\n" + "-" * 40)
+    print("CALL DISPOSITION (v3.9)")
+    print("-" * 40)
+    db = report.get("disposition_breakdown", {})
+    by_disp = db.get("by_disposition", {})
+    if by_disp:
+        print("  By Disposition:")
+        for disp, data in by_disp.items():
+            print(f"    {disp}: {data['count']} ({data['rate']*100:.1f}%)" if data.get('rate') else f"    {disp}: {data['count']}")
+
+        funnel = db.get("funnel_metrics", {})
+        if funnel:
+            print("\n  Funnel Metrics:")
+            if funnel.get("in_scope_success_rate") is not None:
+                print(f"    In-Scope Success Rate: {funnel['in_scope_success_rate']*100:.1f}% ({funnel.get('in_scope_total', 0)} in-scope calls)")
+            if funnel.get("out_of_scope_recovery_rate") is not None:
+                print(f"    Out-of-Scope Recovery: {funnel['out_of_scope_recovery_rate']*100:.1f}% ({funnel.get('out_of_scope_total', 0)} out-of-scope calls)")
+            if funnel.get("pre_intent_rate") is not None:
+                print(f"    Pre-Intent Rate: {funnel['pre_intent_rate']*100:.1f}%")
+    else:
+        print("  No disposition data (pre-v3.9 analyses)")
+
     # Actionable Flags
     print("\n" + "-" * 40)
     print("ACTIONABLE FLAGS")
@@ -824,7 +957,7 @@ def print_summary(report: dict) -> None:
                 for severity, data in by_severity.items():
                     print(f"    {severity}: {data['count']} ({data.get('rate', 0)*100:.1f}%)")
 
-        # Loop stats (v3.8: agent_loops with typed detection)
+        # Loop stats (v3.9.1: agent_loops with typed detection + subject)
         ls = cq.get("loop_stats", {})
         if ls.get("calls_with_loops"):
             print(f"  Calls with Loops: {ls['calls_with_loops']} ({ls.get('pct_calls_with_loops', 0)*100:.1f}%)")
@@ -834,9 +967,18 @@ def print_summary(report: dict) -> None:
             # v3.8: By type distribution
             by_type = ls.get("by_type", {})
             if by_type:
-                print("  By Type (v3.8):")
+                print("  By Type:")
                 for loop_type, data in by_type.items():
                     print(f"    {loop_type}: {data['count']} ({data.get('rate', 0)*100:.1f}%)")
+            # v3.9.1: Subject stats
+            loops_with_subject = ls.get("loops_with_subject", 0)
+            if loops_with_subject > 0:
+                print(f"  Loops with Subject (v3.9.1): {loops_with_subject}")
+                top_subjects = ls.get("top_subjects", [])
+                if top_subjects:
+                    print("  Top Subjects:")
+                    for item in top_subjects[:5]:
+                        print(f"    {item.get('subject', 'N/A')}: {item.get('count', 0)}")
     else:
         print("  No v3.8.5 conversation quality data")
 
@@ -862,7 +1004,7 @@ def print_summary(report: dict) -> None:
 
 
 def main():
-    parser = argparse.ArgumentParser(description="Compute v3.8.5 Section A: Deterministic Metrics (streamlined friction tracking)")
+    parser = argparse.ArgumentParser(description="Compute v3.9.1 Section A: Deterministic Metrics (loop subject granularity)")
     parser.add_argument("-i", "--input-dir", type=Path,
                         default=Path(__file__).parent.parent / "analyses",
                         help="Directory containing analysis JSON files")

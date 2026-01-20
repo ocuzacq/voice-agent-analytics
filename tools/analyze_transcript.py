@@ -1,9 +1,21 @@
 #!/usr/bin/env python3
 """
-Single Transcript Analyzer for Vacatia AI Voice Agent Analytics (v3.8.5)
+Single Transcript Analyzer for Vacatia AI Voice Agent Analytics (v3.9.1)
 
 Hybrid schema with streamlined friction tracking enabling both programmatic analysis
 and executive-ready insights through a two-part report architecture.
+
+v3.9.1 changes - Loop Subject Granularity:
+- New `subject` field in friction.loops identifying WHAT is being looped on
+- Guided values by loop type (info_retry: name, phone, etc.; intent_retry: fee_info, etc.)
+- Freeform fallback for edge cases not in the shortlist
+- Enables granular analysis of friction patterns
+
+v3.9 changes - Call Disposition Classification:
+- New call_disposition field for funnel analysis
+- Values: pre_intent, out_of_scope_handled, out_of_scope_abandoned, in_scope_success, in_scope_partial, in_scope_failed
+- Decision tree for classification based on customer intent, agent scope, and completion status
+- Scope reference for in-scope vs out-of-scope request classification
 
 v3.8.5 changes - Streamlined Friction Tracking:
 - Consolidated friction fields into single compact `friction` object
@@ -73,6 +85,8 @@ ANALYSIS_SCHEMA = """
 
   "summary": "string (1-2 sentence summary focused on outcome and key driver)",
 
+  "call_disposition": "enum: 'pre_intent' | 'out_of_scope_handled' | 'out_of_scope_abandoned' | 'in_scope_success' | 'in_scope_partial' | 'in_scope_failed'",
+
   "policy_gap_detail": "object or null - REQUIRED when failure_point='policy_gap'. Structure: { 'category': enum 'capability_limit' | 'data_access' | 'auth_restriction' | 'business_rule' | 'integration_missing', 'specific_gap': string (what exactly couldn't be done), 'customer_ask': string (what the customer wanted), 'blocker': string (why it couldn't be fulfilled) }",
 
   "customer_verbatim": "string or null (key quote from customer capturing their core frustration, need, or emotional state. Direct transcript excerpt, 1-2 sentences max. Example: 'I've called three times about this and no one can help me')",
@@ -106,6 +120,7 @@ ANALYSIS_SCHEMA = """
       {
         "t": "array of integers (turn numbers involved in this loop)",
         "type": "enum: 'info_retry' | 'intent_retry' | 'deflection' | 'comprehension' | 'action_retry'",
+        "subject": "string (what is being looped on, see subject values by loop type)",
         "ctx": "string (5-8 words, telegraph style)"
       }
     ]
@@ -176,6 +191,38 @@ Set `critical_failure: true` ONLY if:
 - Compliance/security issue occurred
 - Customer could be harmed by following agent's guidance
 
+## Call Disposition Classification (v3.9)
+
+**call_disposition**: Classify the overall call outcome using this decision tree:
+
+1. Did customer state a specific, actionable request?
+   - NO → `pre_intent` (greeting-only, ≤2 turns, hung up before stating need)
+
+2. Could the agent handle this type of request? (See scope reference below)
+   - NO + customer redirected/informed → `out_of_scope_handled`
+   - NO + customer abandoned/escalated → `out_of_scope_abandoned`
+
+3. Did agent complete the requested action?
+   - NO → `in_scope_failed` (verification failed, system error, couldn't help)
+
+4. Did customer express explicit satisfaction? ("thank you", "that helps", "perfect", "great")
+   - YES → `in_scope_success`
+   - NO → `in_scope_partial` (completed but customer just said "okay" or hung up)
+
+**Scope Reference - IN-SCOPE (agent CAN handle):**
+- Info lookup: maintenance fees, balances, due dates, property info, payment history
+- Send links: Payment, Auto Pay, Account History, Rental Agreement, Clubhouse, RCI
+- Account verification via phone/name/state
+- Transfer to concierge (on-hours) or route to IVR callback (off-hours)
+
+**Scope Reference - OUT-OF-SCOPE (agent CANNOT handle):**
+- Process payments directly (only sends links)
+- Update contact info (email, phone, address)
+- Book/modify/cancel reservations
+- RCI exchanges, week banking/rollover
+- Live transfers when unavailable
+- Complex issues: deceased owner, disputes, tax breakdown, international customers
+
 ## VALIDATION RULES (CRITICAL)
 
 1. **failure_point consistency**:
@@ -231,8 +278,8 @@ Track when CUSTOMER corrects agent's understanding. Compact format: `{t, sev, ct
 - `moderate`: Correction with mild frustration
 - `major`: Explicit anger or critical mistake
 
-### friction.loops
-Detect agent friction loops (NOT benign repetition). Compact format: `{t, type, ctx}`
+### friction.loops (v3.9.1)
+Detect agent friction loops (NOT benign repetition). Compact format: `{t, type, subject, ctx}`
 
 **t field**: Array of turn numbers involved in this loop pattern.
 
@@ -242,6 +289,26 @@ Detect agent friction loops (NOT benign repetition). Compact format: `{t, type, 
 - `deflection`: Generic questions while unable to help primary request
 - `comprehension`: Agent couldn't hear, asks to repeat
 - `action_retry`: System retry ("let me try that again")
+
+**subject field (v3.9.1)**: Identifies WHAT is being looped on. Use guided values when they fit:
+
+**info_retry** (verification data):
+- `name`, `phone`, `address`, `zip`, `state`, `account`, `email`
+
+**intent_retry** (customer intents):
+- `fee_info`, `balance`, `payment_link`, `autopay_link`, `history_link`
+- `rental_link`, `clubhouse_link`, `rci_link`, `transfer`, `callback`
+
+**deflection** (stalling questions):
+- `anything_else`, `other_help`, `clarify_request`
+
+**comprehension** (audio issues):
+- `unclear_speech`, `background_noise`, `connection`
+
+**action_retry** (system retries):
+- `verification`, `link_send`, `lookup`, `transfer_attempt`
+
+For edge cases not in these lists, use descriptive lowercase_with_underscores.
 
 **EXCLUDE** (benign, don't track):
 - Greeting after hold
@@ -277,7 +344,7 @@ Use **telegraph style** for ctx fields (5-8 words max):
     {"t": 21, "sev": "moderate", "ctx": "corrected misspelled name"}
   ],
   "loops": [
-    {"t": [20, 22, 25], "type": "info_retry", "ctx": "name asked 3x despite refusal"}
+    {"t": [20, 22, 25], "type": "info_retry", "subject": "name", "ctx": "asked 3x despite refusal"}
   ]
 }
 ```
@@ -401,6 +468,8 @@ def analyze_transcript(transcript_path: Path, model_name: str = "gemini-3-flash-
 
     v3.7: Uses preprocessing to provide structured input with turn numbers.
     v3.8.6: Uses new google.genai SDK with thinking config.
+    v3.9: Adds call_disposition field for funnel analysis.
+    v3.9.1: Adds subject field to friction loops for granular analysis.
     """
     # Preprocess transcript for deterministic turn numbers
     preprocessed = preprocess_transcript(transcript_path)
@@ -444,7 +513,7 @@ def analyze_transcript(transcript_path: Path, model_name: str = "gemini-3-flash-
 
     analysis = extract_json_from_response(response.text)
     analysis["call_id"] = call_id
-    analysis["schema_version"] = "v3.8.6"
+    analysis["schema_version"] = "v3.9.1"
 
     # v3.8.5: No _preprocessing in output (bloat reduction)
     # Turn data is available in friction.turns
@@ -464,7 +533,7 @@ def save_analysis(analysis: dict, output_dir: Path) -> Path:
 
 
 def main():
-    parser = argparse.ArgumentParser(description="Analyze call transcript (v3.8.6 - google.genai SDK)")
+    parser = argparse.ArgumentParser(description="Analyze call transcript (v3.9.1 - loop subject granularity)")
     parser.add_argument("transcript", type=Path, help="Path to transcript file")
     parser.add_argument("-o", "--output-dir", type=Path,
                         default=Path(__file__).parent.parent / "analyses",

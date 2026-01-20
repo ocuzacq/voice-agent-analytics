@@ -1,8 +1,19 @@
 #!/usr/bin/env python3
 """
-Markdown Report Renderer for Vacatia AI Voice Agent Analytics (v3.8.5)
+Markdown Report Renderer for Vacatia AI Voice Agent Analytics (v3.9.1)
 
 Renders the combined Section A + Section B report as an executive-ready Markdown document.
+
+v3.9.1 additions:
+- Loop Subject Analysis: Table showing subject distribution per loop type
+- High-Impact Patterns: LLM-generated insights on (loop_type, subject) combinations
+- Subject clustering narrative
+- Custom Analysis: Dedicated section for user-provided questions and LLM answers
+
+v3.9 additions:
+- Call Disposition Breakdown: Table showing distribution of call_disposition values
+- Funnel Metrics: In-scope success rate, out-of-scope recovery rate, pre-intent rate
+- Disposition Analysis: LLM-generated insights on disposition patterns
 
 v3.8.5 additions:
 - Backwards-compatible with both v3.8.5 (compact friction) and v3.8 formats
@@ -104,6 +115,33 @@ def render_markdown(report: dict) -> str:
     lines.append(exec_summary)
     lines.append("")
 
+    # v3.9.1: Custom Analysis (user-provided questions)
+    custom_analysis = report.get("custom_analysis", [])
+    if custom_analysis:
+        lines.append("## Custom Analysis")
+        lines.append("")
+        lines.append("*Answers to user-provided analytical questions:*")
+        lines.append("")
+
+        for i, qa in enumerate(custom_analysis, 1):
+            question = qa.get("question", "N/A")
+            answer = qa.get("answer", "N/A")
+            confidence = qa.get("confidence", "medium")
+            evidence = qa.get("evidence", [])
+
+            lines.append(f"### {i}. {question}")
+            lines.append("")
+            lines.append(f"**Confidence:** {confidence.upper()}")
+            lines.append("")
+            lines.append(answer)
+            lines.append("")
+
+            if evidence:
+                lines.append("**Supporting Evidence:**")
+                for e in evidence:
+                    lines.append(f"- {e}")
+                lines.append("")
+
     # Key Metrics at a Glance
     lines.append("## Key Metrics at a Glance")
     lines.append("")
@@ -124,6 +162,88 @@ def render_markdown(report: dict) -> str:
     lines.append(f"| Failure Rate | {failure_rate*100:.1f}% | {get_assessment_emoji(failure_rate, 'failure_rate')} | {key_metrics_desc.get('failure_rate', '')} |")
     lines.append(f"| Customer Effort | {customer_effort:.2f}/5 | {get_assessment_emoji(customer_effort, 'customer_effort')} | {key_metrics_desc.get('customer_effort', '')} |")
     lines.append("")
+
+    # v3.9: Call Disposition Breakdown
+    disposition_breakdown = metrics.get("disposition_breakdown", {})
+    disp_analysis = insights.get("disposition_analysis", {})
+    by_disposition = disposition_breakdown.get("by_disposition", {})
+
+    if by_disposition:
+        lines.append("## Call Disposition Breakdown")
+        lines.append("")
+
+        # Narrative from LLM
+        if disp_analysis.get("narrative"):
+            lines.append(disp_analysis["narrative"])
+            lines.append("")
+
+        lines.append("| Disposition | Count | % |")
+        lines.append("|-------------|-------|---|")
+
+        # Order dispositions in funnel order
+        disposition_order = [
+            "in_scope_success", "in_scope_partial", "in_scope_failed",
+            "out_of_scope_handled", "out_of_scope_abandoned", "pre_intent", "unknown"
+        ]
+        for disp in disposition_order:
+            if disp in by_disposition:
+                data = by_disposition[disp]
+                rate = data.get("rate", 0) or 0
+                lines.append(f"| {disp.replace('_', ' ').title()} | {data['count']} | {rate*100:.1f}% |")
+
+        # Any other dispositions not in the order
+        for disp, data in by_disposition.items():
+            if disp not in disposition_order:
+                rate = data.get("rate", 0) or 0
+                lines.append(f"| {disp} | {data['count']} | {rate*100:.1f}% |")
+
+        lines.append("")
+
+        # Funnel Metrics
+        funnel_metrics = disposition_breakdown.get("funnel_metrics", {})
+        if funnel_metrics:
+            lines.append("### Funnel Metrics")
+            lines.append("")
+
+            in_scope_success = funnel_metrics.get("in_scope_success_rate")
+            out_of_scope_recovery = funnel_metrics.get("out_of_scope_recovery_rate")
+            pre_intent_rate = funnel_metrics.get("pre_intent_rate")
+
+            if in_scope_success is not None:
+                in_scope_total = funnel_metrics.get("in_scope_total", 0)
+                lines.append(f"- **In-Scope Success Rate:** {in_scope_success*100:.1f}% ({in_scope_total} in-scope calls confirmed satisfaction)")
+            if out_of_scope_recovery is not None:
+                out_of_scope_total = funnel_metrics.get("out_of_scope_total", 0)
+                lines.append(f"- **Out-of-Scope Recovery:** {out_of_scope_recovery*100:.1f}% ({out_of_scope_total} out-of-scope calls handled gracefully)")
+            if pre_intent_rate is not None:
+                lines.append(f"- **Pre-Intent Rate:** {pre_intent_rate*100:.1f}% (possible IVR/routing issues)")
+            lines.append("")
+
+        # Actionable insights from LLM
+        actionable_insights = disp_analysis.get("actionable_insights", [])
+        if actionable_insights:
+            lines.append("### Disposition Insights")
+            lines.append("")
+            lines.append("| Disposition | Root Cause | Recommendation |")
+            lines.append("|-------------|------------|----------------|")
+            for ai in actionable_insights:
+                disp = ai.get("disposition", "N/A")
+                root_cause = ai.get("root_cause", "")
+                rec = ai.get("recommendation", "")
+                lines.append(f"| {disp.replace('_', ' ').title()} | {root_cause} | {rec} |")
+            lines.append("")
+
+        # Funnel health assessment
+        funnel_health = disp_analysis.get("funnel_health", {})
+        if funnel_health.get("assessment"):
+            assessment = (funnel_health.get("assessment") or "").upper()
+            emoji = "✅" if assessment == "HEALTHY" else "⚠️" if assessment == "NEEDS_ATTENTION" else "❌"
+            lines.append(f"**Funnel Health:** {emoji} {assessment}")
+            if funnel_health.get("explanation"):
+                lines.append(f"_{funnel_health['explanation']}_")
+            if funnel_health.get("priority_focus"):
+                lines.append(f"\n**Priority Focus:** {funnel_health['priority_focus']}")
+            lines.append("")
 
     # v3.6: Conversation Quality Section
     conv_quality = metrics.get("conversation_quality", {})
@@ -311,6 +431,49 @@ def render_markdown(report: dict) -> str:
                     lines.append(f"- Intent Retry Rate: {loop_analysis['intent_retry_rate']}")
                 if loop_analysis.get("deflection_rate"):
                     lines.append(f"- Deflection Rate: {loop_analysis['deflection_rate']}")
+                lines.append("")
+
+        # v3.9.1: Loop Subject Analysis
+        loop_subject = insights.get("loop_subject_clusters", {})
+        loop_subject_stats = loop_stats.get("by_subject", {})
+
+        if loop_subject or loop_subject_stats:
+            lines.append("### Loop Subject Analysis (v3.9.1)")
+            lines.append("")
+
+            if loop_subject.get("narrative"):
+                lines.append(loop_subject["narrative"])
+                lines.append("")
+
+            # Show subject breakdown from deterministic metrics
+            if loop_subject_stats:
+                lines.append("#### Subject Breakdown by Loop Type")
+                lines.append("")
+                for loop_type, subjects in loop_subject_stats.items():
+                    if subjects:
+                        lines.append(f"**{loop_type.replace('_', ' ').title()}:**")
+                        lines.append("")
+                        lines.append("| Subject | Count | % |")
+                        lines.append("|---------|-------|---|")
+                        for subj, data in list(subjects.items())[:5]:
+                            count = data.get("count", 0)
+                            rate = data.get("rate", 0) or 0
+                            lines.append(f"| {subj} | {count} | {rate*100:.1f}% |")
+                        lines.append("")
+
+            # Show high-impact patterns from LLM insights
+            high_impact = loop_subject.get("high_impact_patterns", [])
+            if high_impact:
+                lines.append("#### High-Impact Patterns")
+                lines.append("")
+                lines.append("| Loop Type | Subject | Impact | Recommendation |")
+                lines.append("|-----------|---------|--------|----------------|")
+                for p in high_impact:
+                    lt = p.get("loop_type", "N/A").replace("_", " ").title()
+                    subj = p.get("subject", "N/A")
+                    impact = p.get("impact", "N/A")
+                    rec = p.get("recommendation", "N/A")
+                    lines.append(f"| {lt} | {subj} | {impact} | {rec} |")
                 lines.append("")
 
         # Efficiency Insights
@@ -642,7 +805,7 @@ def render_markdown(report: dict) -> str:
 
     # Footer
     lines.append("---")
-    lines.append(f"*Report generated by Vacatia AI Voice Agent Analytics Framework v3.8.5*")
+    lines.append(f"*Report generated by Vacatia AI Voice Agent Analytics Framework v3.9.1*")
 
     return "\n".join(lines)
 
