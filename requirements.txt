@@ -4,5 +4,8 @@
 # Google Generative AI SDK (Gemini)
 google-genai>=1.0.0
 
+# Environment variable loading
+python-dotenv>=1.0.0
+
 # Testing (optional)
 pytest>=7.0.0

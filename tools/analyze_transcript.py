@@ -53,6 +53,10 @@ import os
 import sys
 from pathlib import Path
 
+# Load .env file if present
+from dotenv import load_dotenv
+load_dotenv()
+
 from google import genai
 from google.genai import types
 
