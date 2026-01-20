@@ -244,6 +244,29 @@ python3 tools/review_report.py --model gemini-3-pro-preview  # Default
 - Generates pipeline improvement suggestions
 - Preserves original report alongside refined version
 
+### `ask.py`
+
+Ad-hoc Q&A about call data without generating full reports.
+
+```bash
+python3 tools/ask.py "Why do calls fail?"
+python3 tools/ask.py "What causes name issues?" --limit 50
+python3 tools/ask.py "Main friction patterns?" --limit 250 --stats
+python3 tools/ask.py "Top customer frustrations?" --verbose
+```
+
+**How it works:**
+- Single question → single text answer
+- Random sampling from analyses/ directory (default 100 calls, configurable via `--limit`)
+- Cites 2-4 illustrative examples (not exhaustive)
+- Auto-saves to `asks/<timestamp>/` with question.txt, answer.md, metadata.json
+- Token usage stats available with `--stats` or `--verbose` flags
+
+**Use cases:**
+- Quick hypothesis testing without full pipeline runs
+- Exploring specific questions between report runs
+- Rapid iteration on specific failure patterns or friction points
+
 ## Output Files
 
 ```
@@ -254,6 +277,12 @@ reports/
 ├── executive_summary_v3_{timestamp}.md            # Markdown executive report
 ├── executive_summary_v3_{timestamp}_reviewed.md   # v3.5.5: Refined report
 └── pipeline_suggestions_v3_{timestamp}.md         # v3.5.5: Improvement ideas
+
+asks/
+└── Jan20-10h40/                                   # Timestamped Q&A sessions
+    ├── question.txt                               # Original question
+    ├── answer.md                                  # LLM response
+    └── metadata.json                              # Sample info + token usage
 ```
 
 ## Directory Structure
@@ -270,13 +299,16 @@ reports/
 │   ├── extract_nl_fields.py  # v3.1: NL extraction
 │   ├── generate_insights.py
 │   ├── render_report.py
+│   ├── review_report.py   # v3.5.5: Editorial review
+│   ├── ask.py             # Ad-hoc Q&A without full reports
 │   ├── v0/                # Archived: Simple schema (~15 fields)
 │   ├── v1/                # Archived: Verbose schema (~50 fields)
 │   ├── v2/                # Previous: Actionable schema (14 fields)
 │   └── v3/                # Current: Hybrid schema (18 fields)
 ├── sampled/               # Output from sampling script
 ├── analyses/              # JSON output from analyzer
-└── reports/               # Aggregate metrics and reports
+├── reports/               # Aggregate metrics and reports
+└── asks/                  # Q&A session results
 ```
 
 ## Version History
@@ -539,13 +571,12 @@ export GEMINI_API_KEY="your-key"
 
 **Always use Gemini 3 models.** Never use older models (gemini-2.5-flash, etc.)
 
-| Use Case | Model | Description |
-|----------|-------|-------------|
-| Transcript analysis | `gemini-3-flash-preview` | Fast, cost-effective per-call analysis |
-| Aggregate insights | `gemini-3-pro-preview` | Deep reasoning for patterns/recommendations |
-| Report review | `gemini-3-pro-preview` | Editorial quality and consistency |
-
-All models use `thinking_level="MEDIUM"` for balanced latency and quality.
+| Use Case | Model | Thinking Level | Description |
+|----------|-------|----------------|-------------|
+| Transcript analysis | `gemini-3-flash-preview` | `LOW` | Fast per-call analysis (~3-6s/call) |
+| Aggregate insights | `gemini-3-pro-preview` | default (none set) | Deep reasoning for patterns/recommendations |
+| Report review | `gemini-3-pro-preview` | default (none set) | Editorial quality and consistency |
+| Ad-hoc Q&A (ask.py) | `gemini-3-pro-preview` | default (none set) | Analytical question answering |
 
 ## Sample Output
 

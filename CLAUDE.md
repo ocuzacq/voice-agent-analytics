@@ -1,4 +1,4 @@
-# Voice Agent Analytics - Project Instructions (v3.9)
+# Voice Agent Analytics - Project Instructions (v3.9.1)
 
 ## Environment
 
@@ -40,7 +40,9 @@ Keep archived tool versions in `tools/vX/` directories with their own `VERSION.m
 - Why it was superseded
 - Key differences from current
 
-## Pipeline Architecture (v3.9)
+## Pipeline Architecture (v3.9.1)
+
+### Full Pipeline
 
 ```
 transcripts/ → sample → preprocess → analyze (parallel) → metrics → extract_nl → insights → report → review
@@ -50,10 +52,22 @@ transcripts/ → sample → preprocess → analyze (parallel) → metrics → ex
 2. `preprocess_transcript.py` - Deterministic turn counting (v3.7: integrated into analyze)
 3. `batch_analyze.py` - LLM analysis with parallel processing (v3.2: default 3 workers)
 4. `compute_metrics.py` - Section A: Deterministic metrics (v3.9: +disposition breakdown)
-5. `extract_nl_fields.py` - Condensed NL data for LLM (v3.9: +disposition summary)
-6. `generate_insights.py` - Section B: LLM insights (v3.9: +disposition analysis)
-7. `render_report.py` - Markdown executive summary (v3.9: +disposition breakdown)
+5. `extract_nl_fields.py` - Condensed NL data for LLM (v3.9.1: +loop subjects)
+6. `generate_insights.py` - Section B: LLM insights (v3.9.1: +loop subject clustering)
+7. `render_report.py` - Markdown executive summary (v3.9.1: +loop subject breakdown)
 8. `review_report.py` - Editorial review and pipeline suggestions (v3.5.5)
+
+### Ad-hoc Q&A Tool
+
+```
+analyses/ → ask.py → asks/<timestamp>/
+```
+
+- `ask.py` - Single question answering without full report generation
+- Random sampling from existing analyses (default 100, configurable)
+- Cites 2-4 illustrative examples
+- Auto-saves question, answer, and metadata
+- Use for quick hypothesis testing between pipeline runs
 
 ### Report Review (v3.5.5)
 
@@ -107,33 +121,33 @@ python3 tools/test_v36_features.py
 | Use Case | Model | Thinking Level |
 |----------|-------|----------------|
 | Per-transcript analysis | `gemini-3-flash-preview` | LOW (fast, ~3-6s/call) |
-| Aggregate insights | `gemini-3-pro-preview` | default (HIGH) |
-| Report review | `gemini-3-pro-preview` | default (HIGH) |
-| Report rendering | `gemini-3-pro-preview` | default (HIGH) |
+| Aggregate insights | `gemini-3-pro-preview` | default (none set) |
+| Report review | `gemini-3-pro-preview` | default (none set) |
+| Report rendering | `gemini-3-pro-preview` | default (none set) |
+| Ad-hoc Q&A (ask.py) | `gemini-3-pro-preview` | default (none set) |
 
-**Note:** Gemini 3 Pro only supports LOW/HIGH. Gemini 3 Flash supports minimal/low/medium/high.
+**Note:** When thinking level is "default (none set)", no `thinking_config` is specified in the GenerateContentConfig, allowing the model to use its native default behavior.
 
 ### Thinking Configuration
 
-Gemini 3 models support thinking levels. Use `MEDIUM` for balanced latency/quality:
+**Current Strategy:**
 
-```python
-generation_config=genai.GenerationConfig(
-    temperature=0.2,
-    max_output_tokens=16384,
-    thinking_config=genai.types.ThinkingConfig(
-        thinking_level="MEDIUM"
-    )
-)
-```
+1. **Per-transcript analysis** (analyze_transcript.py): Use LOW thinking level for speed
+   ```python
+   thinking_config=genai.types.ThinkingConfig(thinking_level="LOW")
+   ```
 
-**Thinking Levels (Gemini 3 Flash):**
+2. **Insights, reports, and Q&A** (generate_insights.py, render_report.py, review_report.py, ask.py):
+   - Use **default** (no thinking_config specified)
+   - Allows model to use its native reasoning without constraints
+
+**Available Thinking Levels (Gemini 3 Flash only):**
 - `minimal`: No thinking, fastest latency
-- `low`: Minimal reasoning, fast
-- `medium`: Balanced (recommended for structured output)
+- `low`: Minimal reasoning, fast (used for per-call analysis)
+- `medium`: Balanced reasoning
 - `high`: Deep reasoning, slower
 
-**Note:** Thinking tokens count against `max_output_tokens`. Use higher limits (16384+) to prevent truncation.
+**Note:** Gemini 3 Pro only supports LOW/HIGH when explicitly set. Thinking tokens count against `max_output_tokens`, so use higher limits (16384+) when using thinking configs.
 
 ### API Key
 
