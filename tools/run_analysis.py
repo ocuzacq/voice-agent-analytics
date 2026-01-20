@@ -250,9 +250,16 @@ Examples:
             steps_completed.append("analysis")
         else:
             steps_failed.append("analysis")
-            if not args.skip_insights:
-                print("\n❌ Analysis failed. Cannot continue.")
-                return 1
+            print("\n" + "=" * 60)
+            print("❌ PIPELINE STOPPED: Analysis step failed")
+            print("=" * 60)
+            print("\nThe batch analysis step is required for all downstream steps.")
+            print("Common causes:")
+            print("  • Missing API key: Set GOOGLE_API_KEY in .env file")
+            print("  • Invalid API key: Check your Gemini API credentials")
+            print("  • Network issues: Check your internet connection")
+            print("\nTo retry, run the same command again.")
+            return 1
     else:
         print("\n⏭️ Skipping analysis (--skip-analysis)")
         steps_completed.append("analysis (skipped)")

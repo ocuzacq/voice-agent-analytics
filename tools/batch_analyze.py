@@ -11,12 +11,17 @@ v3.2: Added parallel processing (default 3 workers) for faster batch analysis.
 
 import argparse
 import csv
+import os
 import sys
 import time
 import threading
 from concurrent.futures import ThreadPoolExecutor, as_completed
 from pathlib import Path
 from datetime import datetime
+
+# Load .env file if present
+from dotenv import load_dotenv
+load_dotenv()
 
 sys.path.insert(0, str(Path(__file__).parent))
 
@@ -274,7 +279,14 @@ Examples:
     try:
         configure_genai()
     except ValueError as e:
-        print(f"Error: {e}", file=sys.stderr)
+        print(f"\n{'='*50}", file=sys.stderr)
+        print("❌ API KEY ERROR", file=sys.stderr)
+        print(f"{'='*50}", file=sys.stderr)
+        print(f"\n{e}\n", file=sys.stderr)
+        print("To fix this, either:", file=sys.stderr)
+        print("  1. Create a .env file with: GOOGLE_API_KEY=your-key-here", file=sys.stderr)
+        print("  2. Or export it: export GOOGLE_API_KEY=your-key-here", file=sys.stderr)
+        print(f"\n{'='*50}\n", file=sys.stderr)
         return 1
 
     print(f"Scanning: {args.input_dir}")
