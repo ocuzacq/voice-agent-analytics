@@ -1,0 +1,8 @@
+# Voice Agent Analytics - Dependencies
+# Install: pip install -r requirements.txt
+
+# Google Generative AI SDK (Gemini)
+google-genai>=1.0.0
+
+# Testing (optional)
+pytest>=7.0.0
