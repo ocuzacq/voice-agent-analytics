@@ -227,7 +227,7 @@ def save_ask_results(
     answer_file = ask_dir / "answer.md"
     answer_file.write_text(answer or "(No answer generated)", encoding='utf-8')
 
-    # Save metadata.json
+    # Save metadata.json (usage_stats before large call_ids list for readability)
     metadata = {
         "timestamp": now.isoformat(),
         "question": question,
@@ -235,8 +235,8 @@ def save_ask_results(
         "limit": limit,
         "total_analyses_available": total_analyses,
         "sampled_count": sampled_count,
+        "usage_stats": usage_stats,
         "sampled_call_ids": sampled_call_ids,
-        "usage_stats": usage_stats
     }
     metadata_file = ask_dir / "metadata.json"
     with open(metadata_file, 'w', encoding='utf-8') as f:
@@ -281,27 +281,23 @@ Examples:
             args.analyses_dir = script_dir / args.analyses_dir
 
     # 1. Load all analyses
+    print(f"Loading analyses from {args.analyses_dir}...", file=sys.stderr)
     try:
         analyses = load_analyses(args.analyses_dir)
     except FileNotFoundError as e:
         print(f"Error: {e}", file=sys.stderr)
         return 1
 
-    if args.verbose:
-        print(f"Loaded {len(analyses)} analyses", file=sys.stderr)
-
     # 2. Random sample up to limit
     sampled = sample_analyses(analyses, args.limit)
-    if args.verbose:
-        print(f"Sampled {len(sampled)} for context", file=sys.stderr)
+    print(f"Sampled {len(sampled)} of {len(analyses)} analyses", file=sys.stderr)
 
     # 3. Build prompt
     prompt = build_qa_prompt(args.question, sampled)
+    prompt_tokens_est = len(prompt) // 4
 
     # 4. Call LLM
-    if args.verbose:
-        print(f"Calling {args.model}...", file=sys.stderr)
-        print(f"Prompt size: ~{len(prompt) // 4} tokens (est.)", file=sys.stderr)
+    print(f"Calling {args.model} (~{prompt_tokens_est:,} input tokens)...", file=sys.stderr)
 
     try:
         answer, usage_stats = call_llm(prompt, args.model, args.verbose)
@@ -311,6 +307,8 @@ Examples:
     except Exception as e:
         print(f"LLM error: {e}", file=sys.stderr)
         return 1
+
+    print("", file=sys.stderr)  # Blank line before answer
 
     # 5. Print answer
     print(answer)

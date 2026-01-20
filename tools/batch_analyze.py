@@ -88,25 +88,55 @@ def get_transcripts_from_manifest(input_dir: Path) -> list[Path] | None:
     return transcripts if transcripts else None
 
 
-def get_transcripts_to_analyze(input_dir: Path, output_dir: Path, skip_existing: bool = True) -> list[Path]:
-    """Get list of transcripts needing analysis.
+def get_transcripts_to_analyze(input_dir: Path, output_dir: Path, skip_existing: bool = True) -> dict:
+    """Get list of transcripts needing analysis with detailed state info.
 
     v3.2: If manifest.csv exists, only process files listed in it (scope enforcement).
     Falls back to directory scan if no manifest found (backward compatible).
+
+    Returns dict with:
+        - transcripts: list of Path objects to analyze
+        - manifest_used: bool
+        - manifest_count: int (total in manifest, or 0 if no manifest)
+        - existing_count: int (already analyzed)
+        - orphan_analyses: list of stems in analyses/ but not in manifest
     """
+    result = {
+        "transcripts": [],
+        "manifest_used": False,
+        "manifest_count": 0,
+        "existing_count": 0,
+        "orphan_analyses": [],
+    }
+
     # Try manifest first (v3.2 scope enforcement)
     transcripts = get_transcripts_from_manifest(input_dir)
-    manifest_used = transcripts is not None
+    result["manifest_used"] = transcripts is not None
 
     if transcripts is None:
         # Fall back to directory scan (backward compatible)
         transcripts = [f for f in input_dir.iterdir() if f.suffix == '.txt']
+    else:
+        result["manifest_count"] = len(transcripts)
 
-    if skip_existing and output_dir.exists():
-        analyzed_ids = {f.stem for f in output_dir.iterdir() if f.suffix == '.json'}
-        transcripts = [t for t in transcripts if t.stem not in analyzed_ids]
+    # Get existing analyses
+    existing_ids = set()
+    if output_dir.exists():
+        existing_ids = {f.stem for f in output_dir.iterdir() if f.suffix == '.json'}
 
-    return sorted(transcripts), manifest_used
+    # Check for orphan analyses (in analyses/ but not in manifest)
+    if result["manifest_used"] and existing_ids:
+        manifest_ids = {t.stem for t in transcripts}
+        result["orphan_analyses"] = sorted(existing_ids - manifest_ids)
+
+    if skip_existing:
+        # Count how many we're skipping
+        skipped = [t for t in transcripts if t.stem in existing_ids]
+        result["existing_count"] = len(skipped)
+        transcripts = [t for t in transcripts if t.stem not in existing_ids]
+
+    result["transcripts"] = sorted(transcripts)
+    return result
 
 
 def analyze_single(
@@ -268,6 +298,8 @@ Examples:
     parser.add_argument("--no-skip-existing", action="store_true", help="Re-analyze existing")
     parser.add_argument("--stop-on-error", action="store_true", help="Stop on first error")
     parser.add_argument("--limit", type=int, help="Limit number to analyze")
+    parser.add_argument("-y", "--yes", action="store_true", help="Skip confirmation prompt")
+    parser.add_argument("--confirm", action="store_true", help="Require confirmation before starting")
 
     args = parser.parse_args()
 
@@ -289,25 +321,60 @@ Examples:
         print(f"\n{'='*50}\n", file=sys.stderr)
         return 1
 
-    print(f"Scanning: {args.input_dir}")
-    transcripts, manifest_used = get_transcripts_to_analyze(
+    print(f"\nScanning: {args.input_dir}")
+    state = get_transcripts_to_analyze(
         args.input_dir, args.output_dir, not args.no_skip_existing
     )
 
-    if manifest_used:
-        print("✓ Using manifest.csv for scope (v3.2 run isolation)")
+    transcripts = state["transcripts"]
+
+    # Detailed state output
+    print("\n" + "-" * 50)
+    print("RESUME STATE")
+    print("-" * 50)
+
+    if state["manifest_used"]:
+        print(f"  Manifest:    {args.input_dir / 'manifest.csv'}")
+        print(f"  Total scope: {state['manifest_count']} transcripts in manifest")
     else:
-        print("⚠ No manifest.csv found - using all .txt files in directory")
+        print("  Manifest:    NOT FOUND (using all .txt files in directory)")
+        print(f"  Total scope: {len(transcripts) + state['existing_count']} transcripts found")
+
+    print(f"  Analyzed:    {state['existing_count']} already have JSON output")
+    print(f"  Remaining:   {len(transcripts)} transcripts to analyze")
+
+    if state["orphan_analyses"]:
+        print(f"\n  ⚠ Found {len(state['orphan_analyses'])} analyses NOT in manifest:")
+        for orphan in state["orphan_analyses"][:5]:
+            print(f"      - {orphan}.json")
+        if len(state["orphan_analyses"]) > 5:
+            print(f"      ... and {len(state['orphan_analyses']) - 5} more")
+
+    print("-" * 50)
 
     if args.limit:
         transcripts = transcripts[:args.limit]
+        print(f"\n  (Limited to first {args.limit} transcripts)")
 
     if not transcripts:
-        print("No transcripts to analyze")
+        print("\n✓ No transcripts to analyze - all done!")
         return 0
 
-    print(f"Found {len(transcripts)} transcripts to analyze")
-    print(f"Workers: {args.workers}, Rate limit: {args.rate_limit}s")
+    print(f"\nWill analyze {len(transcripts)} transcripts")
+    print(f"  Workers: {args.workers}")
+    print(f"  Rate limit: {args.rate_limit}s per call")
+    print(f"  Max retries: {args.max_retries}")
+
+    # Confirmation prompt
+    if args.confirm and not args.yes:
+        try:
+            response = input("\nProceed? [y/N] ").strip().lower()
+            if response not in ('y', 'yes'):
+                print("Aborted.")
+                return 0
+        except (EOFError, KeyboardInterrupt):
+            print("\nAborted.")
+            return 0
 
     start = datetime.now()
 
