@@ -1,11 +1,12 @@
 #!/usr/bin/env python3
 """
-Batch Transcript Analyzer for Vacatia AI Voice Agent Analytics (v3.2)
+Batch Transcript Analyzer for Vacatia AI Voice Agent Analytics (v3.9.2)
 
 Analyzes multiple transcripts with configurable parallelization and rate limiting.
 Produces v3 schema analyses with 18 fields including policy_gap_detail,
 customer_verbatim, agent_miss_detail, and resolution_steps.
 
+v3.9.2: Supports both .txt and .json transcript formats (auto-detected).
 v3.2: Added parallel processing (default 3 workers) for faster batch analysis.
 """
 
@@ -72,6 +73,9 @@ def get_transcripts_from_manifest(input_dir: Path) -> list[Path] | None:
 
     Returns list of transcript paths if manifest exists, None otherwise.
     This enables v3.2 run isolation - only process files from current scope.
+
+    v3.9.2: Matches by stem (not full filename) to support both .txt and .json.
+    Prioritizes .json if both exist for the same call_id.
     """
     manifest_path = input_dir / "manifest.csv"
     if not manifest_path.exists():
@@ -81,9 +85,21 @@ def get_transcripts_from_manifest(input_dir: Path) -> list[Path] | None:
     with open(manifest_path, 'r') as f:
         reader = csv.DictReader(f)
         for row in reader:
+            # Try exact filename first (backward compat)
             file_path = input_dir / row['filename']
             if file_path.exists():
                 transcripts.append(file_path)
+            else:
+                # Try matching by stem with different extensions
+                # Prioritize .json over .txt
+                stem = Path(row['filename']).stem
+                json_path = input_dir / f"{stem}.json"
+                txt_path = input_dir / f"{stem}.txt"
+
+                if json_path.exists():
+                    transcripts.append(json_path)
+                elif txt_path.exists():
+                    transcripts.append(txt_path)
 
     return transcripts if transcripts else None
 
@@ -91,6 +107,7 @@ def get_transcripts_from_manifest(input_dir: Path) -> list[Path] | None:
 def get_transcripts_to_analyze(input_dir: Path, output_dir: Path, skip_existing: bool = True) -> dict:
     """Get list of transcripts needing analysis with detailed state info.
 
+    v3.9.2: Supports both .txt and .json formats. Prioritizes .json over .txt.
     v3.2: If manifest.csv exists, only process files listed in it (scope enforcement).
     Falls back to directory scan if no manifest found (backward compatible).
 
@@ -115,7 +132,14 @@ def get_transcripts_to_analyze(input_dir: Path, output_dir: Path, skip_existing:
 
     if transcripts is None:
         # Fall back to directory scan (backward compatible)
-        transcripts = [f for f in input_dir.iterdir() if f.suffix == '.txt']
+        # v3.9.2: Support both .txt and .json, prioritize .json
+        seen_stems = set()
+        transcripts = []
+        for ext in ['.json', '.txt']:
+            for f in input_dir.iterdir():
+                if f.suffix == ext and f.stem not in seen_stems:
+                    transcripts.append(f)
+                    seen_stems.add(f.stem)
     else:
         result["manifest_count"] = len(transcripts)
 
@@ -337,7 +361,7 @@ Examples:
         print(f"  Manifest:    {args.input_dir / 'manifest.csv'}")
         print(f"  Total scope: {state['manifest_count']} transcripts in manifest")
     else:
-        print("  Manifest:    NOT FOUND (using all .txt files in directory)")
+        print("  Manifest:    NOT FOUND (using all .txt/.json files in directory)")
         print(f"  Total scope: {len(transcripts) + state['existing_count']} transcripts found")
 
     print(f"  Analyzed:    {state['existing_count']} already have JSON output")

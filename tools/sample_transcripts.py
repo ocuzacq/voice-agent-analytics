@@ -1,9 +1,13 @@
 #!/usr/bin/env python3
 """
-Transcript Sampling Script for Vacatia AI Voice Agent Analytics (v0)
+Transcript Sampling Script for Vacatia AI Voice Agent Analytics (v3.9.2)
 
 Randomly selects N transcripts stratified by file size (proxy for call complexity).
 Larger files typically represent longer, more complex calls.
+
+v3.9.2: Supports both .txt and .json transcript formats.
+- Prioritizes .json if both exist for the same call_id
+- Clears both .txt and .json files when clearing existing samples
 """
 
 import argparse
@@ -17,11 +21,21 @@ from datetime import datetime
 
 
 def get_transcript_files(transcript_dir: Path) -> list[tuple[Path, int]]:
-    """Get all transcript files with their sizes."""
+    """Get all transcript files with their sizes.
+
+    Supports both .txt and .json formats.
+    Prioritizes .json if both exist for the same call_id (dedupes by stem).
+    """
     files = []
-    for f in transcript_dir.iterdir():
-        if f.is_file() and f.suffix == '.txt':
-            files.append((f, f.stat().st_size))
+    seen_stems = set()
+
+    # First pass: prefer .json files
+    for ext in ['.json', '.txt']:
+        for f in transcript_dir.iterdir():
+            if f.is_file() and f.suffix == ext and f.stem not in seen_stems:
+                files.append((f, f.stat().st_size))
+                seen_stems.add(f.stem)
+
     return files
 
 
@@ -77,16 +91,19 @@ def copy_samples(
         samples: List of (file_path, size) tuples to copy
         output_dir: Destination directory
         median_size: Median file size for categorization
-        clear_existing: If True, clear existing .txt files before copying (default: True)
+        clear_existing: If True, clear existing transcript files before copying (default: True)
     """
     output_dir.mkdir(parents=True, exist_ok=True)
 
     # Clear existing transcript files if requested (v3.2 run isolation)
+    # v3.9.2: Clear both .txt and .json files
     if clear_existing:
-        existing_txt = list(output_dir.glob("*.txt"))
-        if existing_txt:
-            print(f"Clearing {len(existing_txt)} existing transcript files...")
-            for f in existing_txt:
+        existing_files = list(output_dir.glob("*.txt")) + list(output_dir.glob("*.json"))
+        # Exclude special files (manifest, checkpoint, etc.)
+        existing_files = [f for f in existing_files if f.stem not in ('manifest', 'classification_checkpoint')]
+        if existing_files:
+            print(f"Clearing {len(existing_files)} existing transcript files...")
+            for f in existing_files:
                 f.unlink()
 
     manifest = []

@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """
-End-to-End Analysis Pipeline for Vacatia AI Voice Agent Analytics (v3.9.1)
+End-to-End Analysis Pipeline for Vacatia AI Voice Agent Analytics (v3.9.2)
 
 Orchestrates the complete analysis workflow:
 1. sample_transcripts.py → Sample transcripts from corpus
@@ -10,6 +10,11 @@ Orchestrates the complete analysis workflow:
 5. generate_insights.py → Generate Section B LLM insights
 6. render_report.py → Render Markdown executive summary
 7. review_report.py → Editorial review and pipeline suggestions (v3.5.5) [optional]
+
+v3.9.2 Features:
+- Lazy metrics/NL extraction: --skip-insights now stops after analysis step
+- Enables fast workflow for ask.py (no metrics/NL files needed)
+- Full pipeline auto-generates metrics/NL before insights as before
 
 v3.9.1 Features:
 - Custom questions: --questions flag to provide questions file for LLM to answer
@@ -46,6 +51,10 @@ Usage:
 
     # Skip analysis (use existing analyses)
     python3 tools/run_analysis.py --skip-analysis
+
+    # Fast mode for ask.py (stop after analysis, skip metrics/NL/insights)
+    python3 tools/run_analysis.py -n 10 --skip-insights
+    python3 tools/ask.py "What causes escalations?"
 """
 
 import argparse
@@ -111,7 +120,7 @@ Examples:
     parser.add_argument("--no-clear-analyses", action="store_true",
                         help="Don't clear analyses/ before fresh run (default: clear for run isolation)")
     parser.add_argument("--skip-insights", action="store_true",
-                        help="Skip LLM insights generation (metrics only)")
+                        help="Skip metrics, NL extraction, and insights (stop after analysis)")
     parser.add_argument("--analysis-model", type=str, default="gemini-3-flash-preview",
                         help="Gemini model for transcript analysis (default: gemini-3-flash-preview)")
     parser.add_argument("--insights-model", type=str, default="gemini-3-pro-preview",
@@ -177,7 +186,7 @@ Examples:
     run_review = args.enable_review and not args.skip_review
 
     print("=" * 60)
-    print("VACATIA AI VOICE AGENT ANALYTICS - v3.9.1 PIPELINE")
+    print("VACATIA AI VOICE AGENT ANALYTICS - v3.9.2 PIPELINE")
     print("=" * 60)
     print(f"Run ID: {run_id}")
     print(f"Started: {datetime.now().isoformat()}")
@@ -264,39 +273,40 @@ Examples:
         print("\n⏭️ Skipping analysis (--skip-analysis)")
         steps_completed.append("analysis (skipped)")
 
-    # Step 3: Compute metrics (v3.3: scope coherence via manifest)
-    cmd = [
-        sys.executable,
-        str(tools_dir / "compute_metrics.py"),
-        "-i", str(analyses_dir),
-        "-o", str(reports_dir),
-        "-s", str(sampled_dir)  # v3.3: Pass sampled dir for manifest filtering
-    ]
-
-    if run_step("Compute Deterministic Metrics (Section A)", cmd):
-        steps_completed.append("metrics")
-    else:
-        steps_failed.append("metrics")
-        print("\n❌ Metrics computation failed. Cannot continue.")
-        return 1
-
-    # Step 4: Extract NL fields (v3.3: scope coherence via manifest)
-    cmd = [
-        sys.executable,
-        str(tools_dir / "extract_nl_fields.py"),
-        "-i", str(analyses_dir),
-        "-o", str(reports_dir),
-        "-s", str(sampled_dir)  # v3.3: Pass sampled dir for manifest filtering
-    ]
-
-    if run_step("Extract NL Fields for LLM (v3.3)", cmd):
-        steps_completed.append("nl_extraction")
-    else:
-        steps_failed.append("nl_extraction")
-        print("\n⚠️ NL extraction failed. Insights will be based on metrics only.")
-
-    # Step 5: Generate insights (v3.3: uses gemini-3-pro-preview by default)
+    # Steps 3-5: Metrics, NL extraction, and insights (skipped with --skip-insights)
     if not args.skip_insights:
+        # Step 3: Compute metrics (v3.3: scope coherence via manifest)
+        cmd = [
+            sys.executable,
+            str(tools_dir / "compute_metrics.py"),
+            "-i", str(analyses_dir),
+            "-o", str(reports_dir),
+            "-s", str(sampled_dir)  # v3.3: Pass sampled dir for manifest filtering
+        ]
+
+        if run_step("Compute Deterministic Metrics (Section A)", cmd):
+            steps_completed.append("metrics")
+        else:
+            steps_failed.append("metrics")
+            print("\n❌ Metrics computation failed. Cannot continue.")
+            return 1
+
+        # Step 4: Extract NL fields (v3.3: scope coherence via manifest)
+        cmd = [
+            sys.executable,
+            str(tools_dir / "extract_nl_fields.py"),
+            "-i", str(analyses_dir),
+            "-o", str(reports_dir),
+            "-s", str(sampled_dir)  # v3.3: Pass sampled dir for manifest filtering
+        ]
+
+        if run_step("Extract NL Fields for LLM (v3.3)", cmd):
+            steps_completed.append("nl_extraction")
+        else:
+            steps_failed.append("nl_extraction")
+            print("\n⚠️ NL extraction failed. Insights will be based on metrics only.")
+
+        # Step 5: Generate insights (v3.3: uses gemini-3-pro-preview by default)
         cmd = [
             sys.executable,
             str(tools_dir / "generate_insights.py"),
@@ -321,7 +331,9 @@ Examples:
             steps_failed.append("insights")
             print("\n⚠️ Insights generation failed. Continuing without insights...")
     else:
-        print("\n⏭️ Skipping insights generation (--skip-insights)")
+        print("\n⏭️ Skipping metrics, NL extraction, insights (--skip-insights)")
+        steps_completed.append("metrics (skipped)")
+        steps_completed.append("nl_extraction (skipped)")
         steps_completed.append("insights (skipped)")
 
     # Step 6: Render report

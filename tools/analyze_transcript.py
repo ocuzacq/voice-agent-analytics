@@ -1,9 +1,15 @@
 #!/usr/bin/env python3
 """
-Single Transcript Analyzer for Vacatia AI Voice Agent Analytics (v3.9.1)
+Single Transcript Analyzer for Vacatia AI Voice Agent Analytics (v3.9.2)
 
 Hybrid schema with streamlined friction tracking enabling both programmatic analysis
 and executive-ready insights through a two-part report architecture.
+
+v3.9.2 changes - JSON Transcript Support:
+- Support for new JSON transcript format with timestamps and metadata
+- Pass through `ended_reason` from preprocessing to analysis output
+- Include `ended_reason` context in LLM prompt for better outcome classification
+- Values: assistant-ended-call, user-ended-call, error, etc.
 
 v3.9.1 changes - Loop Subject Granularity:
 - New `subject` field in friction.loops identifying WHAT is being looped on
@@ -64,13 +70,14 @@ from google.genai import types
 from preprocess_transcript import preprocess_transcript, format_for_llm
 
 
-# v3.8.5 Schema - Hybrid metrics + streamlined friction tracking
+# v3.9.2 Schema - Hybrid metrics + streamlined friction tracking + ended_reason
 ANALYSIS_SCHEMA = """
 {
   "call_id": "string (UUID from filename)",
 
   "outcome": "enum: 'resolved' | 'escalated' | 'abandoned' | 'unclear'",
   "resolution_type": "string (what was accomplished: 'payment processed', 'callback scheduled', 'info provided', 'none', etc.)",
+  "ended_reason": "string or null (from transcript metadata: 'assistant-ended-call', 'user-ended-call', 'error', etc.)",
 
   "agent_effectiveness": "integer 1-5 (did agent understand and respond appropriately?)",
   "conversation_quality": "integer 1-5 (flow, tone, clarity combined)",
@@ -154,6 +161,13 @@ Use these turn numbers EXACTLY when referencing specific turns in clarification_
 - **unclear**: ONLY use when transcript is corrupted/unreadable
 
 Prefer a definitive outcome over "unclear". If customer got ANY useful info, lean toward "resolved".
+
+## Using ended_reason Context (v3.9.2)
+If `Ended Reason:` is provided in the transcript header, use it to inform your outcome classification:
+- **assistant-ended-call**: Agent initiated call end - often indicates resolved or escalated
+- **user-ended-call**: Customer hung up - could be abandoned, resolved (satisfied), or unclear
+- **error**: Technical issue - likely abandoned or unclear
+- Don't rely solely on ended_reason - analyze the conversation to determine actual outcome
 
 ## Scoring Guidelines (1-5 scale)
 
@@ -474,6 +488,7 @@ def analyze_transcript(transcript_path: Path, model_name: str = "gemini-3-flash-
     v3.8.6: Uses new google.genai SDK with thinking config.
     v3.9: Adds call_disposition field for funnel analysis.
     v3.9.1: Adds subject field to friction loops for granular analysis.
+    v3.9.2: Supports JSON transcripts with timestamps; passes through ended_reason.
     """
     # Preprocess transcript for deterministic turn numbers
     preprocessed = preprocess_transcript(transcript_path)
@@ -517,7 +532,12 @@ def analyze_transcript(transcript_path: Path, model_name: str = "gemini-3-flash-
 
     analysis = extract_json_from_response(response.text)
     analysis["call_id"] = call_id
-    analysis["schema_version"] = "v3.9.1"
+    analysis["schema_version"] = "v3.9.2"
+
+    # v3.9.2: Pass through ended_reason from preprocessing metadata
+    ended_reason = preprocessed.get("metadata", {}).get("ended_reason")
+    if ended_reason:
+        analysis["ended_reason"] = ended_reason
 
     # v3.8.5: No _preprocessing in output (bloat reduction)
     # Turn data is available in friction.turns
@@ -537,7 +557,7 @@ def save_analysis(analysis: dict, output_dir: Path) -> Path:
 
 
 def main():
-    parser = argparse.ArgumentParser(description="Analyze call transcript (v3.9.1 - loop subject granularity)")
+    parser = argparse.ArgumentParser(description="Analyze call transcript (v3.9.2 - JSON format support)")
     parser.add_argument("transcript", type=Path, help="Path to transcript file")
     parser.add_argument("-o", "--output-dir", type=Path,
                         default=Path(__file__).parent.parent / "analyses",
