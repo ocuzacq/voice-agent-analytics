@@ -77,7 +77,8 @@ def preprocess_json_transcript(transcript_path: Path) -> dict:
         }
 
     # Get the first timestamp as the baseline for relative timing
-    first_timestamp = messages[0].get("timestamp", 0)
+    # Use `or 0` to handle both missing keys AND explicit null values
+    first_timestamp = messages[0].get("timestamp") or 0
 
     # Coalesce consecutive same-role messages into turns
     turns = []

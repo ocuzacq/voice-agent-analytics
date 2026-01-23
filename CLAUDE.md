@@ -1,4 +1,4 @@
-# Voice Agent Analytics - Project Instructions (v3.9.1)
+# Voice Agent Analytics - Project Instructions (v4.3)
 
 ## Environment
 
@@ -40,13 +40,41 @@ Keep archived tool versions in `tools/vX/` directories with their own `VERSION.m
 - Why it was superseded
 - Key differences from current
 
-## Pipeline Architecture (v3.9.1)
+## Pipeline Architecture (v4.3)
 
 ### Full Pipeline
 
 ```
 transcripts/ → sample → preprocess → analyze (parallel) → metrics → extract_nl → insights → report → review
+
+v4.3: Target-based augmentation - -n is a TARGET for existing runs
+v4.0: Each run creates isolated directory: runs/<run_id>/
+      All outputs contained within: sampled/, analyses/, reports/
 ```
+
+### Target-Based Run Augmentation (v4.3)
+
+```bash
+# Day 1: Create run with 50 transcripts
+python3 tools/run_analysis.py -n 50
+
+# Day 2: Grow to 200 total (system calculates delta: +150)
+python3 tools/run_analysis.py -n 200
+
+# Day 3: Grow to 1000 total (system calculates delta: +800)
+python3 tools/run_analysis.py -n 1000
+
+# Target already met? Nothing added
+python3 tools/run_analysis.py -n 100  # "Run already has 1000 transcripts. Nothing to add."
+
+# Use specific run directory
+python3 tools/run_analysis.py -n 500 --run-dir runs/run_xxx
+```
+
+**Key behavior:**
+- New runs: `-n 50` = sample 50 transcripts
+- Existing runs: `-n 200` = TARGET 200 total, system adds difference
+- Manifest tracks all sampled files, excluding already-sampled on augment
 
 1. `sample_transcripts.py` - Random stratified sampling
 2. `preprocess_transcript.py` - Deterministic turn counting (v3.7: integrated into analyze)
@@ -100,6 +128,9 @@ python3 tools/run_analysis.py -n 50 --workers 1
 Always run the test harness before releases:
 ```bash
 python3 tools/test_framework.py
+
+# v4.0: Run intent + sentiment analysis tests
+python3 tools/test_v40_features.py
 
 # v3.9: Run call disposition classification tests
 python3 tools/test_v39_features.py

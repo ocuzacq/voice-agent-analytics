@@ -1,0 +1,17 @@
+{
+  "agent_id": "6JOtFGReUgrOWt5jIFIU",
+  "duration": 45.5,
+  "ended_reason": "assistant-ended-call",
+  "messages": [
+    {"role": "assistant", "timestamp": 1767474099.6031153, "content": "Hi, thank you for calling Vacatia. How can I help you today?"},
+    {"role": "user", "timestamp": 1767474105.8214529, "content": "Hi, I'm calling about my"},
+    {"role": "user", "timestamp": 1767474107.1234567, "content": "maintenance fee."},
+    {"role": "assistant", "timestamp": 1767474110.5555555, "content": "I'd be happy to help you with your maintenance fee. Can you please verify your phone number for me?"},
+    {"role": "user", "timestamp": 1767474115.7777777, "content": "Sure, it's 555-123-4567."},
+    {"role": "assistant", "timestamp": 1767474120.1111111, "content": "Thank you for verifying. Your current maintenance fee balance is $450, due on February 15th. Would you like me to send you a payment link?"},
+    {"role": "user", "timestamp": 1767474128.2222222, "content": "Yes, please."},
+    {"role": "assistant", "timestamp": 1767474132.3333333, "content": "I've sent the payment link to your phone number ending in 4567. Is there anything else I can help you with today?"},
+    {"role": "user", "timestamp": 1767474138.4444444, "content": "No, that's all. Thank you."},
+    {"role": "assistant", "timestamp": 1767474142.5555555, "content": "You're welcome. Have a great day!"}
+  ]
+}
