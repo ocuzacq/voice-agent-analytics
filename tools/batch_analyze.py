@@ -1,11 +1,17 @@
 #!/usr/bin/env python3
 """
-Batch Transcript Analyzer for Vacatia AI Voice Agent Analytics (v3.2)
+Batch Transcript Analyzer for Vacatia AI Voice Agent Analytics (v4.1)
 
 Analyzes multiple transcripts with configurable parallelization and rate limiting.
 Produces v3 schema analyses with 18 fields including policy_gap_detail,
 customer_verbatim, agent_miss_detail, and resolution_steps.
 
+v4.1: Run-based isolation support.
+- --run-dir argument for isolated execution
+- Reads from run's sampled/, writes to run's analyses/
+- Backwards compatible with legacy flat directory mode
+
+v3.9.2: Supports both .txt and .json transcript formats (auto-detected).
 v3.2: Added parallel processing (default 3 workers) for faster batch analysis.
 """
 
@@ -25,7 +31,25 @@ load_dotenv()
 
 sys.path.insert(0, str(Path(__file__).parent))
 
-from analyze_transcript import configure_genai, analyze_transcript, save_analysis
+from analyze_transcript import configure_genai, analyze_transcript, save_analysis, get_genai_client
+from run_utils import (
+    add_run_arguments, resolve_run_from_args, get_run_paths,
+    prompt_for_run, confirm_or_select_run, require_explicit_run_noninteractive
+)
+
+# Thread-local storage for client reuse (one client per worker thread)
+_thread_local = threading.local()
+
+
+def get_thread_client():
+    """Get or create a genai client for the current thread.
+
+    This avoids creating a new HTTP client for every API call,
+    which was a major throughput bottleneck.
+    """
+    if not hasattr(_thread_local, 'client'):
+        _thread_local.client = get_genai_client()
+    return _thread_local.client
 
 
 # Thread-safe counter for progress tracking
@@ -42,20 +66,24 @@ class ProgressTracker:
         self.start_time = datetime.now()
 
     def record_success(self, transcript_name: str, outcome: str, effort: str):
+        # Minimize time holding lock - compute values, then print outside lock
         with self.lock:
             self.completed += 1
             self.successful += 1
+            completed = self.completed
             elapsed = (datetime.now() - self.start_time).total_seconds()
-            rate = self.completed / elapsed if elapsed > 0 else 0
-            eta = (self.total - self.completed) / rate if rate > 0 else 0
-            print(f"[{self.completed}/{self.total}] ✓ {transcript_name}: {outcome} | effort={effort} ({rate:.1f}/s, ETA {eta:.0f}s)")
+        rate = completed / elapsed if elapsed > 0 else 0
+        eta = (self.total - completed) / rate if rate > 0 else 0
+        print(f"[{completed}/{self.total}] ✓ {transcript_name}: {outcome} | effort={effort} ({rate:.1f}/s, ETA {eta:.0f}s)")
 
     def record_failure(self, transcript_name: str, error: str):
+        # Minimize time holding lock
         with self.lock:
             self.completed += 1
             self.failed += 1
             self.errors.append(f"{transcript_name}: {error}")
-            print(f"[{self.completed}/{self.total}] ✗ {transcript_name}: {error}")
+            completed = self.completed
+        print(f"[{completed}/{self.total}] ✗ {transcript_name}: {error}")
 
     def get_results(self) -> dict:
         with self.lock:
@@ -72,6 +100,9 @@ def get_transcripts_from_manifest(input_dir: Path) -> list[Path] | None:
 
     Returns list of transcript paths if manifest exists, None otherwise.
     This enables v3.2 run isolation - only process files from current scope.
+
+    v3.9.2: Matches by stem (not full filename) to support both .txt and .json.
+    Prioritizes .json if both exist for the same call_id.
     """
     manifest_path = input_dir / "manifest.csv"
     if not manifest_path.exists():
@@ -81,9 +112,21 @@ def get_transcripts_from_manifest(input_dir: Path) -> list[Path] | None:
     with open(manifest_path, 'r') as f:
         reader = csv.DictReader(f)
         for row in reader:
+            # Try exact filename first (backward compat)
             file_path = input_dir / row['filename']
             if file_path.exists():
                 transcripts.append(file_path)
+            else:
+                # Try matching by stem with different extensions
+                # Prioritize .json over .txt
+                stem = Path(row['filename']).stem
+                json_path = input_dir / f"{stem}.json"
+                txt_path = input_dir / f"{stem}.txt"
+
+                if json_path.exists():
+                    transcripts.append(json_path)
+                elif txt_path.exists():
+                    transcripts.append(txt_path)
 
     return transcripts if transcripts else None
 
@@ -91,6 +134,7 @@ def get_transcripts_from_manifest(input_dir: Path) -> list[Path] | None:
 def get_transcripts_to_analyze(input_dir: Path, output_dir: Path, skip_existing: bool = True) -> dict:
     """Get list of transcripts needing analysis with detailed state info.
 
+    v3.9.2: Supports both .txt and .json formats. Prioritizes .json over .txt.
     v3.2: If manifest.csv exists, only process files listed in it (scope enforcement).
     Falls back to directory scan if no manifest found (backward compatible).
 
@@ -115,7 +159,14 @@ def get_transcripts_to_analyze(input_dir: Path, output_dir: Path, skip_existing:
 
     if transcripts is None:
         # Fall back to directory scan (backward compatible)
-        transcripts = [f for f in input_dir.iterdir() if f.suffix == '.txt']
+        # v3.9.2: Support both .txt and .json, prioritize .json
+        seen_stems = set()
+        transcripts = []
+        for ext in ['.json', '.txt']:
+            for f in input_dir.iterdir():
+                if f.suffix == ext and f.stem not in seen_stems:
+                    transcripts.append(f)
+                    seen_stems.add(f.stem)
     else:
         result["manifest_count"] = len(transcripts)
 
@@ -151,9 +202,12 @@ def analyze_single(
     # v3.4.1: Extra retries for JSON parse errors (usually transient API issues)
     json_parse_retries = max_retries + 2
 
+    # Reuse client per thread (major throughput improvement)
+    client = get_thread_client()
+
     for retry in range(json_parse_retries):
         try:
-            analysis = analyze_transcript(transcript, model_name)
+            analysis = analyze_transcript(transcript, model_name, client=client)
             save_analysis(analysis, output_dir)
             outcome = analysis.get("outcome", "?")
             effort = analysis.get("customer_effort", "?")
@@ -301,10 +355,34 @@ Examples:
     parser.add_argument("-y", "--yes", action="store_true", help="Skip confirmation prompt")
     parser.add_argument("--confirm", action="store_true", help="Require confirmation before starting")
 
+    # v4.1: Run-based isolation
+    add_run_arguments(parser)
+
     args = parser.parse_args()
 
+    # v4.1: Resolve run directory from --run-dir or --run-id
+    project_dir = Path(__file__).parent.parent
+    run_dir, run_id, source = resolve_run_from_args(args, project_dir)
+
+    # Non-interactive mode requires explicit --run-id or --run-dir
+    require_explicit_run_noninteractive(source)
+
+    # Interactive run selection/confirmation
+    if source in (".last_run", "$LAST_RUN"):
+        # Implicit source - ask for confirmation
+        run_dir, run_id = confirm_or_select_run(project_dir, run_dir, run_id, source)
+    elif run_dir is None:
+        # No run specified - show selection menu
+        run_dir, run_id = prompt_for_run(project_dir)
+
+    if run_dir:
+        paths = get_run_paths(run_dir, project_dir)
+        args.input_dir = paths["sampled_dir"]
+        args.output_dir = paths["analyses_dir"]
+        print(f"Using run: {run_id} ({run_dir})")
+
     print("=" * 50)
-    print("BATCH ANALYZER v3.2 (Parallel Processing)")
+    print("BATCH ANALYZER v4.1 (Parallel Processing)")
     print("=" * 50)
 
     print("\nConfiguring API...")
@@ -337,7 +415,7 @@ Examples:
         print(f"  Manifest:    {args.input_dir / 'manifest.csv'}")
         print(f"  Total scope: {state['manifest_count']} transcripts in manifest")
     else:
-        print("  Manifest:    NOT FOUND (using all .txt files in directory)")
+        print("  Manifest:    NOT FOUND (using all .txt/.json files in directory)")
         print(f"  Total scope: {len(transcripts) + state['existing_count']} transcripts found")
 
     print(f"  Analyzed:    {state['existing_count']} already have JSON output")

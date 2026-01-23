@@ -1,8 +1,19 @@
 #!/usr/bin/env python3
 """
-Markdown Report Renderer for Vacatia AI Voice Agent Analytics (v3.9.1)
+Markdown Report Renderer for Vacatia AI Voice Agent Analytics (v4.1)
 
 Renders the combined Section A + Section B report as an executive-ready Markdown document.
+
+v4.1 additions:
+- Run-based isolation support via --run-dir argument
+- Reads report from run's reports/, writes output to same
+- Backwards compatible with legacy flat directory mode
+
+v4.0 additions:
+- Intent Analysis: Semantic clustering of caller intents with success correlation
+- Sentiment Analysis: Emotional journey patterns with improvement/degradation drivers
+- Updated field references for v4.0 schema
+- Backwards-compatible with v3.x reports
 
 v3.9.1 additions:
 - Loop Subject Analysis: Table showing subject distribution per loop type
@@ -57,6 +68,11 @@ import json
 import sys
 from datetime import datetime
 from pathlib import Path
+
+from run_utils import (
+    add_run_arguments, resolve_run_from_args, get_run_paths,
+    prompt_for_run, confirm_or_select_run, require_explicit_run_noninteractive
+)
 
 
 def get_assessment_emoji(value: float, metric_type: str) -> str:
@@ -243,6 +259,135 @@ def render_markdown(report: dict) -> str:
                 lines.append(f"_{funnel_health['explanation']}_")
             if funnel_health.get("priority_focus"):
                 lines.append(f"\n**Priority Focus:** {funnel_health['priority_focus']}")
+            lines.append("")
+
+    # v4.0: Intent Analysis
+    intent_analysis = insights.get("intent_analysis", {})
+    intent_stats = metrics.get("intent_stats", {})
+
+    if intent_analysis or intent_stats:
+        lines.append("## Intent Analysis")
+        lines.append("")
+
+        # Narrative from LLM
+        if intent_analysis.get("narrative"):
+            lines.append(intent_analysis["narrative"])
+            lines.append("")
+
+        # Top Intent Clusters from LLM
+        top_clusters = intent_analysis.get("top_clusters", [])
+        if top_clusters:
+            lines.append("### Top Intent Clusters")
+            lines.append("")
+            lines.append("| Intent | Count | % | Success Rate | Insight |")
+            lines.append("|--------|-------|---|--------------|---------|")
+            for c in top_clusters[:10]:
+                intent = c.get("intent_cluster", "N/A")
+                count = c.get("count", 0)
+                pct = c.get("pct", "N/A")
+                success = c.get("success_rate", "N/A")
+                insight = c.get("insight", "")[:60]
+                lines.append(f"| {intent} | {count} | {pct} | {success} | {insight} |")
+            lines.append("")
+
+        # Context Patterns
+        context_patterns = intent_analysis.get("context_patterns", [])
+        if context_patterns:
+            lines.append("### Context Patterns")
+            lines.append("")
+            lines.append("*Why customers need help:*")
+            lines.append("")
+            lines.append("| Pattern | Frequency | Recommendation |")
+            lines.append("|---------|-----------|----------------|")
+            for p in context_patterns[:5]:
+                pattern = p.get("pattern", "N/A")
+                freq = p.get("frequency", "N/A")
+                rec = p.get("recommendation", "")
+                lines.append(f"| {pattern} | {freq} | {rec} |")
+            lines.append("")
+
+        # Unmet Needs
+        unmet_needs = intent_analysis.get("unmet_needs", [])
+        if unmet_needs:
+            lines.append("### Unmet Needs")
+            lines.append("")
+            lines.append("*Capability expansion opportunities:*")
+            lines.append("")
+            for n in unmet_needs[:5]:
+                need = n.get("need", "N/A")
+                freq = n.get("frequency", "N/A")
+                rec = n.get("recommendation", "")
+                lines.append(f"- **{need}** ({freq})")
+                if rec:
+                    lines.append(f"  - _{rec}_")
+            lines.append("")
+
+    # v4.0: Sentiment Analysis
+    sentiment_analysis = insights.get("sentiment_analysis", {})
+    sentiment_stats = metrics.get("sentiment_stats", {})
+
+    if sentiment_analysis or sentiment_stats:
+        lines.append("## Sentiment Analysis")
+        lines.append("")
+
+        # Narrative from LLM
+        if sentiment_analysis.get("narrative"):
+            lines.append(sentiment_analysis["narrative"])
+            lines.append("")
+
+        # Health Metrics Summary
+        health_metrics = sentiment_analysis.get("health_metrics", {})
+        if health_metrics:
+            assessment = (health_metrics.get("assessment") or "N/A").upper()
+            emoji = "✅" if assessment == "HEALTHY" else "⚠️" if assessment == "NEEDS_ATTENTION" else "❌"
+            improvement = health_metrics.get("improvement_rate", "N/A")
+            degradation = health_metrics.get("degradation_rate", "N/A")
+            lines.append(f"**Sentiment Health:** {emoji} {assessment}")
+            lines.append(f"- Improvement Rate: {improvement}")
+            lines.append(f"- Degradation Rate: {degradation}")
+            lines.append("")
+
+        # Journey Patterns
+        journey_patterns = sentiment_analysis.get("journey_patterns", [])
+        if journey_patterns:
+            lines.append("### Emotional Journey Patterns")
+            lines.append("")
+            lines.append("| Journey | Frequency | Drivers | Outcome Correlation |")
+            lines.append("|---------|-----------|---------|---------------------|")
+            for j in journey_patterns[:6]:
+                pattern = j.get("pattern", "N/A")
+                freq = j.get("frequency", "N/A")
+                drivers = j.get("drivers", "N/A")[:40] if j.get("drivers") else "N/A"
+                outcome = j.get("outcome_correlation", "N/A")[:30] if j.get("outcome_correlation") else "N/A"
+                lines.append(f"| {pattern} | {freq} | {drivers} | {outcome} |")
+            lines.append("")
+
+        # Improvement Drivers
+        improvement_drivers = sentiment_analysis.get("improvement_drivers", [])
+        if improvement_drivers:
+            lines.append("### What Improves Sentiment")
+            lines.append("")
+            for d in improvement_drivers[:4]:
+                factor = d.get("factor", "N/A")
+                freq = d.get("frequency", "N/A")
+                rec = d.get("recommendation", "")
+                lines.append(f"- **{factor}** ({freq})")
+                if rec:
+                    lines.append(f"  - _{rec}_")
+            lines.append("")
+
+        # Degradation Drivers
+        degradation_drivers = sentiment_analysis.get("degradation_drivers", [])
+        if degradation_drivers:
+            lines.append("### What Worsens Sentiment")
+            lines.append("")
+            for d in degradation_drivers[:4]:
+                factor = d.get("factor", "N/A")
+                freq = d.get("frequency", "N/A")
+                rec = d.get("recommendation", "")
+                lines.append(f"- **{factor}** ({freq})")
+                if rec:
+                    lines.append(f"  - _{rec}_")
             lines.append("")
 
     # v3.6: Conversation Quality Section
@@ -805,13 +950,13 @@ def render_markdown(report: dict) -> str:
 
     # Footer
     lines.append("---")
-    lines.append(f"*Report generated by Vacatia AI Voice Agent Analytics Framework v3.9.1*")
+    lines.append(f"*Report generated by Vacatia AI Voice Agent Analytics Framework v4.0*")
 
     return "\n".join(lines)
 
 
 def main():
-    parser = argparse.ArgumentParser(description="Render v3 report as Markdown")
+    parser = argparse.ArgumentParser(description="Render v4.0 report as Markdown (intent + sentiment analysis)")
     parser.add_argument("-i", "--input", type=Path,
                         help="Path to full report JSON (with deterministic_metrics and llm_insights)")
     parser.add_argument("-o", "--output-dir", type=Path,
@@ -820,13 +965,40 @@ def main():
     parser.add_argument("--stdout", action="store_true",
                         help="Print to stdout instead of saving")
 
+    # v4.1: Run-based isolation
+    add_run_arguments(parser)
+
     args = parser.parse_args()
 
-    # Find latest report file if not specified
+    # v4.1: Resolve run directory from --run-dir or --run-id
+    project_dir = Path(__file__).parent.parent
+    run_dir, run_id, source = resolve_run_from_args(args, project_dir)
+
+    # Non-interactive mode requires explicit --run-id or --run-dir
+    require_explicit_run_noninteractive(source)
+
+    # Interactive run selection/confirmation
+    if source in (".last_run", "$LAST_RUN"):
+        # Implicit source - ask for confirmation
+        run_dir, run_id = confirm_or_select_run(project_dir, run_dir, run_id, source)
+    elif run_dir is None:
+        # No run specified - show selection menu
+        run_dir, run_id = prompt_for_run(project_dir)
+
+    if run_dir:
+        paths = get_run_paths(run_dir, project_dir)
+        args.output_dir = paths["reports_dir"]
+        print(f"Using run: {run_id} ({run_dir})", file=sys.stderr)
+
+    # Find latest report file if not specified (v4 first, fallback to v3)
     if not args.input:
         reports_dir = args.output_dir
         if reports_dir.exists():
-            report_files = sorted(reports_dir.glob("report_v3_*.json"), reverse=True)
+            # Try v4 first
+            report_files = sorted(reports_dir.glob("report_v4_*.json"), reverse=True)
+            if not report_files:
+                # Fallback to v3
+                report_files = sorted(reports_dir.glob("report_v3_*.json"), reverse=True)
             if report_files:
                 args.input = report_files[0]
                 print(f"Using latest report: {args.input}", file=sys.stderr)
@@ -847,7 +1019,7 @@ def main():
     else:
         args.output_dir.mkdir(parents=True, exist_ok=True)
         timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
-        output_path = args.output_dir / f"executive_summary_v3_{timestamp}.md"
+        output_path = args.output_dir / f"executive_summary_v4_{timestamp}.md"
 
         with open(output_path, 'w', encoding='utf-8') as f:
             f.write(markdown)

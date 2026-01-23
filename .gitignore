@@ -5,6 +5,7 @@ reports/
 asks/
 cowork/
 preprocessed/
+runs/
 
 # Keep test analyses, exclude production analyses
 analyses/*
@@ -39,3 +40,4 @@ Thumbs.db
 
 # Claude Code
 .claude/
+.last_run*

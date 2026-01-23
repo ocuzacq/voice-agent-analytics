@@ -8,6 +8,30 @@ Analytical framework to evaluate the Vacatia AI voice agent's performance using 
 - **Section A**: Python-calculated metrics (reproducible, auditable)
 - **Section B**: LLM-generated insights (executive narratives, recommendations)
 
+**v4.3 Enhancements**:
+- **Target-Based Augmentation**: `-n` becomes a TARGET when existing run detected
+- **Automatic Delta Calculation**: System calculates how many transcripts to add
+- **Iterative Growth**: `python3 tools/run_analysis.py -n 50` → `-n 200` → `-n 1000`
+- **Simplified CLI**: No more `--augment` flag, just specify desired total
+
+**v4.1 Enhancements**:
+- **Run-Based Isolation**: Each analysis run self-contained in `runs/<run_id>/`
+- **Reproducibility**: `config.json` captures all run parameters
+- **Progress Tracking**: `status.json` tracks pipeline stage completion
+- **Concurrent Runs**: Multiple analyses can run simultaneously without conflicts
+- **Resume Support**: Continue interrupted runs from where they left off
+- **Auto-Tracking**: `.last_run` file automatically tracks last created run
+- **Legacy Mode**: `--legacy` flag preserves flat directory behavior
+- **Scoped Q&A**: `ask.py --run-id` queries analyses from specific runs
+
+**v4.0 Enhancements**:
+- **Intent Analysis**: New `intent` + `intent_context` + `secondary_intent` fields capture WHAT customers want and WHY
+- **Sentiment Tracking**: New `sentiment_start` + `sentiment_end` fields track emotional journey
+- **Unified Disposition**: Single `disposition` field replaces `outcome` + `call_disposition`
+- **Cleaner Field Names**: Shorter, more intuitive names (`effectiveness`, `quality`, `effort`, `verbatim`, `coaching`, `steps`)
+- **Flattened Friction**: `turns`, `derailed_at`, `clarifications`, `corrections`, `loops` at top-level (not nested under `friction`)
+- **Schema v4.0**: 22 fields with backwards compatibility for v3.x analyses
+
 **v3.9.1 Enhancements**:
 - Loop Subject Granularity: New `subject` field in friction loops identifies WHAT is being looped on
 - Guided values by loop type (info_retry: name, phone; intent_retry: fee_info, balance; etc.)
@@ -77,7 +101,7 @@ Analytical framework to evaluate the Vacatia AI voice agent's performance using 
 
 ## Overview
 
-- **19-field analysis schema** (v3.8.5) - hybrid metrics + insights + streamlined friction tracking
+- **22-field analysis schema** (v4.0) - intent tracking, sentiment analysis, flattened friction
 - **3 quality scores** - agent effectiveness, conversation quality, customer effort
 - **Policy gap breakdown** - structured categorization of capability limitations
 - **Customer verbatim** - direct quotes capturing frustration/needs
@@ -93,6 +117,7 @@ Analytical framework to evaluate the Vacatia AI voice agent's performance using 
 export GOOGLE_API_KEY="your-api-key-here"
 
 # 2. Run the full pipeline (50 transcripts, 3 parallel workers)
+#    v4.1: Creates isolated run in runs/<timestamp>/
 python3 tools/run_analysis.py
 
 # OR quick test with 5 transcripts
@@ -101,16 +126,30 @@ python3 tools/run_analysis.py --quick
 # OR larger batch with more parallelization
 python3 tools/run_analysis.py -n 200 --workers 5
 
+# OR with custom run ID (v4.1)
+python3 tools/run_analysis.py -n 50 --run-id experiment_a
+
 # OR with custom questions (v3.9.1)
 python3 tools/run_analysis.py -n 50 --questions questions.txt
 
-# OR step-by-step:
-python3 tools/sample_transcripts.py -n 50
-python3 tools/batch_analyze.py --workers 3   # v3.2: Parallel processing
-python3 tools/compute_metrics.py
-python3 tools/extract_nl_fields.py           # v3.1: Condensed NL data for LLM
-python3 tools/generate_insights.py --questions questions.txt  # v3.9.1: Custom questions
-python3 tools/render_report.py
+# OR legacy flat directory mode
+python3 tools/run_analysis.py --legacy
+
+# 3. All tools automatically use the last created run (v4.1)
+#    (saved in .last_run file, no config needed)
+python3 tools/ask.py "Why do calls fail?"
+python3 tools/batch_analyze.py
+
+# OR use --run-id to override
+python3 tools/ask.py "Compare" --run-id other_run
+
+# OR step-by-step with --run-id (auto-creates directory):
+python3 tools/sample_transcripts.py -n 50 --run-id my_run
+python3 tools/batch_analyze.py --run-id my_run
+python3 tools/compute_metrics.py --run-id my_run
+python3 tools/extract_nl_fields.py --run-id my_run
+python3 tools/generate_insights.py --run-id my_run
+python3 tools/render_report.py --run-id my_run
 ```
 
 ## Tools
@@ -120,7 +159,7 @@ python3 tools/render_report.py
 End-to-end pipeline that runs all steps in sequence.
 
 ```bash
-# Full pipeline with 50 transcripts (3 parallel workers)
+# Full pipeline with 50 transcripts (creates isolated run)
 python3 tools/run_analysis.py
 
 # Quick test with 5 transcripts
@@ -128,6 +167,15 @@ python3 tools/run_analysis.py --quick
 
 # Larger batch with more parallelization
 python3 tools/run_analysis.py -n 200 --workers 5
+
+# Custom run ID (v4.1)
+python3 tools/run_analysis.py -n 50 --run-id experiment_a
+
+# Use existing run directory (v4.1)
+python3 tools/run_analysis.py --run-dir runs/experiment_a --resume
+
+# Legacy mode - flat directories (v4.1)
+python3 tools/run_analysis.py --legacy
 
 # Custom sample size with reproducible seed
 python3 tools/run_analysis.py -n 100 --seed 42
@@ -150,6 +198,8 @@ python3 tools/run_analysis.py --skip-sampling --skip-analysis
 # Metrics only (no LLM insights)
 python3 tools/run_analysis.py --skip-insights
 ```
+
+**v4.1 Run-Based Isolation**: Each run creates an isolated directory under `runs/` containing all outputs (sampled transcripts, analyses, reports). The `runs/latest` symlink always points to the most recent run.
 
 ### `sample_transcripts.py`
 
@@ -253,6 +303,10 @@ python3 tools/ask.py "Why do calls fail?"
 python3 tools/ask.py "What causes name issues?" --limit 50
 python3 tools/ask.py "Main friction patterns?" --limit 250 --stats
 python3 tools/ask.py "Top customer frustrations?" --verbose
+
+# v4.1: Query analyses from specific run
+python3 tools/ask.py "Why do calls fail?" --run-dir runs/experiment_a
+python3 tools/ask.py "Top friction patterns?" --run-dir runs/latest
 ```
 
 **How it works:**
@@ -261,28 +315,52 @@ python3 tools/ask.py "Top customer frustrations?" --verbose
 - Cites 2-4 illustrative examples (not exhaustive)
 - Auto-saves to `asks/<timestamp>/` with question.txt, answer.md, metadata.json
 - Token usage stats available with `--stats` or `--verbose` flags
+- **v4.1**: `--run-dir` option scopes queries to specific run's analyses
 
 **Use cases:**
 - Quick hypothesis testing without full pipeline runs
 - Exploring specific questions between report runs
 - Rapid iteration on specific failure patterns or friction points
+- **v4.1**: Comparing findings across different runs
 
 ## Output Files
 
+### v4.1 Run-Based Isolation (Default)
+
 ```
-reports/
-├── metrics_v3_{timestamp}.json                    # Section A: Deterministic metrics
-├── nl_summary_v3_{timestamp}.json                 # v3.1: Condensed NL fields for LLM
-├── report_v3_{timestamp}.json                     # Combined Section A + B
-├── executive_summary_v3_{timestamp}.md            # Markdown executive report
-├── executive_summary_v3_{timestamp}_reviewed.md   # v3.5.5: Refined report
-└── pipeline_suggestions_v3_{timestamp}.md         # v3.5.5: Improvement ideas
+runs/
+├── run_20260121_143000/                          # Isolated run directory
+│   ├── config.json                               # Run parameters (reproducibility)
+│   ├── status.json                               # Pipeline progress tracking
+│   ├── manifest.csv                              # Sample scope anchor
+│   ├── sampled/                                  # Transcript copies for this run
+│   ├── analyses/                                 # Analysis JSONs for this run
+│   └── reports/
+│       ├── metrics_v4_{timestamp}.json           # Section A: Deterministic metrics
+│       ├── nl_summary_v4_{timestamp}.json        # Condensed NL fields for LLM
+│       ├── report_v4_{timestamp}.json            # Combined Section A + B
+│       └── executive_summary_v4_{timestamp}.md   # Markdown executive report
+├── experiment_a/                                 # Custom-named run
+│   └── ...
+└── latest -> run_20260121_143000                 # Symlink to most recent run
 
 asks/
-└── Jan20-10h40/                                   # Timestamped Q&A sessions
-    ├── question.txt                               # Original question
-    ├── answer.md                                  # LLM response
-    └── metadata.json                              # Sample info + token usage
+└── Jan20-10h40/                                  # Timestamped Q&A sessions
+    ├── question.txt                              # Original question
+    ├── answer.md                                 # LLM response
+    └── metadata.json                             # Sample info + token usage + run_id
+```
+
+### Legacy Mode (`--legacy`)
+
+```
+sampled/                   # Transcript copies
+analyses/                  # Analysis JSONs
+reports/
+├── metrics_v4_{timestamp}.json
+├── nl_summary_v4_{timestamp}.json
+├── report_v4_{timestamp}.json
+└── executive_summary_v4_{timestamp}.md
 ```
 
 ## Directory Structure
@@ -292,22 +370,26 @@ asks/
 ├── transcripts/           # 5822 raw transcript files
 ├── tools/
 │   ├── run_analysis.py    # End-to-end orchestrator
+│   ├── run_utils.py       # v4.1: Shared utilities for run isolation
 │   ├── sample_transcripts.py
 │   ├── analyze_transcript.py
 │   ├── batch_analyze.py
 │   ├── compute_metrics.py
-│   ├── extract_nl_fields.py  # v3.1: NL extraction
+│   ├── extract_nl_fields.py  # NL extraction
 │   ├── generate_insights.py
 │   ├── render_report.py
-│   ├── review_report.py   # v3.5.5: Editorial review
+│   ├── review_report.py   # Editorial review
 │   ├── ask.py             # Ad-hoc Q&A without full reports
 │   ├── v0/                # Archived: Simple schema (~15 fields)
 │   ├── v1/                # Archived: Verbose schema (~50 fields)
 │   ├── v2/                # Previous: Actionable schema (14 fields)
-│   └── v3/                # Current: Hybrid schema (18 fields)
-├── sampled/               # Output from sampling script
-├── analyses/              # JSON output from analyzer
-├── reports/               # Aggregate metrics and reports
+│   └── v3/                # Previous: Hybrid schema (18 fields)
+├── runs/                  # v4.1: Isolated run directories
+│   ├── run_{timestamp}/
+│   └── latest -> ...      # Symlink to most recent
+├── sampled/               # Legacy mode output
+├── analyses/              # Legacy mode output
+├── reports/               # Legacy mode output
 └── asks/                  # Q&A session results
 ```
 
@@ -330,7 +412,9 @@ asks/
 | **v3.8** | 23 | Agent loops: typed detection replacing repeated_prompts | Previous | [`README_v3.8.md`](README_v3.8.md) |
 | **v3.8.5** | 19 | Streamlined friction: compact object, shorter enums, ~31% size reduction | Previous | [`README_v3.8.5.md`](README_v3.8.5.md) |
 | **v3.9** | 20 | Call disposition classification for funnel analysis | Previous | [`README_v3.9.md`](README_v3.9.md) |
-| **v3.9.1** | 20 | Loop subject granularity: subject field for targeted friction analysis | **Current** | [`README_v3.9.1.md`](README_v3.9.1.md) |
+| **v3.9.1** | 20 | Loop subject granularity: subject field for targeted friction analysis | Previous | [`README_v3.9.1.md`](README_v3.9.1.md) |
+| **v4.0** | 22 | Intent + sentiment analysis, schema cleanup, flattened friction | Previous | [`README_v4.0.md`](README_v4.0.md) |
+| **v4.1** | 22 | Run-based isolation, reproducibility, concurrent runs | **Current** | [`README_v4.1.md`](README_v4.1.md) |
 
 ### Versioning Guidelines
 
@@ -341,52 +425,57 @@ asks/
 
 See [`CLAUDE.md`](CLAUDE.md) for full versioning guidelines and project instructions.
 
-## Analysis Schema (v3.8.5)
+## Analysis Schema (v4.0)
 
-Each transcript analysis produces a JSON with 19 fields (consolidated from 23 in v3.8):
+Each transcript analysis produces a JSON with 22 fields (restructured from v3.9.1):
 
 ```json
 {
   "call_id": "uuid",
-  "schema_version": "v3.8.5",
+  "schema_version": "v4.0",
 
-  // === OUTCOME ===
-  "outcome": "resolved",
-  "resolution_type": "payment processed",
+  // === METADATA ===
+  "turns": 12,
+  "ended_by": "agent",
 
-  // === QUALITY SCORES (1-5) ===
-  "agent_effectiveness": 4,
-  "conversation_quality": 4,
-  "customer_effort": 2,
+  // === INTENT (NEW in v4.0) ===
+  "intent": "Make payment",
+  "intent_context": "Past due notice received",
+  "secondary_intent": null,
 
-  // === FAILURE ANALYSIS ===
-  "failure_point": "none",
-  "failure_description": null,
-  "was_recoverable": null,
-  "critical_failure": false,
+  // === DISPOSITION (unified from outcome + call_disposition) ===
+  "disposition": "in_scope_success",
+  "resolution": "payment processed",
+  "steps": ["greeted customer", "verified identity", "processed payment", "confirmed success"],
 
-  // === ACTIONABLE FLAGS ===
-  "escalation_requested": false,
-  "repeat_caller_signals": false,
-  "training_opportunity": null,
-  "additional_intents": null,
+  // === QUALITY SCORES (1-5, renamed) ===
+  "effectiveness": 4,
+  "quality": 4,
+  "effort": 2,
+  "sentiment_start": "neutral",
+  "sentiment_end": "satisfied",
 
+  // === FAILURE ANALYSIS (renamed) ===
+  "failure_type": "none",
+  "failure_detail": null,
+  "failure_recoverable": null,
+  "failure_critical": false,
+  "policy_gap": null,
+
+  // === FRICTION (flattened from friction object) ===
+  "derailed_at": null,
+  "clarifications": [{"turn": 3, "type": "phone", "cause": "ok", "note": "confirmed number"}],
+  "corrections": [],
+  "loops": [],
+
+  // === INSIGHTS ===
   "summary": "Customer called to make payment. Resolved after brief verification.",
+  "verbatim": null,
+  "coaching": null,
 
-  // === v3 FIELDS ===
-  "policy_gap_detail": null,
-  "customer_verbatim": null,
-  "agent_miss_detail": null,
-  "resolution_steps": ["greeted customer", "verified identity", "processed payment", "confirmed success"],
-
-  // === v3.8.5 FRICTION (consolidated from v3.6-v3.8) ===
-  "friction": {
-    "turns": 12,
-    "derailed_at": null,
-    "clarifications": [{"t": 3, "type": "phone", "cause": "ok", "ctx": "confirmed number"}],
-    "corrections": [],
-    "loops": []
-  }
+  // === FLAGS ===
+  "escalation_requested": false,
+  "repeat_caller": false
 }
 ```
 
