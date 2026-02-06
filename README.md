@@ -112,40 +112,54 @@ Analytical framework to evaluate the Vacatia AI voice agent's performance using 
 
 ## Quick Start
 
+### Fastest path: sample → ask_raw (no per-call analysis)
+
 ```bash
 # 1. Set your Google AI API key
 export GOOGLE_API_KEY="your-api-key-here"
 
-# 2. Run the full pipeline (50 transcripts, 3 parallel workers)
-#    v4.1: Creates isolated run in runs/<timestamp>/
-python3 tools/run_analysis.py
+# 2. Sample 30 transcripts (no analysis, very fast)
+python3 tools/run_analysis.py -n 30 --sample-only
 
-# OR quick test with 5 transcripts
+# 3. Ask questions directly against raw transcripts
+python3 tools/ask_raw.py "What are customers calling about?"
+python3 tools/ask_raw.py "What friction patterns do you see?"
+```
+
+### Standard path: sample → analyze → ask (structured analysis)
+
+```bash
+# 2. Sample + analyze 50 transcripts (default: no insights/report)
+python3 tools/run_analysis.py -n 50
+
+# 3. Ask questions against the LLM-analyzed data
+python3 tools/ask.py "Why do calls fail?"
+python3 tools/ask.py "What are the main friction patterns?"
+
+# 4. Grow the run when you need more data (v4.3 target-based)
+python3 tools/run_analysis.py -n 200        # adds 150 to reach 200
+
+# 5. Generate full insights + report when ready
+python3 tools/run_analysis.py --insights
+```
+
+### More Examples
+
+```bash
+# Quick test with 5 transcripts
 python3 tools/run_analysis.py --quick
 
-# OR larger batch with more parallelization
-python3 tools/run_analysis.py -n 200 --workers 5
-
-# OR with custom run ID (v4.1)
+# Custom run ID
 python3 tools/run_analysis.py -n 50 --run-id experiment_a
 
-# OR with custom questions (v3.9.1)
-python3 tools/run_analysis.py -n 50 --questions questions.txt
+# Full pipeline with insights + custom questions
+python3 tools/run_analysis.py -n 50 --insights --questions questions.txt
 
-# OR legacy flat directory mode
-python3 tools/run_analysis.py --legacy
-
-# 3. All tools automatically use the last created run (v4.1)
-#    (saved in .last_run file, no config needed)
-python3 tools/ask.py "Why do calls fail?"
-python3 tools/batch_analyze.py
-
-# OR use --run-id to override
-python3 tools/ask.py "Compare" --run-id other_run
-
-# OR step-by-step with --run-id (auto-creates directory):
+# Step-by-step with --run-id (auto-creates directory):
 python3 tools/sample_transcripts.py -n 50 --run-id my_run
 python3 tools/batch_analyze.py --run-id my_run
+python3 tools/ask.py "Quick question" --run-id my_run
+# Only needed for full reports:
 python3 tools/compute_metrics.py --run-id my_run
 python3 tools/extract_nl_fields.py --run-id my_run
 python3 tools/generate_insights.py --run-id my_run
@@ -156,50 +170,43 @@ python3 tools/render_report.py --run-id my_run
 
 ### `run_analysis.py` (Orchestrator)
 
-End-to-end pipeline that runs all steps in sequence.
+End-to-end pipeline. Default: **sample + analyze** (fast path for `ask.py`). Use `--insights` for the full pipeline with metrics, insights, and report.
 
 ```bash
-# Full pipeline with 50 transcripts (creates isolated run)
+# Sample + analyze 50 transcripts (default)
 python3 tools/run_analysis.py
+
+# Sample only — for ask_raw.py (skips analysis)
+python3 tools/run_analysis.py -n 30 --sample-only
+
+# Full pipeline with insights and report
+python3 tools/run_analysis.py -n 50 --insights
 
 # Quick test with 5 transcripts
 python3 tools/run_analysis.py --quick
 
-# Larger batch with more parallelization
-python3 tools/run_analysis.py -n 200 --workers 5
+# Grow existing run to 200 total (v4.3 target-based)
+python3 tools/run_analysis.py -n 200
 
 # Custom run ID (v4.1)
 python3 tools/run_analysis.py -n 50 --run-id experiment_a
 
-# Use existing run directory (v4.1)
-python3 tools/run_analysis.py --run-dir runs/experiment_a --resume
-
-# Legacy mode - flat directories (v4.1)
-python3 tools/run_analysis.py --legacy
-
 # Custom sample size with reproducible seed
 python3 tools/run_analysis.py -n 100 --seed 42
 
-# Resume an interrupted run (uses existing manifest)
-python3 tools/run_analysis.py --resume
-
-# v3.9.1: Custom questions (answered in report)
-python3 tools/run_analysis.py -n 50 --questions questions.txt
-
-# v3.9.1: Enable report review (disabled by default)
-python3 tools/run_analysis.py -n 50 --enable-review
-
-# Append to existing samples (don't clear sampled/)
-python3 tools/run_analysis.py -n 50 --no-clear
-
-# Skip sampling/analysis (use existing data)
-python3 tools/run_analysis.py --skip-sampling --skip-analysis
-
-# Metrics only (no LLM insights)
-python3 tools/run_analysis.py --skip-insights
+# Full pipeline with custom questions (v3.9.1)
+python3 tools/run_analysis.py -n 50 --insights --questions questions.txt
 ```
 
-**v4.1 Run-Based Isolation**: Each run creates an isolated directory under `runs/` containing all outputs (sampled transcripts, analyses, reports). The `runs/latest` symlink always points to the most recent run.
+**Three modes:**
+| Flag | Pipeline | Use with |
+|------|----------|----------|
+| `--sample-only` | `sample` | `ask_raw.py` (fastest, no analysis) |
+| *(default)* | `sample → analyze` | `ask.py` (structured queries) |
+| `--insights` | `sample → analyze → metrics → NL → insights → report` | Full executive report |
+
+**v4.1 Run-Based Isolation**: Each run creates an isolated directory under `runs/`.
+**v4.3 Target-Based**: `-n` is a target when a run exists — system calculates the delta automatically.
 
 ### `sample_transcripts.py`
 
@@ -294,34 +301,53 @@ python3 tools/review_report.py --model gemini-3-pro-preview  # Default
 - Generates pipeline improvement suggestions
 - Preserves original report alongside refined version
 
-### `ask.py`
+### `ask.py` — Q&A on LLM analyses
 
-Ad-hoc Q&A about call data without generating full reports.
+Queries the structured analysis outputs (requires `batch_analyze.py` to have run).
 
 ```bash
 python3 tools/ask.py "Why do calls fail?"
 python3 tools/ask.py "What causes name issues?" --limit 50
 python3 tools/ask.py "Main friction patterns?" --limit 250 --stats
-python3 tools/ask.py "Top customer frustrations?" --verbose
 
-# v4.1: Query analyses from specific run
+# Query specific run
 python3 tools/ask.py "Why do calls fail?" --run-dir runs/experiment_a
-python3 tools/ask.py "Top friction patterns?" --run-dir runs/latest
 ```
 
 **How it works:**
-- Single question → single text answer
-- Random sampling from analyses/ directory (default 100 calls, configurable via `--limit`)
-- Cites 2-4 illustrative examples (not exhaustive)
-- Auto-saves to `asks/<timestamp>/` with question.txt, answer.md, metadata.json
-- Token usage stats available with `--stats` or `--verbose` flags
-- **v4.1**: `--run-dir` option scopes queries to specific run's analyses
+- Reads from `analyses/` — LLM-extracted fields (intent, disposition, friction, etc.)
+- Random sampling (default 100 calls, configurable via `--limit`)
+- Cites 2-4 illustrative examples, auto-saves to `asks/<timestamp>/`
+- `--run-dir` / `--run-id` scopes queries to a specific run
 
-**Use cases:**
-- Quick hypothesis testing without full pipeline runs
-- Exploring specific questions between report runs
-- Rapid iteration on specific failure patterns or friction points
-- **v4.1**: Comparing findings across different runs
+### `ask_raw.py` — Q&A on raw transcripts
+
+Queries raw conversation transcripts directly — **no analysis step needed**.
+
+```bash
+python3 tools/ask_raw.py "What are customers calling about?"
+python3 tools/ask_raw.py "What friction patterns do you see?" --limit 20
+python3 tools/ask_raw.py "Why do calls get escalated?" --verbose
+
+# Query specific run
+python3 tools/ask_raw.py "Main patterns?" --run-dir runs/my_run
+```
+
+**How it works:**
+- Reads from `sampled/` — raw transcript JSONs, preprocessed on-the-fly
+- Lower default limit (30) since raw transcripts are larger than analysis summaries
+- No per-call LLM cost — only the single Q&A call
+- Auto-saves to `asks_raw/<timestamp>/`
+- `--run-dir` / `--run-id` scopes queries to a specific run
+
+### When to use which
+
+| | `ask_raw.py` | `ask.py` |
+|-|-------------|----------|
+| **Speed** | Fastest (sample only) | Needs analysis first |
+| **Cost** | 1 LLM call total | N analysis calls + 1 Q&A call |
+| **Data** | Full conversation text | Structured fields (intent, disposition, scores) |
+| **Best for** | Exploration, open-ended questions | Targeted queries on extracted metrics |
 
 ## Output Files
 
@@ -414,7 +440,8 @@ reports/
 | **v3.9** | 20 | Call disposition classification for funnel analysis | Previous | [`README_v3.9.md`](README_v3.9.md) |
 | **v3.9.1** | 20 | Loop subject granularity: subject field for targeted friction analysis | Previous | [`README_v3.9.1.md`](README_v3.9.1.md) |
 | **v4.0** | 22 | Intent + sentiment analysis, schema cleanup, flattened friction | Previous | [`README_v4.0.md`](README_v4.0.md) |
-| **v4.1** | 22 | Run-based isolation, reproducibility, concurrent runs | **Current** | [`README_v4.1.md`](README_v4.1.md) |
+| **v4.1** | 22 | Run-based isolation, reproducibility, concurrent runs | Previous | [`README_v4.1.md`](README_v4.1.md) |
+| **v4.3** | 22 | Target-based augmentation, insights off by default | **Current** | [`README_v4.3.md`](README_v4.3.md) |
 
 ### Versioning Guidelines
 

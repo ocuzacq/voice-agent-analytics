@@ -27,9 +27,9 @@ v4.1 Features:
 - --run-id for custom run naming
 
 v3.9.2 Features:
-- Lazy metrics/NL extraction: --skip-insights now stops after analysis step
-- Enables fast workflow for ask.py (no metrics/NL files needed)
-- Full pipeline auto-generates metrics/NL before insights as before
+- Insights off by default: use --insights to run metrics/NL/insights/report
+- Default pipeline: sample → analyze (fast workflow for ask.py)
+- Full pipeline with --insights: sample → analyze → metrics → NL → insights → report
 
 v3.9.1 Features:
 - Custom questions: --questions flag to provide questions file for LLM to answer
@@ -37,8 +37,14 @@ v3.9.1 Features:
 - Review step disabled by default (use --enable-review to run it)
 
 Usage:
-    # Full pipeline with 50 transcripts (creates isolated run)
+    # Sample + analyze 50 transcripts (default)
     python3 tools/run_analysis.py -n 50
+
+    # Sample only (for ask_raw.py — skips analysis)
+    python3 tools/run_analysis.py -n 50 --sample-only
+
+    # Full pipeline with insights/report
+    python3 tools/run_analysis.py -n 50 --insights
 
     # Quick test with 5 transcripts
     python3 tools/run_analysis.py --quick
@@ -98,8 +104,15 @@ def main():
         formatter_class=argparse.RawDescriptionHelpFormatter,
         epilog="""
 Examples:
-    # Full pipeline with 50 transcripts (creates isolated run)
+    # Sample + analyze 50 transcripts (default)
     python3 tools/run_analysis.py -n 50
+
+    # Sample only, then use ask_raw.py (skips analysis)
+    python3 tools/run_analysis.py -n 30 --sample-only
+    python3 tools/ask_raw.py "What are customers calling about?"
+
+    # Full pipeline with insights and report
+    python3 tools/run_analysis.py -n 50 --insights
 
     # Quick test with 5 transcripts
     python3 tools/run_analysis.py --quick
@@ -131,6 +144,8 @@ Examples:
     parser.add_argument("--legacy", action="store_true",
                         help="Use legacy flat directory mode (no isolation)")
 
+    parser.add_argument("--sample-only", action="store_true",
+                        help="Stop after sampling (for ask_raw.py workflow, no analysis)")
     parser.add_argument("--skip-sampling", action="store_true",
                         help="Skip sampling step (use existing sampled/)")
     parser.add_argument("--resume", action="store_true",
@@ -141,8 +156,10 @@ Examples:
                         help="Skip analysis step (use existing analyses/)")
     parser.add_argument("--no-clear-analyses", action="store_true",
                         help="Don't clear analyses/ before fresh run (default: clear for run isolation)")
+    parser.add_argument("--insights", action="store_true",
+                        help="Run metrics, NL extraction, insights, and report (off by default)")
     parser.add_argument("--skip-insights", action="store_true",
-                        help="Skip metrics, NL extraction, and insights (stop after analysis)")
+                        help="[DEPRECATED] No-op, insights are now off by default. Use --insights to enable.")
     parser.add_argument("--analysis-model", type=str, default="gemini-3-flash-preview",
                         help="Gemini model for transcript analysis (default: gemini-3-flash-preview)")
     parser.add_argument("--insights-model", type=str, default="gemini-3-pro-preview",
@@ -324,6 +341,10 @@ Examples:
             cmd.extend(["--seed", str(args.seed)])
         if args.no_clear:
             cmd.append("--no-clear")
+        if is_augmenting:
+            # v4.3 fix: run_analysis.py already computed the delta,
+            # so tell sample_transcripts.py to treat -n as exact count
+            cmd.append("--force-count")
         if using_isolation and run_dir:
             cmd.extend(["--run-dir", str(run_dir)])
 
@@ -344,6 +365,21 @@ Examples:
         skip_reason = "--resume" if args.resume else "--skip-sampling"
         print(f"\n⏭️ Skipping sampling ({skip_reason})")
         steps_completed.append("sampling (skipped)")
+
+    # --sample-only: stop after sampling (for ask_raw.py workflow)
+    if args.sample_only:
+        if using_isolation and run_dir:
+            update_latest_symlink(run_dir)
+        print("\n" + "=" * 60)
+        print("PIPELINE SUMMARY (--sample-only)")
+        print("=" * 60)
+        print(f"Completed: {datetime.now().isoformat()}")
+        print(f"\n✅ Steps completed: {', '.join(steps_completed)}")
+        print(f"\n📁 Sampled transcripts: {sampled_dir}")
+        if using_isolation and run_dir:
+            print(f"📂 Run directory: {run_dir}")
+        print(f"\nNext: python3 tools/ask_raw.py \"Your question here\"")
+        return 0
 
     # Step 2: Batch analyze (parallel in v3.2)
     if not args.skip_analysis:
@@ -396,8 +432,9 @@ Examples:
         print("\n⏭️ Skipping analysis (--skip-analysis)")
         steps_completed.append("analysis (skipped)")
 
-    # Steps 3-5: Metrics, NL extraction, and insights (skipped with --skip-insights)
-    if not args.skip_insights:
+    # Steps 3-5: Metrics, NL extraction, and insights (opt-in with --insights)
+    run_insights = args.insights
+    if run_insights:
         # Step 3: Compute metrics (v3.3: scope coherence via manifest)
         if using_isolation and run_dir:
             update_status(run_dir, "metrics", "in_progress")
@@ -481,7 +518,7 @@ Examples:
                 update_status(run_dir, "insights", "failed")
             print("\n⚠️ Insights generation failed. Continuing without insights...")
     else:
-        print("\n⏭️ Skipping metrics, NL extraction, insights (--skip-insights)")
+        print("\n⏭️ Skipping metrics, NL extraction, insights (use --insights to enable)")
         steps_completed.append("metrics (skipped)")
         steps_completed.append("nl_extraction (skipped)")
         steps_completed.append("insights (skipped)")

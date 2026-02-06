@@ -103,7 +103,10 @@ def get_genai_client() -> genai.Client:
 
 
 def load_analyses(analyses_dir: Path) -> list[dict]:
-    """Load all analysis JSON files from directory."""
+    """Load all analysis JSON files from directory.
+
+    Handles both individual analysis files (dict) and skips batch/aggregate files.
+    """
     analyses = []
 
     if not analyses_dir.exists():
@@ -113,11 +116,26 @@ def load_analyses(analyses_dir: Path) -> list[dict]:
     if not json_files:
         raise FileNotFoundError(f"No analysis JSON files found in {analyses_dir}")
 
+    # Skip known non-analysis files
+    skip_patterns = {'batch_', 'all_calls_', 'metrics_', 'report_', 'insights_', 'nl_data_'}
+
     for json_file in json_files:
+        # Skip aggregate/batch files
+        if any(json_file.name.startswith(p) for p in skip_patterns):
+            continue
+
         try:
             with open(json_file, 'r', encoding='utf-8') as f:
-                analysis = json.load(f)
-                analyses.append(analysis)
+                data = json.load(f)
+
+                # Handle both dict (single analysis) and list (multiple)
+                if isinstance(data, dict):
+                    # Must have call_id to be a valid analysis
+                    if "call_id" in data:
+                        analyses.append(data)
+                elif isinstance(data, list):
+                    # Skip lists - these are typically aggregate files
+                    continue
         except (json.JSONDecodeError, IOError) as e:
             print(f"Warning: Could not load {json_file}: {e}", file=sys.stderr)
             continue

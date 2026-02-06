@@ -3,6 +3,7 @@ transcripts/
 sampled/
 reports/
 asks/
+asks_raw/
 cowork/
 preprocessed/
 runs/
