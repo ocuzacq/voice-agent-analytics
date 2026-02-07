@@ -3,12 +3,18 @@ transcripts/
 sampled/
 reports/
 asks/
+asks_raw/
 cowork/
 preprocessed/
+runs/
 
 # Keep test analyses, exclude production analyses
 analyses/*
 !analyses/test-v3-*.json
+
+# Golden test set (override general ignores above)
+!tests/golden/
+!tests/golden/**
 
 # Python
 __pycache__/
@@ -39,3 +45,4 @@ Thumbs.db
 
 # Claude Code
 .claude/
+.last_run*

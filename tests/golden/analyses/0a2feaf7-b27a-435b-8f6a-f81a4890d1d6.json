@@ -1,0 +1,65 @@
+{
+  "call_id": "0a2feaf7-b27a-435b-8f6a-f81a4890d1d6",
+  "schema_version": "v5.0",
+  "turns": 11,
+  "ended_by": "agent",
+  "intent": "Make a payment",
+  "intent_context": "Account number showing as invalid on portal",
+  "secondary_intent": "Log into Clubhouse portal",
+  "call_scope": "in_scope",
+  "call_outcome": "completed",
+  "resolution": "link sent",
+  "steps": [
+    "Account lookup by phone",
+    "Verification by name and state",
+    "Troubleshoot portal login",
+    "Confirm property and contact info",
+    "Send payment link"
+  ],
+  "escalation_trigger": null,
+  "abandon_stage": null,
+  "resolution_confirmed": false,
+  "effectiveness": 5,
+  "quality": 5,
+  "effort": 2,
+  "sentiment_start": "neutral",
+  "sentiment_end": "neutral",
+  "failure_type": null,
+  "failure_detail": null,
+  "policy_gap": null,
+  "derailed_at": null,
+  "clarifications": [
+    {
+      "turn": 5,
+      "type": "name",
+      "cause": "ok",
+      "note": "Confirming spelling of name for verification"
+    }
+  ],
+  "corrections": [],
+  "loops": [],
+  "summary": "Customer called because their account number was showing as invalid on the portal. The agent verified the account and sent a payment link via email and text to resolve the immediate need.",
+  "verbatim": "My account number is invalid... Tells me this is not a valid ID.",
+  "coaching": null,
+  "repeat_caller": true,
+  "actions": [
+    {
+      "action": "account_lookup",
+      "outcome": "success",
+      "detail": "Located account using phone number"
+    },
+    {
+      "action": "verification",
+      "outcome": "success",
+      "detail": "Verified via name and state"
+    },
+    {
+      "action": "send_payment_link",
+      "outcome": "success",
+      "detail": "Sent link via email and text"
+    }
+  ],
+  "transfer_destination": null,
+  "transfer_queue_detected": false,
+  "duration_seconds": 190.9
+}

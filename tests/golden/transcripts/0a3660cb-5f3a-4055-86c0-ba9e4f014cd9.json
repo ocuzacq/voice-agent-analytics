@@ -1,0 +1,117 @@
+{
+  "agent_id": "IdNSnJmoukxviqoTIWOZ",
+  "duration": 133.075604,
+  "ended_reason": "customer-ended-call",
+  "messages": [
+    {
+      "role": "assistant",
+      "timestamp": 1769618487.0649655,
+      "content": "Hi, thank you for calling Vacation Village Resorts. This is Jamie, a virtual agent on a recorded line. How can I help you today?"
+    },
+    {
+      "role": "user",
+      "timestamp": 1769618498.8023384,
+      "content": "Payment."
+    },
+    {
+      "role": "assistant",
+      "timestamp": 1769618501.3370576,
+      "content": "Alright, I can help with your payment. Are you looking to pay your annual maintenance fees or your mortgage? Just to clarify, are you looking to pay your mortgage or your yearly"
+    },
+    {
+      "role": "assistant",
+      "timestamp": 1769618501.3370576,
+      "content": "maintenance fees?"
+    },
+    {
+      "role": "user",
+      "timestamp": 1769618514.9621418,
+      "content": "Maintenance."
+    },
+    {
+      "role": "assistant",
+      "timestamp": 1769618521.365135,
+      "content": "Okay, I was able to pull up a matching record using your phone number. Can you tell me your first and last name?"
+    },
+    {
+      "role": "user",
+      "timestamp": 1769618530.2203946,
+      "content": "Bernard Dolan."
+    },
+    {
+      "role": "assistant",
+      "timestamp": 1769618533.1414695,
+      "content": "Thanks, Bernard Dolan. Can you tell me what state you currently reside in?"
+    },
+    {
+      "role": "user",
+      "timestamp": 1769618540.1413903,
+      "content": "Pennsylvania."
+    },
+    {
+      "role": "assistant",
+      "timestamp": 1769618542.3017747,
+      "content": "Great, your information is verified. Go ahead and let me know what you need help with regarding your maintenance payment."
+    },
+    {
+      "role": "user",
+      "timestamp": 1769618551.9955091,
+      "content": "Supposed to be an automatic withdrawal, but it has not come out yet."
+    },
+    {
+      "role": "user",
+      "timestamp": 1769618556.216675,
+      "content": "Is it going to come out?"
+    },
+    {
+      "role": "assistant",
+      "timestamp": 1769618558.6177843,
+      "content": "I see, you were expecting your maintenance fee to be withdrawn automatically but it hasn't come out yet. Can you confirm which"
+    },
+    {
+      "role": "assistant",
+      "timestamp": 1769618558.6177843,
+      "content": "property this is for?"
+    },
+    {
+      "role": "user",
+      "timestamp": 1769618570.0004811,
+      "content": "Account number. Eight seven seven two zero zero three three"
+    },
+    {
+      "role": "user",
+      "timestamp": 1769618577.2794323,
+      "content": "four zero three zero."
+    },
+    {
+      "role": "assistant",
+      "timestamp": 1769618579.39962,
+      "content": "Thanks for sharing your account number. Can you confirm the name of the resort or property this contract is for?"
+    },
+    {
+      "role": "user",
+      "timestamp": 1769618589.3284328,
+      "content": "Vacation Village at Williamsburg."
+    },
+    {
+      "role": "assistant",
+      "timestamp": 1769618593.4490416,
+      "content": "So, for Vacation Village at Williamsburg, contract number eight seven seven two zero zero three three four zero three"
+    },
+    {
+      "role": "assistant",
+      "timestamp": 1769618593.4490416,
+      "content": "zero, you want to know if your maintenance fee will be withdrawn automatically since it hasn't come out yet?"
+    },
+    {
+      "role": "user",
+      "timestamp": 1769618606.2189138,
+      "content": "What am I looking for?"
+    },
+    {
+      "role": "assistant",
+      "timestamp": 1769618610.4202983,
+      "content": "You mentioned your maintenance fee hasn't been withdrawn automatically for Vacation Village at Williamsburg, contract number eight seven seven two zero zero three three"
+    }
+  ]
+}

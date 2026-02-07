@@ -1,0 +1,307 @@
+{
+  "agent_id": "IdNSnJmoukxviqoTIWOZ",
+  "duration": 326.45438,
+  "ended_reason": "customer-ended-call",
+  "messages": [
+    {
+      "role": "assistant",
+      "timestamp": 1769881706.8309288,
+      "content": "Hi, thank you for calling Vacation Village Resorts. Our offices are currently closed. This is Jamie, a virtual agent on a recorded line. How can I help you today?"
+    },
+    {
+      "role": "user",
+      "timestamp": 1769881718.4273188,
+      "content": "I'm trying to log in to the new vacation vacation Vacatia."
+    },
+    {
+      "role": "assistant",
+      "timestamp": 1769881724.1095464,
+      "content": "Let me get you the registration link for Clubhouse so you can create your account. Are Who do I have the pleasure of speaking with? you looking to register a new account"
+    },
+    {
+      "role": "assistant",
+      "timestamp": 1769881724.1095464,
+      "content": "or having trouble logging in to an existing one?"
+    },
+    {
+      "role": "user",
+      "timestamp": 1769881734.855594,
+      "content": "I'm trying to I'm trying to set that up. Vacation Village at Parkway. I just got a letter saying vacation Village is"
+    },
+    {
+      "role": "user",
+      "timestamp": 1769881741.5807352,
+      "content": "is is is now studying something called Vacatia Clubhouse."
+    },
+    {
+      "role": "assistant",
+      "timestamp": 1769881747.9415007,
+      "content": "Alright, so you're looking to set up your new Vacatia Clubhouse account for Vacation Village at Parkway."
+    },
+    {
+      "role": "assistant",
+      "timestamp": 1769881747.9415007,
+      "content": "Can I get your name?"
+    },
+    {
+      "role": "user",
+      "timestamp": 1769881754.2500238,
+      "content": "That's correct."
+    },
+    {
+      "role": "user",
+      "timestamp": 1769881757.6598127,
+      "content": "And I've done what it says. I I type in my ID number. It says it's not a correct ID number."
+    },
+    {
+      "role": "user",
+      "timestamp": 1769881764.9709852,
+      "content": "And then when I I swipe then it says you can type in your"
+    },
+    {
+      "role": "user",
+      "timestamp": 1769881770.1130283,
+      "content": "you you can type in your"
+    },
+    {
+      "role": "user",
+      "timestamp": 1769881772.9701848,
+      "content": "what is it, your unit number and your week number, and I did that. And"
+    },
+    {
+      "role": "user",
+      "timestamp": 1769881778.3018851,
+      "content": "it it comes back, and it says it's trying to send me an email, and it sent it to trash. I type in the code that I got from the code, and it says it's not no good. Actually, it logged me in. It says we're already we're already members."
+    },
+    {
+      "role": "user",
+      "timestamp": 1769881796.0201216,
+      "content": "I'm just trying to set this thing up. It's ridiculous."
+    },
+    {
+      "role": "assistant",
+      "timestamp": 1769881797.7007248,
+      "content": "Can I get your name?"
+    },
+    {
+      "role": "user",
+      "timestamp": 1769881801.0196025,
+      "content": "Bradley Akeerman, a k e I m a n."
+    },
+    {
+      "role": "assistant",
+      "timestamp": 1769881807.1411963,
+      "content": "Bradley, can you give me the phone number you have on your contract?"
+    },
+    {
+      "role": "user",
+      "timestamp": 1769881812.5079756,
+      "content": "Six zero three five one two eight eight one two."
+    },
+    {
+      "role": "assistant",
+      "timestamp": 1769881817.1486754,
+      "content": "Just a sec, let me check your account for you."
+    },
+    {
+      "role": "assistant",
+      "timestamp": 1769881820.7082722,
+      "content": "I was able to pull up a record using your phone number. Can you confirm your last name spelling"
+    },
+    {
+      "role": "user",
+      "timestamp": 1769881821.8337545,
+      "content": "Okay."
+    },
+    {
+      "role": "assistant",
+      "timestamp": 1769881825.1168911,
+      "content": "Can you spell your last name for me one more time?"
+    },
+    {
+      "role": "user",
+      "timestamp": 1769881831.8218262,
+      "content": "Bakerman, a k e I m a n."
+    },
+    {
+      "role": "assistant",
+      "timestamp": 1769881835.0698564,
+      "content": "Let me spell that back to you: A as"
+    },
+    {
+      "role": "assistant",
+      "timestamp": 1769881835.0698564,
+      "content": "in Apple, K as in Kite, E as in Edward, I as in Indigo, M as in Mary, A as in Apple,"
+    },
+    {
+      "role": "user",
+      "timestamp": 1769881843.834381,
+      "content": "Oh, r. A k e r."
+    },
+    {
+      "role": "assistant",
+      "timestamp": 1769881847.5947368,
+      "content": "Got it, so your last name is spelled"
+    },
+    {
+      "role": "user",
+      "timestamp": 1769881848.9741518,
+      "content": "Like ran Randy."
+    },
+    {
+      "role": "assistant",
+      "timestamp": 1769881851.2562056,
+      "content": "Let me confirm, I have your last name as Akerman. Can you tell me your state of residence?"
+    },
+    {
+      "role": "user",
+      "timestamp": 1769881858.2256029,
+      "content": "South Carolina."
+    },
+    {
+      "role": "assistant",
+      "timestamp": 1769881860.5065472,
+      "content": "Perfect, I have you verified. Go ahead and let me know what you need help with regarding your Vacation Village at"
+    },
+    {
+      "role": "assistant",
+      "timestamp": 1769881860.5065472,
+      "content": "Parkway ownership."
+    },
+    {
+      "role": "user",
+      "timestamp": 1769881869.782868,
+      "content": "I'm try are you familiar with the letter that we all I I guess, we all receive saying vacate it's called Vacatia. It says that now that you you need to set set up a Vacatia clubhouse."
+    },
+    {
+      "role": "user",
+      "timestamp": 1769881883.6529553,
+      "content": "And that's what I was trying to do."
+    },
+    {
+      "role": "assistant",
+      "timestamp": 1769881887.656096,
+      "content": "Yes, I am familiar"
+    },
+    {
+      "role": "user",
+      "timestamp": 1769881889.3258603,
+      "content": "And it won't let me do it."
+    },
+    {
+      "role": "assistant",
+      "timestamp": 1769881891.1911612,
+      "content": "So, just to clarify, would you like me to send you a new registration link for Clubhouse so you can try setting up your account again?"
+    },
+    {
+      "role": "user",
+      "timestamp": 1769881901.4712756,
+      "content": "Well, I got in there, but it wouldn't let me do anything."
+    },
+    {
+      "role": "user",
+      "timestamp": 1769881905.0218117,
+      "content": "I it says that we it says"
+    },
+    {
+      "role": "user",
+      "timestamp": 1769881908.4538975,
+      "content": "it says that"
+    },
+    {
+      "role": "user",
+      "timestamp": 1769881910.1233323,
+      "content": "let me yeah. I I've gotta go through all this thing now. Why won't it accept But first of all, it it it says account lookup and it just asked for my ID. Do you have my my ID as one dash six four two dash zero I mean, one six four two zero two nine zero?"
+    },
+    {
+      "role": "assistant",
+      "timestamp": 1769881930.92438,
+      "content": "I see your RCI Member ID as one"
+    },
+    {
+      "role": "user",
+      "timestamp": 1769881933.1605914,
+      "content": "That's the ID"
+    },
+    {
+      "role": "assistant",
+      "timestamp": 1769881935.9252615,
+      "content": "Yes, I have your RCI Member ID as one dash six four two zero two nine zero."
+    },
+    {
+      "role": "user",
+      "timestamp": 1769881938.1754766,
+      "content": "Oh, that's my"
+    },
+    {
+      "role": "user",
+      "timestamp": 1769881940.3789232,
+      "content": "okay. And I should have been able to punch that. It says no. It's asking me for my personalized Vacatia ID. I assume that was my"
+    },
+    {
+      "role": "user",
+      "timestamp": 1769881950.5875902,
+      "content": "RCI ID. Is that right?"
+    },
+    {
+      "role": "assistant",
+      "timestamp": 1769881953.7791803,
+      "content": "Your personalized Vacatia ID is not the same as your RCI Member ID. The Vacatia Clubhouse registration will require a unique Vacatia ID,"
+    },
+    {
+      "role": "assistant",
+      "timestamp": 1769881953.7791803,
+      "content": "which is different from your RCI number. Did the letter you received mention a specific Vacatia ID, or did it provide instructions on where to find it?"
+    },
+    {
+      "role": "user",
+      "timestamp": 1769881974.4443088,
+      "content": "Let's see. I'm not right here."
+    },
+    {
+      "role": "assistant",
+      "timestamp": 1769881977.8501885,
+      "content": "Take your time. If you find the letter, can you read"
+    },
+    {
+      "role": "user",
+      "timestamp": 1769881980.4273155,
+      "content": "It's simple. If it's simple, log in log log logging in, it says it's simple. Select your resort from the down drop down menu, enter your new your unit and week, or use your personal ID. Well, I went through entering my unit and my week."
+    },
+    {
+      "role": "user",
+      "timestamp": 1769881996.9382398,
+      "content": "I guess if I don't set it up, I don't have an ID yet. That's what you're saying."
+    },
+    {
+      "role": "assistant",
+      "timestamp": 1769882000.4911287,
+      "content": "That's right, you won't have a Vacatia ID until you complete the registration process. Would you like me to send you a new registration link for Clubhouse"
+    },
+    {
+      "role": "user",
+      "timestamp": 1769882007.636873,
+      "content": "Alright. I guess well,"
+    },
+    {
+      "role": "user",
+      "timestamp": 1769882011.3671074,
+      "content": "okay. You can see. Go ahead. Go ahead and send that to me. Will that be sent to my email or a text or"
+    },
+    {
+      "role": "assistant",
+      "timestamp": 1769882020.5278168,
+      "content": "I have your email as BRAD0723 at aol dot com. Is that"
+    },
+    {
+      "role": "assistant",
+      "timestamp": 1769882020.5278168,
+      "content": "the correct email for you?"
+    },
+    {
+      "role": "user",
+      "timestamp": 1769882029.9306886,
+      "content": "That is the correct one. And when I"
+    }
+  ]
+}

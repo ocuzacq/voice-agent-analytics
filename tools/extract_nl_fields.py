@@ -1,9 +1,21 @@
 #!/usr/bin/env python3
 """
-NL Field Extractor for Vacatia AI Voice Agent Analytics (v3.9.1)
+NL Field Extractor for Vacatia AI Voice Agent Analytics (v4.1)
 
-Extracts natural language fields from v3 analysis JSONs into a condensed
+Extracts natural language fields from v4/v3 analysis JSONs into a condensed
 format optimized for LLM insight generation.
+
+v4.1 additions:
+- Run-based isolation support via --run-dir argument
+- Reads from run's analyses/, writes to run's reports/
+- Backwards compatible with legacy flat directory mode
+
+v4.0 additions:
+- intent_data: Extracts intent, intent_context, secondary_intent for caller needs analysis
+- sentiment_data: Extracts sentiment_start, sentiment_end for emotional journey tracking
+- Updated field mappings for v4.0 renamed fields (verbatim, coaching, etc.)
+- Flattened friction extraction (clarifications, corrections, loops at top-level)
+- Disposition extraction unified (v4.0 disposition vs v3.x call_disposition)
 
 v3.9.1 additions:
 - loop_subjects: Extracts subject field from loops for granular analysis
@@ -16,38 +28,13 @@ v3.9 additions:
 v3.8.5 additions:
 - Backwards-compatible extraction from both v3.8.5 (friction) and v3.8 formats
 - Extracts from friction.clarifications, friction.corrections, friction.loops
-- Maps short enum values to canonical values for consistent aggregation
-- Loops now include turn numbers (t array) when available
 
-v3.8 additions:
-- loop_events: Now extracts from agent_loops with type + context
-- Each loop event includes: type (enum), context (description), call outcome
-- Supports friction loop analysis by type (info_retry, intent_retry, etc.)
-
-v3.7 additions:
-- clarification_events now include: cause (enum) + context (string)
-- correction_events now include: severity (enum) + context (string)
-- These structured fields enable reliable aggregation + nuanced analysis
-
-v3.6 additions:
-- clarification_events: Calls with clarification requests + outcomes
-- correction_events: Calls with user corrections + frustration signals
-- conversation_turn_outliers: Unusually long or short calls for analysis
-
-v3.5 additions:
-- training_details: Training opportunities with associated failure context
-- all_additional_intents: Secondary customer intents for clustering
-
-v3.3 additions:
-- Scope coherence: Respects manifest.csv for run isolation
-
-This dedicated script replaces the --export-nl-fields flag in compute_metrics.py,
-providing:
+This dedicated script provides:
 1. Explicit architecture - extraction is a first-class pipeline step
 2. Optimized output - ~70% smaller than full analyses
 3. LLM-ready format - grouped by failure type with all context needed
 
-Output: nl_summary_v3_{timestamp}.json
+Output: nl_summary_v4_{timestamp}.json
 """
 
 import argparse
@@ -57,6 +44,11 @@ import sys
 from collections import defaultdict
 from datetime import datetime
 from pathlib import Path
+
+from run_utils import (
+    add_run_arguments, resolve_run_from_args, get_run_paths,
+    prompt_for_run, confirm_or_select_run, require_explicit_run_noninteractive
+)
 
 
 def load_manifest_ids(sampled_dir: Path) -> set[str] | None:
@@ -75,8 +67,8 @@ def load_manifest_ids(sampled_dir: Path) -> set[str] | None:
     return call_ids
 
 
-def load_v3_analyses(analyses_dir: Path, manifest_ids: set[str] | None = None) -> list[dict]:
-    """Load only v3 schema analysis files.
+def load_analyses(analyses_dir: Path, manifest_ids: set[str] | None = None) -> list[dict]:
+    """Load v4.x and v3.x schema analysis files.
 
     Args:
         analyses_dir: Directory containing analysis JSON files
@@ -84,10 +76,11 @@ def load_v3_analyses(analyses_dir: Path, manifest_ids: set[str] | None = None) -
     """
     analyses = []
     skipped_not_in_manifest = 0
+    version_counts = {}
 
     for f in analyses_dir.iterdir():
         if f.is_file() and f.suffix == '.json':
-            # v3.3: Scope coherence - filter by manifest if provided
+            # Scope coherence - filter by manifest if provided
             if manifest_ids is not None and f.stem not in manifest_ids:
                 skipped_not_in_manifest += 1
                 continue
@@ -95,17 +88,26 @@ def load_v3_analyses(analyses_dir: Path, manifest_ids: set[str] | None = None) -
             try:
                 with open(f, 'r', encoding='utf-8') as fp:
                     data = json.load(fp)
-                    # Accept v3.x versions (v3, v3.5, v3.6, etc.)
+                    # Accept v4.x and v3.x versions
                     version = data.get("schema_version", "")
-                    if version.startswith("v3"):
+                    if version.startswith("v4") or version.startswith("v3"):
                         analyses.append(data)
+                        version_counts[version] = version_counts.get(version, 0) + 1
             except (json.JSONDecodeError, IOError) as e:
                 print(f"Warning: Could not load {f}: {e}", file=sys.stderr)
 
     if skipped_not_in_manifest > 0:
         print(f"Scope filter: Skipped {skipped_not_in_manifest} analyses not in manifest", file=sys.stderr)
 
+    if version_counts:
+        versions_str = ", ".join(f"{v}: {c}" for v, c in sorted(version_counts.items()))
+        print(f"Schema versions: {versions_str}", file=sys.stderr)
+
     return analyses
+
+
+# Keep old function name for backwards compatibility
+load_v3_analyses = load_analyses
 
 
 # v3.8.5 Enum mapping: short values → canonical values
@@ -135,11 +137,37 @@ def get_conversation_turns(analysis: dict) -> int | None:
     return analysis.get("conversation_turns")
 
 
+def get_outcome(analysis: dict) -> str:
+    """Get outcome/disposition from v5.0, v4.0, or v3.x format."""
+    # v5.0: call_outcome
+    if "call_outcome" in analysis:
+        return analysis["call_outcome"]
+    # v4.0 uses disposition
+    if "disposition" in analysis:
+        return analysis["disposition"]
+    # v3.x uses outcome or call_disposition
+    return analysis.get("outcome") or analysis.get("call_disposition")
+
+
 def extract_clarification_events(analysis: dict) -> list[dict]:
-    """Extract clarification events from both v3.8.5 and v3.8 formats."""
+    """Extract clarification events from v4.0 (top-level), v3.8.5, and v3.8 formats."""
     events = []
     call_id = analysis.get("call_id")
-    outcome = analysis.get("outcome")
+    outcome = get_outcome(analysis)
+
+    # v4.0 format: top-level clarifications array
+    if "clarifications" in analysis and isinstance(analysis["clarifications"], list):
+        for c in analysis["clarifications"]:
+            events.append({
+                "call_id": call_id,
+                "type": CLARIFICATION_TYPE_MAP.get(c.get("type"), c.get("type")),
+                "turn": c.get("turn") or c.get("t"),
+                "resolved": None,
+                "cause": CLARIFICATION_CAUSE_MAP.get(c.get("cause"), c.get("cause")),
+                "context": c.get("note") or c.get("ctx"),
+                "outcome": outcome
+            })
+        return events
 
     # v3.8.5 format: friction.clarifications
     friction = analysis.get("friction")
@@ -174,10 +202,25 @@ def extract_clarification_events(analysis: dict) -> list[dict]:
 
 
 def extract_correction_events(analysis: dict) -> list[dict]:
-    """Extract correction events from both v3.8.5 and v3.8 formats."""
+    """Extract correction events from v4.0 (top-level), v3.8.5, and v3.8 formats."""
     events = []
     call_id = analysis.get("call_id")
-    outcome = analysis.get("outcome")
+    outcome = get_outcome(analysis)
+
+    # v4.0 format: top-level corrections array
+    if "corrections" in analysis and isinstance(analysis["corrections"], list):
+        for c in analysis["corrections"]:
+            sev = c.get("severity") or c.get("sev")
+            events.append({
+                "call_id": call_id,
+                "what": None,
+                "turn": c.get("turn") or c.get("t"),
+                "frustrated": sev == "major",
+                "severity": sev,
+                "context": c.get("note") or c.get("ctx"),
+                "outcome": outcome
+            })
+        return events
 
     # v3.8.5 format: friction.corrections
     friction = analysis.get("friction")
@@ -213,13 +256,26 @@ def extract_correction_events(analysis: dict) -> list[dict]:
 
 
 def extract_loop_events(analysis: dict) -> list[dict]:
-    """Extract loop events from both v3.9.1/v3.8.5 and v3.8 formats.
+    """Extract loop events from v4.0 (top-level), v3.9.1/v3.8.5, and v3.8 formats.
 
-    v3.9.1: Includes subject field for granular loop analysis.
+    v4.0/v3.9.1: Includes subject field for granular loop analysis.
     """
     events = []
     call_id = analysis.get("call_id")
-    outcome = analysis.get("outcome")
+    outcome = get_outcome(analysis)
+
+    # v4.0 format: top-level loops array
+    if "loops" in analysis and isinstance(analysis["loops"], list):
+        for l in analysis["loops"]:
+            events.append({
+                "call_id": call_id,
+                "turns": l.get("turns") or l.get("t", []),  # v4.0 uses "turns"
+                "type": l.get("type"),
+                "subject": l.get("subject"),
+                "context": l.get("note") or l.get("ctx"),
+                "outcome": outcome
+            })
+        return events
 
     # v3.9.1/v3.8.5 format: friction.loops
     friction = analysis.get("friction")
@@ -266,35 +322,90 @@ def extract_loop_events(analysis: dict) -> list[dict]:
 
 
 def extract_condensed_call(analysis: dict) -> dict:
-    """Extract only the NL-relevant fields from a single analysis (~5-10 lines vs 18 fields)."""
+    """Extract only the NL-relevant fields from a single analysis (~5-10 lines vs 18 fields).
+
+    Handles both v4.0 and v3.x field names.
+    """
     condensed = {
         "call_id": analysis.get("call_id"),
-        "outcome": analysis.get("outcome"),
-        "failure_point": analysis.get("failure_point"),
     }
 
-    # v3.9: Include call disposition
-    if analysis.get("call_disposition"):
-        condensed["call_disposition"] = analysis["call_disposition"]
+    # v5.0: call_scope + call_outcome | v4.0: disposition | v3.x: outcome/call_disposition
+    if analysis.get("call_scope"):
+        condensed["call_scope"] = analysis["call_scope"]
+    if analysis.get("call_outcome"):
+        condensed["call_outcome"] = analysis["call_outcome"]
+    # Fallback: v4.0/v3.x
+    if "call_scope" not in condensed:
+        disposition = analysis.get("disposition") or analysis.get("call_disposition")
+        if disposition:
+            condensed["disposition"] = disposition
+        elif analysis.get("outcome"):
+            condensed["outcome"] = analysis["outcome"]
 
-    # Only include non-null NL fields
-    if analysis.get("failure_description"):
-        condensed["failure_description"] = analysis["failure_description"]
+    # v4.0 uses failure_type, v3.x uses failure_point
+    failure_type = analysis.get("failure_type") or analysis.get("failure_point")
+    if failure_type:
+        condensed["failure_type"] = failure_type
 
-    if analysis.get("customer_verbatim"):
-        condensed["customer_verbatim"] = analysis["customer_verbatim"]
+    # v4.0: Include intent data
+    if analysis.get("intent"):
+        condensed["intent"] = analysis["intent"]
+    if analysis.get("intent_context"):
+        condensed["intent_context"] = analysis["intent_context"]
 
-    if analysis.get("agent_miss_detail"):
-        condensed["agent_miss_detail"] = analysis["agent_miss_detail"]
+    # v4.0: Include sentiment data
+    if analysis.get("sentiment_start"):
+        condensed["sentiment_start"] = analysis["sentiment_start"]
+    if analysis.get("sentiment_end"):
+        condensed["sentiment_end"] = analysis["sentiment_end"]
 
-    if analysis.get("policy_gap_detail"):
-        condensed["policy_gap_detail"] = analysis["policy_gap_detail"]
+    # Only include non-null NL fields (with v4.0/v3.x compatibility)
+    # v4.0 uses failure_detail, v3.x uses failure_description
+    failure_detail = analysis.get("failure_detail") or analysis.get("failure_description")
+    if failure_detail:
+        condensed["failure_detail"] = failure_detail
 
-    if analysis.get("resolution_steps"):
-        condensed["resolution_steps"] = analysis["resolution_steps"]
+    # v4.0 uses verbatim, v3.x uses customer_verbatim
+    verbatim = analysis.get("verbatim") or analysis.get("customer_verbatim")
+    if verbatim:
+        condensed["verbatim"] = verbatim
 
-    if analysis.get("was_recoverable") is not None:
-        condensed["was_recoverable"] = analysis["was_recoverable"]
+    # v4.0 uses coaching, v3.x uses agent_miss_detail
+    coaching = analysis.get("coaching") or analysis.get("agent_miss_detail")
+    if coaching:
+        condensed["coaching"] = coaching
+
+    # v4.0 uses policy_gap, v3.x uses policy_gap_detail
+    policy_gap = analysis.get("policy_gap") or analysis.get("policy_gap_detail")
+    if policy_gap:
+        condensed["policy_gap"] = policy_gap
+
+    # v4.0 uses steps, v3.x uses resolution_steps
+    steps = analysis.get("steps") or analysis.get("resolution_steps")
+    if steps:
+        condensed["steps"] = steps
+
+    # v4.0 uses failure_recoverable, v3.x uses was_recoverable
+    recoverable = analysis.get("failure_recoverable") if "failure_recoverable" in analysis else analysis.get("was_recoverable")
+    if recoverable is not None:
+        condensed["recoverable"] = recoverable
+
+    # v5.0: Conditional qualifiers
+    if analysis.get("escalation_trigger"):
+        condensed["escalation_trigger"] = analysis["escalation_trigger"]
+    if analysis.get("abandon_stage"):
+        condensed["abandon_stage"] = analysis["abandon_stage"]
+    if analysis.get("resolution_confirmed") is not None:
+        condensed["resolution_confirmed"] = analysis["resolution_confirmed"]
+    # v4.5 backward compat
+    if analysis.get("escalation_initiator"):
+        condensed["escalation_initiator"] = analysis["escalation_initiator"]
+    # Shared fields
+    if analysis.get("actions"):
+        condensed["actions"] = [f"{a['action']}:{a['outcome']}" for a in analysis["actions"]]
+    if analysis.get("transfer_destination"):
+        condensed["transfer_destination"] = analysis["transfer_destination"]
 
     return condensed
 
@@ -303,92 +414,134 @@ def extract_nl_summary(analyses: list[dict]) -> dict:
     """
     Extract and organize NL fields into LLM-optimized structure.
 
-    Output structure:
+    Output structure (v4.0):
     - by_failure_type: Grouped failure data for pattern analysis
     - all_verbatims: Customer quotes for voice-of-customer insights
-    - all_agent_misses: Coaching opportunities
+    - all_coaching: Coaching opportunities (renamed from all_agent_misses)
     - policy_gap_details: Structured gap analysis
     - failed_call_flows: Resolution step sequences for failed calls
+    - intent_data: Intent and context pairs for caller needs analysis (v4.0)
+    - sentiment_data: Sentiment journeys for emotional tracking (v4.0)
     """
 
     # Group by failure type
     by_failure_type = defaultdict(list)
     all_verbatims = []
-    all_agent_misses = []
+    all_coaching = []  # v4.0 renamed from all_agent_misses
     policy_gap_details = []
     failed_call_flows = []
+
+    # v4.0: Intent and sentiment data
+    intent_data = []
+    sentiment_data = []
 
     calls_with_nl_data = 0
 
     for a in analyses:
         call_id = a.get("call_id")
-        outcome = a.get("outcome")
-        failure_point = a.get("failure_point", "none")
+        # v4.0 uses disposition, v3.x uses outcome
+        outcome = get_outcome(a)
+        # v4.0 uses failure_type, v3.x uses failure_point
+        failure_type = a.get("failure_type") or a.get("failure_point", "none")
 
         has_nl_data = False
 
+        # v4.0: Extract intent data
+        if a.get("intent"):
+            intent_entry = {
+                "call_id": call_id,
+                "intent": a["intent"],
+                "outcome": outcome
+            }
+            if a.get("intent_context"):
+                intent_entry["context"] = a["intent_context"]
+            intent_data.append(intent_entry)
+            has_nl_data = True
+
+        # v4.0: Extract sentiment data
+        if a.get("sentiment_start") or a.get("sentiment_end"):
+            sentiment_data.append({
+                "call_id": call_id,
+                "start": a.get("sentiment_start"),
+                "end": a.get("sentiment_end"),
+                "outcome": outcome
+            })
+            has_nl_data = True
+
         # Group by failure type (excluding "none")
-        if failure_point and failure_point != "none":
+        if failure_type and failure_type != "none":
             entry = {
                 "call_id": call_id,
                 "outcome": outcome,
             }
-            if a.get("failure_description"):
-                entry["description"] = a["failure_description"]
+            # v4.0 uses failure_detail, v3.x uses failure_description
+            failure_detail = a.get("failure_detail") or a.get("failure_description")
+            if failure_detail:
+                entry["description"] = failure_detail
                 has_nl_data = True
-            if a.get("customer_verbatim"):
-                entry["verbatim"] = a["customer_verbatim"]
+            # v4.0 uses verbatim, v3.x uses customer_verbatim
+            verbatim = a.get("verbatim") or a.get("customer_verbatim")
+            if verbatim:
+                entry["verbatim"] = verbatim
                 has_nl_data = True
-            if a.get("agent_miss_detail"):
-                entry["miss"] = a["agent_miss_detail"]
+            # v4.0 uses coaching, v3.x uses agent_miss_detail
+            coaching = a.get("coaching") or a.get("agent_miss_detail")
+            if coaching:
+                entry["coaching"] = coaching
                 has_nl_data = True
 
-            by_failure_type[failure_point].append(entry)
+            by_failure_type[failure_type].append(entry)
 
-        # Collect all verbatims
-        if a.get("customer_verbatim"):
+        # Collect all verbatims (v4.0 uses verbatim, v3.x uses customer_verbatim)
+        verbatim = a.get("verbatim") or a.get("customer_verbatim")
+        if verbatim:
             all_verbatims.append({
                 "call_id": call_id,
                 "outcome": outcome,
-                "quote": a["customer_verbatim"]
+                "quote": verbatim
             })
             has_nl_data = True
 
-        # Collect all agent misses
-        if a.get("agent_miss_detail"):
-            all_agent_misses.append({
+        # Collect all coaching (v4.0 uses coaching, v3.x uses agent_miss_detail)
+        coaching = a.get("coaching") or a.get("agent_miss_detail")
+        if coaching:
+            # v4.0 uses failure_recoverable, v3.x uses was_recoverable
+            recoverable = a.get("failure_recoverable") if "failure_recoverable" in a else a.get("was_recoverable")
+            all_coaching.append({
                 "call_id": call_id,
-                "was_recoverable": a.get("was_recoverable"),
-                "miss": a["agent_miss_detail"]
+                "recoverable": recoverable,
+                "coaching": coaching
             })
             has_nl_data = True
 
-        # Collect policy gap details
-        if a.get("policy_gap_detail"):
-            detail = a["policy_gap_detail"]
+        # Collect policy gap details (v4.0 uses policy_gap, v3.x uses policy_gap_detail)
+        policy_gap = a.get("policy_gap") or a.get("policy_gap_detail")
+        if policy_gap:
             policy_gap_details.append({
                 "call_id": call_id,
-                "category": detail.get("category"),
-                "gap": detail.get("specific_gap"),
-                "ask": detail.get("customer_ask"),
-                "blocker": detail.get("blocker")
+                "category": policy_gap.get("category"),
+                "gap": policy_gap.get("specific_gap"),
+                "ask": policy_gap.get("customer_ask"),
+                "blocker": policy_gap.get("blocker")
             })
             has_nl_data = True
 
-        # Collect failed call flows
-        if outcome != "resolved" and a.get("resolution_steps"):
+        # Collect failed call flows (v4.0 uses steps, v3.x uses resolution_steps)
+        steps = a.get("steps") or a.get("resolution_steps")
+        is_failed = outcome not in ("in_scope_success", "in_scope_partial", "resolved")
+        if is_failed and steps:
             failed_call_flows.append({
                 "call_id": call_id,
                 "outcome": outcome,
-                "failure_point": failure_point,
-                "steps": a["resolution_steps"]
+                "failure_type": failure_type,
+                "steps": steps
             })
             has_nl_data = True
 
         if has_nl_data:
             calls_with_nl_data += 1
 
-    # v3.4: Extract all customer_asks for LLM semantic clustering
+    # Extract all customer_asks for LLM semantic clustering
     # This provides the raw list so LLM can cluster semantically similar asks
     all_customer_asks = []
     for detail in policy_gap_details:
@@ -396,7 +549,7 @@ def extract_nl_summary(analyses: list[dict]) -> dict:
         if ask and ask.strip():
             all_customer_asks.append(ask.strip())
 
-    # v3.5: Training details with context
+    # Training details with context (v3.x only - merged into coaching in v4.0)
     # Extracts training opportunities with associated failure info for narrative generation
     training_details = []
     for a in analyses:
@@ -405,20 +558,21 @@ def extract_nl_summary(analyses: list[dict]) -> dict:
             training_details.append({
                 "call_id": a.get("call_id"),
                 "opportunity": training_opp,
-                "outcome": a.get("outcome"),
-                "failure_point": a.get("failure_point"),
-                "failure_description": a.get("failure_description"),
-                "agent_miss_detail": a.get("agent_miss_detail")
+                "outcome": get_outcome(a),
+                "failure_type": a.get("failure_type") or a.get("failure_point"),
+                "failure_detail": a.get("failure_detail") or a.get("failure_description"),
+                "coaching": a.get("coaching") or a.get("agent_miss_detail")
             })
 
-    # v3.5: Additional intents (secondary customer needs)
-    all_additional_intents = []
+    # Secondary intents (v4.0 uses secondary_intent, v3.x uses additional_intents)
+    all_secondary_intents = []
     for a in analyses:
-        if a.get("additional_intents"):
-            all_additional_intents.append({
+        secondary = a.get("secondary_intent") or a.get("additional_intents")
+        if secondary:
+            all_secondary_intents.append({
                 "call_id": a.get("call_id"),
-                "outcome": a.get("outcome"),
-                "intent": a.get("additional_intents")
+                "outcome": get_outcome(a),
+                "intent": secondary
             })
 
     # v3.8.5: Clarification events (using backwards-compatible extraction)
@@ -479,56 +633,80 @@ def extract_nl_summary(analyses: list[dict]) -> dict:
                         "outcome": outcome
                     })
 
-    # v3.9: Extract disposition summary for LLM narrative generation
+    # Extract disposition summary for LLM narrative generation (v5.0/v4.0/v3.9+)
     disposition_summary = defaultdict(list)
     for a in analyses:
-        disposition = a.get("call_disposition")
+        # v5.0: use scope:outcome key, v4.0: disposition, v3.x: call_disposition
+        if a.get("call_scope") and a.get("call_outcome"):
+            disposition = f"{a['call_scope']}:{a['call_outcome']}"
+        else:
+            disposition = a.get("disposition") or a.get("call_disposition")
         if disposition:
             entry = {
                 "call_id": a.get("call_id"),
-                "outcome": a.get("outcome"),
             }
-            if a.get("failure_description"):
-                entry["description"] = a["failure_description"]
-            if a.get("customer_verbatim"):
-                entry["verbatim"] = a["customer_verbatim"]
+            # v4.0 uses failure_detail, v3.x uses failure_description
+            failure_detail = a.get("failure_detail") or a.get("failure_description")
+            if failure_detail:
+                entry["description"] = failure_detail
+            # v4.0 uses verbatim, v3.x uses customer_verbatim
+            verbatim = a.get("verbatim") or a.get("customer_verbatim")
+            if verbatim:
+                entry["verbatim"] = verbatim
             if a.get("summary"):
                 entry["summary"] = a["summary"]
+            # v4.0: Include intent
+            if a.get("intent"):
+                entry["intent"] = a["intent"]
             disposition_summary[disposition].append(entry)
+
+    # Count schema versions
+    v4_count = sum(1 for a in analyses if a.get("schema_version", "").startswith("v4"))
+    v3_count = sum(1 for a in analyses if a.get("schema_version", "").startswith("v3"))
 
     return {
         "metadata": {
             "extracted_at": datetime.now().isoformat(),
+            "schema_version": "v4.0",
             "total_calls": len(analyses),
-            "calls_with_nl_data": calls_with_nl_data
+            "calls_with_nl_data": calls_with_nl_data,
+            "source_versions": {"v4": v4_count, "v3": v3_count}
         },
         "by_failure_type": dict(by_failure_type),
         "all_verbatims": all_verbatims,
-        "all_agent_misses": all_agent_misses,
+        "all_coaching": all_coaching,  # v4.0 renamed from all_agent_misses
+        "all_agent_misses": all_coaching,  # v3.x compatibility alias
         "policy_gap_details": policy_gap_details,
         "failed_call_flows": failed_call_flows,
-        "all_customer_asks": all_customer_asks,  # v3.4: Raw list for LLM clustering
-        "training_details": training_details,  # v3.5: Training opportunities with context
-        "all_additional_intents": all_additional_intents,  # v3.5: Secondary customer intents
-        "clarification_events": clarification_events,  # v3.6: Clarification request details
-        "correction_events": correction_events,  # v3.6: User correction details
-        "loop_events": loop_events,  # v3.6: Repeated prompt events
-        "loop_subject_pairs": loop_subject_pairs,  # v3.9.1: (type, subject) pairs for clustering
-        "turn_outliers": turn_outliers,  # v3.6: Unusually long/short calls
-        "disposition_summary": dict(disposition_summary)  # v3.9: Calls by disposition
+        "all_customer_asks": all_customer_asks,  # Raw list for LLM clustering
+        "training_details": training_details,  # Training opportunities with context
+        "all_secondary_intents": all_secondary_intents,  # v4.0 renamed from all_additional_intents
+        "all_additional_intents": all_secondary_intents,  # v3.x compatibility alias
+        "clarification_events": clarification_events,
+        "correction_events": correction_events,
+        "loop_events": loop_events,
+        "loop_subject_pairs": loop_subject_pairs,  # (type, subject) pairs for clustering
+        "turn_outliers": turn_outliers,
+        "disposition_summary": dict(disposition_summary),
+        # v4.0: New data sections
+        "intent_data": intent_data,
+        "sentiment_data": sentiment_data
     }
 
 
 def print_summary(nl_summary: dict) -> None:
     """Print human-readable summary of extracted NL data."""
     print("\n" + "=" * 60)
-    print("NL FIELD EXTRACTION SUMMARY (v3.9.1)")
+    print("NL FIELD EXTRACTION SUMMARY (v4.0)")
     print("=" * 60)
 
     meta = nl_summary.get("metadata", {})
     print(f"\nTotal calls analyzed: {meta.get('total_calls', 0)}")
     print(f"Calls with NL data: {meta.get('calls_with_nl_data', 0)}")
     print(f"Extracted at: {meta.get('extracted_at', 'N/A')}")
+    versions = meta.get("source_versions", {})
+    if versions:
+        print(f"Source versions: v4={versions.get('v4', 0)}, v3={versions.get('v3', 0)}")
 
     # By failure type
     print("\n" + "-" * 40)
@@ -552,13 +730,48 @@ def print_summary(nl_summary: dict) -> None:
     if len(verbatims) > 3:
         print(f"  ... and {len(verbatims) - 3} more")
 
-    # Agent misses
+    # v4.0: Intent Data
+    intent_data = nl_summary.get("intent_data", [])
+    if intent_data:
+        print("\n" + "-" * 40)
+        print("INTENT DATA (v4.0)")
+        print("-" * 40)
+        print(f"  Calls with intent: {len(intent_data)}")
+        with_context = sum(1 for i in intent_data if i.get("context"))
+        print(f"  With context: {with_context}")
+        # Show top intents
+        from collections import Counter
+        intents = Counter(i.get("intent", "").lower() for i in intent_data if i.get("intent"))
+        print("  Top intents:")
+        for intent, count in intents.most_common(5):
+            print(f"    {intent}: {count}")
+
+    # v4.0: Sentiment Data
+    sentiment_data = nl_summary.get("sentiment_data", [])
+    if sentiment_data:
+        print("\n" + "-" * 40)
+        print("SENTIMENT DATA (v4.0)")
+        print("-" * 40)
+        print(f"  Calls with sentiment: {len(sentiment_data)}")
+        from collections import Counter
+        start_dist = Counter(s.get("start") for s in sentiment_data if s.get("start"))
+        end_dist = Counter(s.get("end") for s in sentiment_data if s.get("end"))
+        if start_dist:
+            print("  Start sentiment:")
+            for sent, count in start_dist.most_common():
+                print(f"    {sent}: {count}")
+        if end_dist:
+            print("  End sentiment:")
+            for sent, count in end_dist.most_common():
+                print(f"    {sent}: {count}")
+
+    # Coaching (renamed from Agent misses)
     print("\n" + "-" * 40)
-    print("AGENT MISSES")
+    print("COACHING OPPORTUNITIES")
     print("-" * 40)
-    misses = nl_summary.get("all_agent_misses", [])
-    print(f"  Total coaching opportunities: {len(misses)}")
-    recoverable = sum(1 for m in misses if m.get("was_recoverable"))
+    coaching = nl_summary.get("all_coaching", []) or nl_summary.get("all_agent_misses", [])
+    print(f"  Total coaching opportunities: {len(coaching)}")
+    recoverable = sum(1 for m in coaching if m.get("recoverable") or m.get("was_recoverable"))
     print(f"  Recoverable calls: {recoverable}")
 
     # Policy gaps
@@ -696,7 +909,7 @@ def print_summary(nl_summary: dict) -> None:
 
 def main():
     parser = argparse.ArgumentParser(
-        description="Extract NL fields from v3 analyses for LLM insight generation",
+        description="Extract NL fields from v4/v3 analyses for LLM insight generation",
         formatter_class=argparse.RawDescriptionHelpFormatter,
         epilog="""
 Examples:
@@ -727,7 +940,32 @@ Examples:
     parser.add_argument("--json-only", action="store_true",
                         help="Output only JSON, no summary")
 
+    # v4.1: Run-based isolation
+    add_run_arguments(parser)
+
     args = parser.parse_args()
+
+    # v4.1: Resolve run directory from --run-dir or --run-id
+    project_dir = Path(__file__).parent.parent
+    run_dir, run_id, source = resolve_run_from_args(args, project_dir)
+
+    # Non-interactive mode requires explicit --run-id or --run-dir
+    require_explicit_run_noninteractive(source)
+
+    # Interactive run selection/confirmation
+    if source in (".last_run", "$LAST_RUN"):
+        # Implicit source - ask for confirmation
+        run_dir, run_id = confirm_or_select_run(project_dir, run_dir, run_id, source)
+    elif run_dir is None:
+        # No run specified - show selection menu
+        run_dir, run_id = prompt_for_run(project_dir)
+
+    if run_dir:
+        paths = get_run_paths(run_dir, project_dir)
+        args.input_dir = paths["analyses_dir"]
+        args.output_dir = paths["reports_dir"]
+        args.sampled_dir = paths["sampled_dir"]
+        print(f"Using run: {run_id} ({run_dir})", file=sys.stderr)
 
     # v3.3: Load manifest for scope coherence
     manifest_ids = None
@@ -738,14 +976,14 @@ Examples:
         else:
             print("Scope filter: No manifest found, including all analyses", file=sys.stderr)
 
-    print(f"Loading v3 analyses from: {args.input_dir}", file=sys.stderr)
-    analyses = load_v3_analyses(args.input_dir, manifest_ids)
+    print(f"Loading analyses from: {args.input_dir}", file=sys.stderr)
+    analyses = load_analyses(args.input_dir, manifest_ids)
 
     if not analyses:
-        print("Error: No v3 schema analysis files found", file=sys.stderr)
+        print("Error: No v4/v3 schema analysis files found", file=sys.stderr)
         return 1
 
-    print(f"Found {len(analyses)} v3 analyses", file=sys.stderr)
+    print(f"Found {len(analyses)} analyses", file=sys.stderr)
 
     # Apply limit if specified
     if args.limit and args.limit < len(analyses):
@@ -758,7 +996,7 @@ Examples:
     # Save output
     args.output_dir.mkdir(parents=True, exist_ok=True)
     timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
-    output_path = args.output_dir / f"nl_summary_v3_{timestamp}.json"
+    output_path = args.output_dir / f"nl_summary_v4_{timestamp}.json"
 
     with open(output_path, 'w', encoding='utf-8') as f:
         json.dump(nl_summary, f, indent=2)

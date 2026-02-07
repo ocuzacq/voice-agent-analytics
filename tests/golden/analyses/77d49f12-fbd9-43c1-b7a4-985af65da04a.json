@@ -1,0 +1,45 @@
+{
+  "call_id": "77d49f12-fbd9-43c1-b7a4-985af65da04a",
+  "schema_version": "v5.0",
+  "turns": 2,
+  "ended_by": "customer",
+  "intent": "Speak to a representative",
+  "intent_context": null,
+  "secondary_intent": null,
+  "call_scope": "in_scope",
+  "call_outcome": "escalated",
+  "resolution": "transferred to concierge",
+  "steps": [
+    "customer requested live agent",
+    "agent initiated transfer"
+  ],
+  "escalation_trigger": "customer_requested",
+  "abandon_stage": null,
+  "resolution_confirmed": null,
+  "effectiveness": 5,
+  "quality": 5,
+  "effort": 1,
+  "sentiment_start": "neutral",
+  "sentiment_end": "neutral",
+  "failure_type": null,
+  "failure_detail": null,
+  "policy_gap": null,
+  "derailed_at": null,
+  "clarifications": [],
+  "corrections": [],
+  "loops": [],
+  "summary": "The customer immediately requested to speak with a live person. The agent acknowledged the request and transferred the call to a representative.",
+  "verbatim": "Let me speak to a real person, Jamie.",
+  "coaching": null,
+  "repeat_caller": false,
+  "actions": [
+    {
+      "action": "transfer",
+      "outcome": "success",
+      "detail": "Transferred to live representative per customer request"
+    }
+  ],
+  "transfer_destination": "concierge",
+  "transfer_queue_detected": false,
+  "duration_seconds": 283.4
+}

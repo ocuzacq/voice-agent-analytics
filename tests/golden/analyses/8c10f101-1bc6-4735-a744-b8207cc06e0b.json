@@ -1,0 +1,88 @@
+{
+  "call_id": "8c10f101-1bc6-4735-a744-b8207cc06e0b",
+  "schema_version": "v5.0",
+  "turns": 24,
+  "ended_by": "agent",
+  "intent": "Register for Clubhouse portal",
+  "intent_context": "Website error message stated ownership type requires special handling",
+  "secondary_intent": null,
+  "call_scope": "in_scope",
+  "call_outcome": "completed",
+  "resolution": "link sent",
+  "steps": [
+    "Attempted account lookup via phone",
+    "Attempted account lookup via contract ID",
+    "Verified owner name and state",
+    "Confirmed contact information",
+    "Sent Clubhouse registration link"
+  ],
+  "escalation_trigger": null,
+  "abandon_stage": null,
+  "resolution_confirmed": true,
+  "effectiveness": 5,
+  "quality": 5,
+  "effort": 3,
+  "sentiment_start": "neutral",
+  "sentiment_end": "satisfied",
+  "failure_type": null,
+  "failure_detail": null,
+  "policy_gap": null,
+  "derailed_at": null,
+  "clarifications": [
+    {
+      "turn": 3,
+      "type": "intent",
+      "cause": "ok",
+      "note": "Clarifying registration vs password reset"
+    },
+    {
+      "turn": 27,
+      "type": "verify",
+      "cause": "ok",
+      "note": "Requested spelling of name"
+    },
+    {
+      "turn": 29,
+      "type": "verify",
+      "cause": "unclear",
+      "note": "Name provided didn't match file"
+    }
+  ],
+  "corrections": [
+    {
+      "turn": 30,
+      "severity": "minor",
+      "note": "User clarifies multiple owners on contract"
+    }
+  ],
+  "loops": [],
+  "summary": "Customer wanted to register for the online portal after receiving an error message on the website. The agent successfully verified the account using a contract ID and sent a registration link to the email on file.",
+  "verbatim": "It says a message like, your ownership type requires special handling. Please contact this number to complete your registration.",
+  "coaching": null,
+  "repeat_caller": false,
+  "actions": [
+    {
+      "action": "account_lookup",
+      "outcome": "failed",
+      "detail": "Lookup by Brazilian phone number failed"
+    },
+    {
+      "action": "account_lookup",
+      "outcome": "success",
+      "detail": "Lookup successful using contract ID"
+    },
+    {
+      "action": "verification",
+      "outcome": "success",
+      "detail": "Verified secondary owner name and state"
+    },
+    {
+      "action": "send_clubhouse_link",
+      "outcome": "success",
+      "detail": "Sent registration link to Yahoo email"
+    }
+  ],
+  "transfer_destination": null,
+  "transfer_queue_detected": false,
+  "duration_seconds": 409.3
+}

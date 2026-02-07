@@ -1,0 +1,64 @@
+{
+  "call_id": "97b367dd-18a5-49fb-8867-fd8d8a7edd00",
+  "schema_version": "v5.0",
+  "turns": 9,
+  "ended_by": "agent",
+  "intent": "Submit rental agreement",
+  "intent_context": "Customer is unsure of the process for handling the agreement",
+  "secondary_intent": null,
+  "call_scope": "in_scope",
+  "call_outcome": "completed",
+  "resolution": "link sent",
+  "steps": [
+    "Identify customer",
+    "Verify account via name spelling and state",
+    "Explain purpose of rental agreement",
+    "Send rental agreement link via email and phone"
+  ],
+  "escalation_trigger": null,
+  "abandon_stage": null,
+  "resolution_confirmed": false,
+  "effectiveness": 5,
+  "quality": 5,
+  "effort": 1,
+  "sentiment_start": "neutral",
+  "sentiment_end": "neutral",
+  "failure_type": null,
+  "failure_detail": null,
+  "policy_gap": null,
+  "derailed_at": null,
+  "clarifications": [
+    {
+      "turn": 5,
+      "type": "intent",
+      "cause": "ok",
+      "note": "Confirmed intent to submit rental agreement"
+    }
+  ],
+  "corrections": [],
+  "loops": [],
+  "summary": "The customer called to ask how to handle their rental agreement. The agent verified the customer's identity and sent a link to complete the agreement online.",
+  "verbatim": "What do I do with the rental agreement?",
+  "coaching": null,
+  "repeat_caller": false,
+  "actions": [
+    {
+      "action": "account_lookup",
+      "outcome": "success",
+      "detail": "Located record using phone number"
+    },
+    {
+      "action": "verification",
+      "outcome": "success",
+      "detail": "Verified via name spelling and state"
+    },
+    {
+      "action": "send_rental_link",
+      "outcome": "success",
+      "detail": "Sent link to email and phone"
+    }
+  ],
+  "transfer_destination": null,
+  "transfer_queue_detected": false,
+  "duration_seconds": 137.9
+}

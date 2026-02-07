@@ -1,0 +1,76 @@
+{
+  "call_id": "0a434683-1ac4-4f26-83ee-c6fce1040ef4",
+  "schema_version": "v5.0",
+  "turns": 12,
+  "ended_by": "agent",
+  "intent": "Log into Clubhouse portal",
+  "intent_context": "First time user needing to set up owner account",
+  "secondary_intent": null,
+  "call_scope": "in_scope",
+  "call_outcome": "completed",
+  "resolution": "link sent",
+  "steps": [
+    "account_lookup",
+    "verification",
+    "contact_info_validation",
+    "send_clubhouse_link"
+  ],
+  "escalation_trigger": null,
+  "abandon_stage": null,
+  "resolution_confirmed": true,
+  "effectiveness": 5,
+  "quality": 5,
+  "effort": 2,
+  "sentiment_start": "neutral",
+  "sentiment_end": "satisfied",
+  "failure_type": null,
+  "failure_detail": null,
+  "policy_gap": null,
+  "derailed_at": null,
+  "clarifications": [
+    {
+      "turn": 13,
+      "type": "intent",
+      "cause": "ok",
+      "note": "Confirmed registration link for login issue"
+    },
+    {
+      "turn": 19,
+      "type": "phone",
+      "cause": "misheard",
+      "note": "Re-verifying phone after user correction"
+    }
+  ],
+  "corrections": [
+    {
+      "turn": 16,
+      "severity": "minor",
+      "note": "User corrected email and phone digit"
+    }
+  ],
+  "loops": [],
+  "summary": "The customer wanted to log into his owner account for the first time. The agent verified his identity, corrected his contact information, and sent a Clubhouse registration link.",
+  "verbatim": "I'm trying to log in. I don't think I've ever logged in to my owner's account before.",
+  "coaching": null,
+  "repeat_caller": false,
+  "actions": [
+    {
+      "action": "account_lookup",
+      "outcome": "success",
+      "detail": "Found record via phone number"
+    },
+    {
+      "action": "verification",
+      "outcome": "success",
+      "detail": "Verified name and state"
+    },
+    {
+      "action": "send_clubhouse_link",
+      "outcome": "success",
+      "detail": "Sent registration link to updated email"
+    }
+  ],
+  "transfer_destination": null,
+  "transfer_queue_detected": false,
+  "duration_seconds": 187.9
+}

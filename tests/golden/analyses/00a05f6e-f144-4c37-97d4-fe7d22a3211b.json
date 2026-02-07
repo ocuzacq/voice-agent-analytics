@@ -1,0 +1,67 @@
+{
+  "call_id": "00a05f6e-f144-4c37-97d4-fe7d22a3211b",
+  "schema_version": "v5.0",
+  "turns": 9,
+  "ended_by": "customer",
+  "intent": "Make a maintenance fee payment",
+  "intent_context": "Annual fee is due",
+  "secondary_intent": "Update account phone number",
+  "call_scope": "mixed",
+  "call_outcome": "escalated",
+  "resolution": "transferred to concierge",
+  "steps": [
+    "account_lookup",
+    "verification",
+    "send_payment_link",
+    "transfer"
+  ],
+  "escalation_trigger": "scope_limit",
+  "abandon_stage": null,
+  "resolution_confirmed": null,
+  "effectiveness": 5,
+  "quality": 5,
+  "effort": 1,
+  "sentiment_start": "neutral",
+  "sentiment_end": "neutral",
+  "failure_type": "policy_gap",
+  "failure_detail": "Agent cannot update contact information and must escalate to concierge.",
+  "policy_gap": {
+    "category": "capability_limit",
+    "specific_gap": "AI cannot update phone numbers or contact info",
+    "customer_ask": "I need to change the phone number",
+    "blocker": "System restricted to info lookup and link delivery only"
+  },
+  "derailed_at": 19,
+  "clarifications": [],
+  "corrections": [],
+  "loops": [],
+  "summary": "The customer successfully received a payment link for their maintenance fees but then requested to update their phone number. Since the AI cannot update contact information, it correctly escalated the call to the concierge department.",
+  "verbatim": "I need to change the phone number.",
+  "coaching": null,
+  "repeat_caller": false,
+  "actions": [
+    {
+      "action": "account_lookup",
+      "outcome": "success",
+      "detail": "Located account via phone number"
+    },
+    {
+      "action": "verification",
+      "outcome": "success",
+      "detail": "Verified state of residence"
+    },
+    {
+      "action": "send_payment_link",
+      "outcome": "success",
+      "detail": "Sent link to email on file"
+    },
+    {
+      "action": "transfer",
+      "outcome": "success",
+      "detail": "Routed to concierge for phone update"
+    }
+  ],
+  "transfer_destination": "concierge",
+  "transfer_queue_detected": true,
+  "duration_seconds": 1119.8
+}

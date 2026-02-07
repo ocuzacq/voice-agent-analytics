@@ -1,0 +1,167 @@
+{
+  "agent_id": "IdNSnJmoukxviqoTIWOZ",
+  "duration": 187.912745,
+  "ended_reason": "assistant-ended-call",
+  "messages": [
+    {
+      "role": "assistant",
+      "timestamp": 1769037052.0158465,
+      "content": "Hi, thank you for calling Vacation Village Resorts. Our offices are currently closed. This is Jamie, a virtual agent on a recorded line. How can I help you today?"
+    },
+    {
+      "role": "user",
+      "timestamp": 1769037065.445235,
+      "content": "Yeah. I'm trying to log in to my"
+    },
+    {
+      "role": "user",
+      "timestamp": 1769037067.43135,
+      "content": "my Vacation Village account"
+    },
+    {
+      "role": "assistant",
+      "timestamp": 1769037070.9430666,
+      "content": "So you\u2019re having trouble logging in to your Vacation Village account. Who do I have the pleasure of speaking with?"
+    },
+    {
+      "role": "user",
+      "timestamp": 1769037067.43135,
+      "content": "Yes."
+    },
+    {
+      "role": "user",
+      "timestamp": 1769037079.1529198,
+      "content": "Roy Dale Norman."
+    },
+    {
+      "role": "assistant",
+      "timestamp": 1769037083.3507528,
+      "content": "Alright Roy Dale Norman, can you share the phone number you have on your contract?"
+    },
+    {
+      "role": "user",
+      "timestamp": 1769037090.5473006,
+      "content": "Eight one three"
+    },
+    {
+      "role": "user",
+      "timestamp": 1769037091.2751193,
+      "content": "seven eight nine four five zero six."
+    },
+    {
+      "role": "assistant",
+      "timestamp": 1769037095.7460213,
+      "content": "Just a sec, let me pull up your account."
+    },
+    {
+      "role": "assistant",
+      "timestamp": 1769037099.5928326,
+      "content": "I was able to pull up a record using your phone number. Can you confirm the spelling of your first and last name as it appears on your contract?"
+    },
+    {
+      "role": "user",
+      "timestamp": 1769037110.518331,
+      "content": "R o y"
+    },
+    {
+      "role": "user",
+      "timestamp": 1769037113.562015,
+      "content": "n o r m a n."
+    },
+    {
+      "role": "assistant",
+      "timestamp": 1769037118.244854,
+      "content": "Got it, Roy Norman. What state do you currently reside in?"
+    },
+    {
+      "role": "user",
+      "timestamp": 1769037123.6823783,
+      "content": "Florida."
+    },
+    {
+      "role": "assistant",
+      "timestamp": 1769037126.0454571,
+      "content": "Alright, you\u2019re verified. Go ahead and tell me what you need help with regarding your Vacation Village account."
+    },
+    {
+      "role": "user",
+      "timestamp": 1769037136.9648108,
+      "content": "I'm trying to log in. I don't think I've ever logged in to my"
+    },
+    {
+      "role": "user",
+      "timestamp": 1769037138.8815117,
+      "content": "owner's account before. So I may not have a login"
+    },
+    {
+      "role": "assistant",
+      "timestamp": 1769037143.4061966,
+      "content": "So, just to clarify, would you like to receive a new registration link for Clubhouse so you can set up your owner's account?"
+    },
+    {
+      "role": "user",
+      "timestamp": 1769037153.2006545,
+      "content": "Yes, please."
+    },
+    {
+      "role": "assistant",
+      "timestamp": 1769037155.456099,
+      "content": "I have your email as rdnorman1@verizon.net and your phone number as eight one three -- seven eight nine -- four six zero six. Are both of these correct?"
+    },
+    {
+      "role": "user",
+      "timestamp": 1769037168.1260817,
+      "content": "No. No."
+    },
+    {
+      "role": "assistant",
+      "timestamp": 1769037170.7992702,
+      "content": "Alright, can you give me your correct email address?"
+    },
+    {
+      "role": "user",
+      "timestamp": 1769037175.4659848,
+      "content": "Hi. It's r d Norman one"
+    },
+    {
+      "role": "user",
+      "timestamp": 1769037178.0249698,
+      "content": "at g mail dot com."
+    },
+    {
+      "role": "assistant",
+      "timestamp": 1769037182.170149,
+      "content": "Got it, r d Norman one at gmail dot com. Can you confirm your phone number for me one more time?"
+    },
+    {
+      "role": "user",
+      "timestamp": 1769037188.2844293,
+      "content": "Eight one. Yeah. It's eight one three seven eight nine four five zero six."
+    },
+    {
+      "role": "assistant",
+      "timestamp": 1769037196.3604352,
+      "content": "Let me confirm what I have: your email is r d Norman one at gmail dot com, and your phone number is eight one three -- seven eight nine -- four five zero six. Is that all correct?"
+    },
+    {
+      "role": "user",
+      "timestamp": 1769037211.3706179,
+      "content": "That's correct. That's all correct."
+    },
+    {
+      "role": "assistant",
+      "timestamp": 1769037214.9766014,
+      "content": "Alright, working on your Clubhouse registration link now. Alright, I\u2019ll send you a Clubhouse registration link so you can set up your owner's account. Is there anything else you need help with today?"
+    },
+    {
+      "role": "user",
+      "timestamp": 1769037227.9561927,
+      "content": "No. You've been very helpful."
+    },
+    {
+      "role": "assistant",
+      "timestamp": 1769037231.4357977,
+      "content": "Glad I could help. Have a great day and enjoy your stay with Vacation Village Resorts. Goodbye!"
+    }
+  ]
+}

@@ -1,0 +1,90 @@
+{
+  "call_id": "0b59f63d-d6d7-41da-89e6-68a36eb3c07b",
+  "schema_version": "v5.0",
+  "turns": 16,
+  "ended_by": "customer",
+  "intent": "Book and pay for reservation",
+  "intent_context": "Customer is worried about losing two weeks of usage and has had technical issues with the website",
+  "secondary_intent": "Resolve website access issues",
+  "call_scope": "mixed",
+  "call_outcome": "escalated",
+  "resolution": "transferred to concierge",
+  "steps": [
+    "Greeted customer",
+    "Handled complaint about prior hang-ups",
+    "Offered transfer but customer chose automation",
+    "Verified account via phone, name, and state",
+    "Identified contract mismatch and clarified property",
+    "Calculated specific check-in/out dates for 2027",
+    "Identified booking/unit assignment as out of scope",
+    "Initiated transfer to concierge"
+  ],
+  "escalation_trigger": "scope_limit",
+  "abandon_stage": null,
+  "resolution_confirmed": null,
+  "effectiveness": 4,
+  "quality": 4,
+  "effort": 3,
+  "sentiment_start": "angry",
+  "sentiment_end": "neutral",
+  "failure_type": "policy_gap",
+  "failure_detail": "Agent cannot book reservations or assign specific units, which was the customer's primary goal.",
+  "policy_gap": {
+    "category": "capability_limit",
+    "specific_gap": "cannot book or assign units",
+    "customer_ask": "pay for and book two specific weeks in an 'A' unit",
+    "blocker": "AI is limited to info lookup and payment links; booking requires human concierge"
+  },
+  "derailed_at": 31,
+  "clarifications": [
+    {
+      "turn": 19,
+      "type": "verify",
+      "cause": "ok",
+      "note": "Clarified property name and contract mismatch"
+    },
+    {
+      "turn": 25,
+      "type": "verify",
+      "cause": "ok",
+      "note": "Validated dates against fixed week schedule"
+    }
+  ],
+  "corrections": [
+    {
+      "turn": 18,
+      "severity": "minor",
+      "note": "Customer corrected property name to Preston"
+    },
+    {
+      "turn": 26,
+      "severity": "minor",
+      "note": "Customer adjusted check-in date after schedule check"
+    }
+  ],
+  "loops": [],
+  "summary": "Customer called frustrated about potential loss of weeks and website issues. The agent verified the account and helped determine specific dates for a 2027 stay, but had to escalate to concierge because the AI cannot process bookings or unit assignments.",
+  "verbatim": "I'm gonna lose two weeks, and nobody's helping me. And you've thrown me off your website, you, Jamie, have hung up on me four times now.",
+  "coaching": "The agent handled a very difficult/angry customer well by remaining calm and following verification protocols, though it could have identified the booking request as out-of-scope slightly sooner.",
+  "repeat_caller": true,
+  "actions": [
+    {
+      "action": "account_lookup",
+      "outcome": "success",
+      "detail": "Located record via phone number"
+    },
+    {
+      "action": "verification",
+      "outcome": "success",
+      "detail": "Verified name and state"
+    },
+    {
+      "action": "transfer",
+      "outcome": "success",
+      "detail": "Transferred to concierge for booking"
+    }
+  ],
+  "transfer_destination": "concierge",
+  "transfer_queue_detected": false,
+  "duration_seconds": 448.6
+}

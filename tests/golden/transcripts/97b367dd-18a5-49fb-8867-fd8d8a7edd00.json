@@ -1,0 +1,107 @@
+{
+  "agent_id": "IdNSnJmoukxviqoTIWOZ",
+  "duration": 137.887649,
+  "ended_reason": "assistant-ended-call",
+  "messages": [
+    {
+      "role": "assistant",
+      "timestamp": 1768586660.1473522,
+      "content": "Hi, thank you for calling Vacation Village Resorts. This is Jamie, a virtual agent on a recorded line. How can I help you today?"
+    },
+    {
+      "role": "user",
+      "timestamp": 1768586673.1040485,
+      "content": "What do I do with the rental agreement?"
+    },
+    {
+      "role": "assistant",
+      "timestamp": 1768586676.8744605,
+      "content": "Who do I have the pleasure of speaking with?"
+    },
+    {
+      "role": "user",
+      "timestamp": 1768586682.169246,
+      "content": "Valerie Morris."
+    },
+    {
+      "role": "assistant",
+      "timestamp": 1768586684.331299,
+      "content": "Valerie, are you calling to get instructions on how to complete or submit your rental agreement?"
+    },
+    {
+      "role": "user",
+      "timestamp": 1768586692.6433694,
+      "content": "Yes."
+    },
+    {
+      "role": "assistant",
+      "timestamp": 1768586699.1245751,
+      "content": "Alright, I was able to pull up a record using your phone number. Can you please spell your first and last name for me?"
+    },
+    {
+      "role": "user",
+      "timestamp": 1768586707.6127727,
+      "content": "V a l e r I e m o r r I s."
+    },
+    {
+      "role": "assistant",
+      "timestamp": 1768586713.9738708,
+      "content": "Let me spell that back to you: V as in Victor, A as in Apple, L as in Larry, E as in Edward, R as in Robert, I as in Indigo, E as in Edward. M as in Mary, O as in Oscar, R as in Robert, R as in Robert, I as in Indigo, S as in Sam. Is that correct?"
+    },
+    {
+      "role": "user",
+      "timestamp": 1768586736.5519905,
+      "content": "Yes."
+    },
+    {
+      "role": "assistant",
+      "timestamp": 1768586739.153635,
+      "content": "Can you tell me the state you live in?"
+    },
+    {
+      "role": "user",
+      "timestamp": 1768586744.2848203,
+      "content": "Indiana."
+    },
+    {
+      "role": "assistant",
+      "timestamp": 1768586746.526273,
+      "content": "You\u2019re verified. Go ahead and let me know what you need help with regarding your rental agreement."
+    },
+    {
+      "role": "user",
+      "timestamp": 1768586755.7665782,
+      "content": "What do I do with it?"
+    },
+    {
+      "role": "assistant",
+      "timestamp": 1768586758.8081048,
+      "content": "The rental agreement allows you to authorize the developer to rent out your owned week at Vacation Village at Parkway, contract number three zero seven one two nine three. Would you like a link sent to your email and phone so you can complete the agreement online?"
+    },
+    {
+      "role": "user",
+      "timestamp": 1768586778.043793,
+      "content": "Yes."
+    },
+    {
+      "role": "assistant",
+      "timestamp": 1768586780.6848874,
+      "content": "Getting your rental agreement link ready."
+    },
+    {
+      "role": "assistant",
+      "timestamp": 1768586785.164185,
+      "content": "Is there anything else I can help you with today?"
+    },
+    {
+      "role": "user",
+      "timestamp": 1768586789.955877,
+      "content": "No. Thank you."
+    },
+    {
+      "role": "assistant",
+      "timestamp": 1768586792.7977738,
+      "content": "Alright, have a great rest of your day. Goodbye."
+    }
+  ]
+}

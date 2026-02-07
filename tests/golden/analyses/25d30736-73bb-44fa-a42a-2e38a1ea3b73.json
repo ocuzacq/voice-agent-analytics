@@ -1,0 +1,71 @@
+{
+  "call_id": "25d30736-73bb-44fa-a42a-2e38a1ea3b73",
+  "schema_version": "v5.0",
+  "turns": 7,
+  "ended_by": "customer",
+  "intent": "Make a maintenance fee payment",
+  "intent_context": null,
+  "secondary_intent": null,
+  "call_scope": "in_scope",
+  "call_outcome": "escalated",
+  "resolution": "transferred to concierge",
+  "steps": [
+    "Identify caller",
+    "Verify account via name and state",
+    "Lookup maintenance fee balance",
+    "Confirm contact information",
+    "Attempt to send payment link",
+    "Escalate due to system error"
+  ],
+  "escalation_trigger": "task_failure",
+  "abandon_stage": null,
+  "resolution_confirmed": null,
+  "effectiveness": 4,
+  "quality": 5,
+  "effort": 2,
+  "sentiment_start": "neutral",
+  "sentiment_end": "neutral",
+  "failure_type": "tech_issue",
+  "failure_detail": "The agent encountered an error while attempting to generate/send the payment link and escalated to concierge.",
+  "policy_gap": null,
+  "derailed_at": 15,
+  "clarifications": [
+    {
+      "turn": 5,
+      "type": "name",
+      "cause": "ok",
+      "note": "requested spelling of name for verification"
+    }
+  ],
+  "corrections": [],
+  "loops": [],
+  "summary": "The customer wanted to pay maintenance fees using a credit card. The agent successfully verified the account and identified the balance, but encountered a technical error when sending the payment link, resulting in a transfer to the concierge department.",
+  "verbatim": "I would like to pay my maintenance fees with a credit card.",
+  "coaching": "The agent performed the workflow correctly; the failure was technical. Ensure the system can handle cases where the email on file is blank by prompting for an email address before attempting to send the link.",
+  "repeat_caller": false,
+  "actions": [
+    {
+      "action": "account_lookup",
+      "outcome": "success",
+      "detail": "Located account for Paul Markowitz"
+    },
+    {
+      "action": "verification",
+      "outcome": "success",
+      "detail": "Verified via name spelling and state"
+    },
+    {
+      "action": "send_payment_link",
+      "outcome": "failed",
+      "detail": "Issue sending information/link to customer"
+    },
+    {
+      "action": "transfer",
+      "outcome": "success",
+      "detail": "Transferred to concierge after task failure"
+    }
+  ],
+  "transfer_destination": "concierge",
+  "transfer_queue_detected": true,
+  "duration_seconds": 749.7
+}

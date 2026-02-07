@@ -1,8 +1,8 @@
 #!/usr/bin/env python3
 """
-End-to-End Analysis Pipeline for Vacatia AI Voice Agent Analytics (v3.9.1)
+End-to-End Analysis Pipeline for Vacatia AI Voice Agent Analytics (v4.3)
 
-Orchestrates the complete analysis workflow:
+Orchestrates the complete analysis workflow with run-based isolation:
 1. sample_transcripts.py → Sample transcripts from corpus
 2. batch_analyze.py → Analyze transcripts with LLM (v3 schema, parallel in v3.2)
 3. compute_metrics.py → Calculate Section A deterministic metrics
@@ -11,48 +11,73 @@ Orchestrates the complete analysis workflow:
 6. render_report.py → Render Markdown executive summary
 7. review_report.py → Editorial review and pipeline suggestions (v3.5.5) [optional]
 
+v4.3 Features:
+- Target-based augmentation: -n becomes a TARGET when run exists
+- Day 1: -n 50 creates run with 50 transcripts
+- Day 2: -n 200 grows to 200 total (adds 150)
+- Day 3: -n 1000 grows to 1000 total (adds 800)
+- System calculates delta automatically
+
+v4.1 Features:
+- Run-based isolation: Each run creates an isolated directory in runs/<run_id>/
+- All outputs (sampled/, analyses/, reports/) contained within run directory
+- config.json and status.json for reproducibility and progress tracking
+- Symlink runs/latest points to most recent run
+- --legacy flag to use flat directory mode (backwards compatible)
+- --run-id for custom run naming
+
+v3.9.2 Features:
+- Insights off by default: use --insights to run metrics/NL/insights/report
+- Default pipeline: sample → analyze (fast workflow for ask.py)
+- Full pipeline with --insights: sample → analyze → metrics → NL → insights → report
+
 v3.9.1 Features:
 - Custom questions: --questions flag to provide questions file for LLM to answer
 - Questions answered in dedicated "Custom Analysis" section after Executive Summary
 - Review step disabled by default (use --enable-review to run it)
 
-v3.5.5 Features:
-- Report review pass with Gemini 3 Pro for editorial refinement
-- Pipeline improvement suggestions generated after each run
-- --skip-review to bypass review step
-- --no-suggestions to skip pipeline suggestions
-
-v3.2 Features:
-- Configurable parallelization (default 3 workers) for batch analysis
-- Run isolation: sampled/ cleared by default between runs
-- Scope coherence: batch_analyze respects manifest.csv
-- Resume capability: --resume to continue from existing samples
-
 Usage:
-    # Full pipeline with 50 transcripts (3 parallel workers)
-    python3 tools/run_analysis.py
+    # Sample + analyze 50 transcripts (default)
+    python3 tools/run_analysis.py -n 50
+
+    # Sample only (for ask_raw.py — skips analysis)
+    python3 tools/run_analysis.py -n 50 --sample-only
+
+    # Full pipeline with insights/report
+    python3 tools/run_analysis.py -n 50 --insights
 
     # Quick test with 5 transcripts
     python3 tools/run_analysis.py --quick
 
-    # Custom sample size with more parallelization
-    python3 tools/run_analysis.py -n 200 --workers 5
+    # Grow existing run to 200 total (system calculates delta)
+    python3 tools/run_analysis.py -n 200
 
-    # Skip sampling (use existing sampled directory)
-    python3 tools/run_analysis.py --skip-sampling
+    # Use specific run directory
+    python3 tools/run_analysis.py -n 300 --run-dir runs/run_xxx
 
-    # Resume interrupted run (uses existing manifest)
-    python3 tools/run_analysis.py --resume
+    # Custom run ID for new run
+    python3 tools/run_analysis.py -n 50 --run-id my_experiment
 
-    # Skip analysis (use existing analyses)
-    python3 tools/run_analysis.py --skip-analysis
+    # Legacy mode (flat directories, no isolation)
+    python3 tools/run_analysis.py --legacy
 """
 
 import argparse
+import csv
 import subprocess
 import sys
 from datetime import datetime
 from pathlib import Path
+
+from run_utils import (
+    create_run_directory,
+    save_config,
+    update_status,
+    update_latest_symlink,
+    get_run_paths,
+    count_transcript_files,
+    load_last_run,
+)
 
 
 def run_step(name: str, cmd: list[str], cwd: Path | None = None) -> bool:
@@ -75,31 +100,52 @@ def run_step(name: str, cmd: list[str], cwd: Path | None = None) -> bool:
 
 def main():
     parser = argparse.ArgumentParser(
-        description="End-to-end analysis pipeline (v3)",
+        description="End-to-end analysis pipeline (v4.3 - target-based augmentation)",
         formatter_class=argparse.RawDescriptionHelpFormatter,
         epilog="""
 Examples:
-    # Full pipeline with 50 transcripts
-    python3 tools/run_analysis.py
+    # Sample + analyze 50 transcripts (default)
+    python3 tools/run_analysis.py -n 50
+
+    # Sample only, then use ask_raw.py (skips analysis)
+    python3 tools/run_analysis.py -n 30 --sample-only
+    python3 tools/ask_raw.py "What are customers calling about?"
+
+    # Full pipeline with insights and report
+    python3 tools/run_analysis.py -n 50 --insights
 
     # Quick test with 5 transcripts
     python3 tools/run_analysis.py --quick
 
-    # Custom sample size
-    python3 tools/run_analysis.py -n 100
+    # Grow existing run to target size (system calculates delta)
+    python3 tools/run_analysis.py -n 200    # has 50 → adds 150
 
-    # Skip sampling (use existing sampled directory)
-    python3 tools/run_analysis.py --skip-sampling
+    # Use specific run directory
+    python3 tools/run_analysis.py -n 300 --run-dir runs/run_xxx
 
-    # Skip analysis (use existing analyses)
-    python3 tools/run_analysis.py --skip-analysis
+    # Custom run ID for new run
+    python3 tools/run_analysis.py -n 50 --run-id experiment_1
+
+    # Legacy mode (flat directories)
+    python3 tools/run_analysis.py --legacy
         """
     )
 
     parser.add_argument("-n", "--sample-size", type=int, default=50,
-                        help="Number of transcripts to sample (default: 50)")
+                        help="Target number of transcripts (default: 50). For existing runs, this is the target total.")
     parser.add_argument("--quick", action="store_true",
                         help="Quick test with 5 transcripts")
+
+    # Run isolation arguments
+    parser.add_argument("--run-dir", type=Path,
+                        help="Use existing run directory (resume or re-run)")
+    parser.add_argument("--run-id", type=str,
+                        help="Custom run ID (default: timestamp)")
+    parser.add_argument("--legacy", action="store_true",
+                        help="Use legacy flat directory mode (no isolation)")
+
+    parser.add_argument("--sample-only", action="store_true",
+                        help="Stop after sampling (for ask_raw.py workflow, no analysis)")
     parser.add_argument("--skip-sampling", action="store_true",
                         help="Skip sampling step (use existing sampled/)")
     parser.add_argument("--resume", action="store_true",
@@ -110,8 +156,10 @@ Examples:
                         help="Skip analysis step (use existing analyses/)")
     parser.add_argument("--no-clear-analyses", action="store_true",
                         help="Don't clear analyses/ before fresh run (default: clear for run isolation)")
+    parser.add_argument("--insights", action="store_true",
+                        help="Run metrics, NL extraction, insights, and report (off by default)")
     parser.add_argument("--skip-insights", action="store_true",
-                        help="Skip LLM insights generation (metrics only)")
+                        help="[DEPRECATED] No-op, insights are now off by default. Use --insights to enable.")
     parser.add_argument("--analysis-model", type=str, default="gemini-3-flash-preview",
                         help="Gemini model for transcript analysis (default: gemini-3-flash-preview)")
     parser.add_argument("--insights-model", type=str, default="gemini-3-pro-preview",
@@ -125,7 +173,7 @@ Examples:
     parser.add_argument("--transcripts-dir", type=Path,
                         help="Custom transcripts directory")
     parser.add_argument("--output-dir", type=Path,
-                        help="Custom output directory for all outputs")
+                        help="Custom output directory for all outputs (legacy mode only)")
 
     # v3.5.5: Report review options (disabled by default in v3.9.1)
     parser.add_argument("--enable-review", action="store_true",
@@ -148,53 +196,133 @@ Examples:
     project_dir = tools_dir.parent
 
     transcripts_dir = args.transcripts_dir or project_dir / "transcripts"
-    sampled_dir = project_dir / "sampled"
-    analyses_dir = project_dir / "analyses"
-    reports_dir = args.output_dir or project_dir / "reports"
 
     # Quick mode
     if args.quick:
         args.sample_size = 5
 
+    # Determine run mode: isolated vs legacy
+    run_dir = None
+    using_isolation = not args.legacy
+
+    if args.run_dir:
+        # Use existing run directory
+        run_dir = args.run_dir
+        if not run_dir.exists():
+            print(f"Error: Run directory not found: {run_dir}")
+            return 1
+        using_isolation = True
+        print(f"Using existing run: {run_dir}")
+    elif not args.legacy:
+        # Check for existing run via .last_run
+        run_id = load_last_run(project_dir)
+        if run_id:
+            runs_dir = project_dir / "runs"
+            potential_run_dir = runs_dir / run_id
+            if potential_run_dir.exists():
+                run_dir = potential_run_dir
+                using_isolation = True
+                print(f"Found existing run: {run_dir}")
+
+    if args.legacy:
+        # Legacy flat directory mode
+        using_isolation = False
+        print("Using legacy flat directory mode")
+    elif run_dir is None:
+        # No existing run found, create new isolated run
+        runs_dir = project_dir / "runs"
+        run_dir, run_id_created = create_run_directory(runs_dir, args.run_id)
+        using_isolation = True
+        print(f"Creating isolated run: {run_dir}")
+        print(f"  (saved to .last_run - all tools will use this automatically)")
+
+    # Get paths based on mode
+    if using_isolation:
+        paths = get_run_paths(run_dir, project_dir)
+        sampled_dir = paths["sampled_dir"]
+        analyses_dir = paths["analyses_dir"]
+        reports_dir = paths["reports_dir"]
+    else:
+        sampled_dir = project_dir / "sampled"
+        analyses_dir = project_dir / "analyses"
+        reports_dir = args.output_dir or project_dir / "reports"
+
+    # v4.3: Target-based augmentation - calculate delta for existing runs
+    existing_count = 0
+    target = args.sample_size
+    is_augmenting = False
+    manifest_path = sampled_dir / "manifest.csv"
+
+    if manifest_path.exists() and not args.skip_sampling:
+        with open(manifest_path) as f:
+            existing_count = sum(1 for _ in csv.reader(f)) - 1  # minus header
+
+        if existing_count > 0:
+            delta = target - existing_count
+            if delta <= 0:
+                print(f"\nRun already has {existing_count} transcripts (target: {target}). Nothing to add.")
+                args.skip_sampling = True
+            else:
+                print(f"\nRun has {existing_count} transcripts. Adding {delta} to reach target of {target}.")
+                args.sample_size = delta  # Sample only the delta
+                args.no_clear = True      # Append mode
+                is_augmenting = True
+
     # Resume mode: skip sampling and use existing manifest
     if args.resume:
         args.skip_sampling = True
-        manifest_path = sampled_dir / "manifest.csv"
         if not manifest_path.exists():
             print(f"Error: Cannot resume - no manifest.csv found in {sampled_dir}")
             print("Run without --resume to create a new sample.")
             return 1
         # Count files in manifest for display
-        import csv
         with open(manifest_path) as f:
             manifest_count = sum(1 for _ in csv.reader(f)) - 1  # minus header
         print(f"Resuming from existing manifest ({manifest_count} files)")
 
+    # Save configuration for reproducibility (isolated mode only)
+    if using_isolation and run_dir and not args.run_dir:
+        # Only save config for NEW runs, not when using existing run_dir
+        total_available = count_transcript_files(transcripts_dir)
+        save_config(run_dir, args, extra={
+            "source": {
+                "transcripts_dir": str(transcripts_dir),
+                "total_available": total_available
+            }
+        })
+
     # Generate run ID for logging
-    run_id = datetime.now().strftime("%Y%m%d_%H%M%S")
+    run_id = run_dir.name if run_dir else datetime.now().strftime("%Y%m%d_%H%M%S")
 
     # v3.9.1: Review disabled by default
     run_review = args.enable_review and not args.skip_review
 
     print("=" * 60)
-    print("VACATIA AI VOICE AGENT ANALYTICS - v3.9.1 PIPELINE")
+    print("VACATIA AI VOICE AGENT ANALYTICS - v4.3 PIPELINE")
     print("=" * 60)
     print(f"Run ID: {run_id}")
     print(f"Started: {datetime.now().isoformat()}")
     print(f"\nConfiguration:")
-    print(f"  Sample size: {args.sample_size}")
+    print(f"  Mode: {'ISOLATED' if using_isolation else 'LEGACY'}")
+    if using_isolation:
+        print(f"  Run directory: {run_dir}")
+    if is_augmenting:
+        print(f"  Target: {target} transcripts ({existing_count} existing + {args.sample_size} new)")
+    else:
+        print(f"  Sample size: {args.sample_size}")
     print(f"  Analysis model: {args.analysis_model}")
     print(f"  Insights model: {args.insights_model}")
     print(f"  Review: {'enabled' if run_review else 'disabled'}{' (use --enable-review to enable)' if not run_review else ''}")
     print(f"  Workers: {args.workers}")
     print(f"  Rate limit: {args.rate_limit}s per worker")
     print(f"  Transcripts: {transcripts_dir}")
-    print(f"  Output: {reports_dir}")
+    if not using_isolation:
+        print(f"  Output: {reports_dir}")
     if args.questions:
         print(f"  Custom questions: {args.questions}")
     if args.resume:
         print(f"  Mode: RESUME (using existing manifest)")
-    elif args.no_clear:
+    elif args.no_clear and not is_augmenting:
         print(f"  Mode: APPEND (keeping existing samples)")
 
     steps_completed = []
@@ -213,28 +341,60 @@ Examples:
             cmd.extend(["--seed", str(args.seed)])
         if args.no_clear:
             cmd.append("--no-clear")
+        if is_augmenting:
+            # v4.3 fix: run_analysis.py already computed the delta,
+            # so tell sample_transcripts.py to treat -n as exact count
+            cmd.append("--force-count")
+        if using_isolation and run_dir:
+            cmd.extend(["--run-dir", str(run_dir)])
 
-        step_name = "Sample Transcripts" + (" (append mode)" if args.no_clear else " (clearing existing)")
+        if is_augmenting:
+            step_name = f"Augment Run (+{args.sample_size} → {target} total)"
+        else:
+            step_name = "Sample Transcripts" + (" (append mode)" if args.no_clear else "")
         if run_step(step_name, cmd):
             steps_completed.append("sampling")
+            if using_isolation and run_dir:
+                update_status(run_dir, "sampling", "completed", count=args.sample_size)
         else:
             steps_failed.append("sampling")
+            if using_isolation and run_dir:
+                update_status(run_dir, "sampling", "failed")
             print("\n⚠️ Sampling failed. Attempting to continue with existing samples...")
     else:
         skip_reason = "--resume" if args.resume else "--skip-sampling"
         print(f"\n⏭️ Skipping sampling ({skip_reason})")
         steps_completed.append("sampling (skipped)")
 
+    # --sample-only: stop after sampling (for ask_raw.py workflow)
+    if args.sample_only:
+        if using_isolation and run_dir:
+            update_latest_symlink(run_dir)
+        print("\n" + "=" * 60)
+        print("PIPELINE SUMMARY (--sample-only)")
+        print("=" * 60)
+        print(f"Completed: {datetime.now().isoformat()}")
+        print(f"\n✅ Steps completed: {', '.join(steps_completed)}")
+        print(f"\n📁 Sampled transcripts: {sampled_dir}")
+        if using_isolation and run_dir:
+            print(f"📂 Run directory: {run_dir}")
+        print(f"\nNext: python3 tools/ask_raw.py \"Your question here\"")
+        return 0
+
     # Step 2: Batch analyze (parallel in v3.2)
     if not args.skip_analysis:
         # v3.3: Clear analyses/ for run isolation (unless --resume or --no-clear-analyses)
-        if not args.resume and not args.no_clear_analyses:
+        # In isolated mode, directory is fresh so no need to clear
+        if not using_isolation and not args.resume and not args.no_clear_analyses:
             existing_analyses = list(analyses_dir.glob("*.json"))
             if existing_analyses:
                 print(f"\n🧹 Clearing {len(existing_analyses)} existing analyses for run isolation...")
                 for f in existing_analyses:
                     f.unlink()
                 print("   (use --no-clear-analyses to preserve existing analyses)")
+
+        if using_isolation and run_dir:
+            update_status(run_dir, "analysis", "in_progress")
 
         cmd = [
             sys.executable,
@@ -245,11 +405,19 @@ Examples:
             "--workers", str(args.workers),
             "--rate-limit", str(args.rate_limit)
         ]
+        if using_isolation and run_dir:
+            cmd.extend(["--run-dir", str(run_dir)])
 
         if run_step(f"Batch Analyze Transcripts (v3.3, {args.workers} workers)", cmd):
             steps_completed.append("analysis")
+            if using_isolation and run_dir:
+                # Count successful analyses
+                success_count = len(list(analyses_dir.glob("*.json")))
+                update_status(run_dir, "analysis", "completed", count=success_count)
         else:
             steps_failed.append("analysis")
+            if using_isolation and run_dir:
+                update_status(run_dir, "analysis", "failed")
             print("\n" + "=" * 60)
             print("❌ PIPELINE STOPPED: Analysis step failed")
             print("=" * 60)
@@ -264,45 +432,70 @@ Examples:
         print("\n⏭️ Skipping analysis (--skip-analysis)")
         steps_completed.append("analysis (skipped)")
 
-    # Step 3: Compute metrics (v3.3: scope coherence via manifest)
-    cmd = [
-        sys.executable,
-        str(tools_dir / "compute_metrics.py"),
-        "-i", str(analyses_dir),
-        "-o", str(reports_dir),
-        "-s", str(sampled_dir)  # v3.3: Pass sampled dir for manifest filtering
-    ]
+    # Steps 3-5: Metrics, NL extraction, and insights (opt-in with --insights)
+    run_insights = args.insights
+    if run_insights:
+        # Step 3: Compute metrics (v3.3: scope coherence via manifest)
+        if using_isolation and run_dir:
+            update_status(run_dir, "metrics", "in_progress")
 
-    if run_step("Compute Deterministic Metrics (Section A)", cmd):
-        steps_completed.append("metrics")
-    else:
-        steps_failed.append("metrics")
-        print("\n❌ Metrics computation failed. Cannot continue.")
-        return 1
+        cmd = [
+            sys.executable,
+            str(tools_dir / "compute_metrics.py"),
+            "-i", str(analyses_dir),
+            "-o", str(reports_dir),
+            "-s", str(sampled_dir)  # v3.3: Pass sampled dir for manifest filtering
+        ]
+        if using_isolation and run_dir:
+            cmd.extend(["--run-dir", str(run_dir)])
 
-    # Step 4: Extract NL fields (v3.3: scope coherence via manifest)
-    cmd = [
-        sys.executable,
-        str(tools_dir / "extract_nl_fields.py"),
-        "-i", str(analyses_dir),
-        "-o", str(reports_dir),
-        "-s", str(sampled_dir)  # v3.3: Pass sampled dir for manifest filtering
-    ]
+        if run_step("Compute Deterministic Metrics (Section A)", cmd):
+            steps_completed.append("metrics")
+            if using_isolation and run_dir:
+                update_status(run_dir, "metrics", "completed")
+        else:
+            steps_failed.append("metrics")
+            if using_isolation and run_dir:
+                update_status(run_dir, "metrics", "failed")
+            print("\n❌ Metrics computation failed. Cannot continue.")
+            return 1
 
-    if run_step("Extract NL Fields for LLM (v3.3)", cmd):
-        steps_completed.append("nl_extraction")
-    else:
-        steps_failed.append("nl_extraction")
-        print("\n⚠️ NL extraction failed. Insights will be based on metrics only.")
+        # Step 4: Extract NL fields (v3.3: scope coherence via manifest)
+        if using_isolation and run_dir:
+            update_status(run_dir, "nl_extraction", "in_progress")
 
-    # Step 5: Generate insights (v3.3: uses gemini-3-pro-preview by default)
-    if not args.skip_insights:
+        cmd = [
+            sys.executable,
+            str(tools_dir / "extract_nl_fields.py"),
+            "-i", str(analyses_dir),
+            "-o", str(reports_dir),
+            "-s", str(sampled_dir)  # v3.3: Pass sampled dir for manifest filtering
+        ]
+        if using_isolation and run_dir:
+            cmd.extend(["--run-dir", str(run_dir)])
+
+        if run_step("Extract NL Fields for LLM (v3.3)", cmd):
+            steps_completed.append("nl_extraction")
+            if using_isolation and run_dir:
+                update_status(run_dir, "nl_extraction", "completed")
+        else:
+            steps_failed.append("nl_extraction")
+            if using_isolation and run_dir:
+                update_status(run_dir, "nl_extraction", "failed")
+            print("\n⚠️ NL extraction failed. Insights will be based on metrics only.")
+
+        # Step 5: Generate insights (v3.3: uses gemini-3-pro-preview by default)
+        if using_isolation and run_dir:
+            update_status(run_dir, "insights", "in_progress")
+
         cmd = [
             sys.executable,
             str(tools_dir / "generate_insights.py"),
             "-o", str(reports_dir),
             "--model", args.insights_model
         ]
+        if using_isolation and run_dir:
+            cmd.extend(["--run-dir", str(run_dir)])
 
         # v3.9.1: Pass custom questions file if provided
         if args.questions:
@@ -317,25 +510,40 @@ Examples:
 
         if run_step(step_name, cmd):
             steps_completed.append("insights")
+            if using_isolation and run_dir:
+                update_status(run_dir, "insights", "completed")
         else:
             steps_failed.append("insights")
+            if using_isolation and run_dir:
+                update_status(run_dir, "insights", "failed")
             print("\n⚠️ Insights generation failed. Continuing without insights...")
     else:
-        print("\n⏭️ Skipping insights generation (--skip-insights)")
+        print("\n⏭️ Skipping metrics, NL extraction, insights (use --insights to enable)")
+        steps_completed.append("metrics (skipped)")
+        steps_completed.append("nl_extraction (skipped)")
         steps_completed.append("insights (skipped)")
 
     # Step 6: Render report
     if "insights" in steps_completed:
+        if using_isolation and run_dir:
+            update_status(run_dir, "report", "in_progress")
+
         cmd = [
             sys.executable,
             str(tools_dir / "render_report.py"),
             "-o", str(reports_dir)
         ]
+        if using_isolation and run_dir:
+            cmd.extend(["--run-dir", str(run_dir)])
 
         if run_step("Render Markdown Report", cmd):
             steps_completed.append("report")
+            if using_isolation and run_dir:
+                update_status(run_dir, "report", "completed")
         else:
             steps_failed.append("report")
+            if using_isolation and run_dir:
+                update_status(run_dir, "report", "failed")
             print("\n⚠️ Report rendering failed.")
     else:
         print("\n⏭️ Skipping report rendering (no insights available)")
@@ -363,6 +571,10 @@ Examples:
     elif "report" not in steps_completed:
         print("\n⏭️ Skipping report review (no report available)")
 
+    # Update latest symlink for isolated runs
+    if using_isolation and run_dir:
+        update_latest_symlink(run_dir)
+
     # Summary
     print("\n" + "=" * 60)
     print("PIPELINE SUMMARY")
@@ -376,10 +588,15 @@ Examples:
     print(f"\n📁 Output directory: {reports_dir}")
     if reports_dir.exists():
         print("\nGenerated files:")
-        for f in sorted(reports_dir.glob("*_v3_*")):
+        for f in sorted(reports_dir.glob("*_v*_*")):
             if f.is_file():
                 size_kb = f.stat().st_size / 1024
                 print(f"  - {f.name} ({size_kb:.1f} KB)")
+
+    # Show run directory info for isolated runs
+    if using_isolation and run_dir:
+        print(f"\n📂 Run directory: {run_dir}")
+        print(f"   Latest symlink: {run_dir.parent / 'latest'}")
 
     return 0 if not steps_failed else 1
 

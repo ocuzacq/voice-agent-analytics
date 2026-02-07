@@ -1,0 +1,76 @@
+{
+  "call_id": "0acca17b-d9c5-476c-965a-ac8697b4a21d",
+  "schema_version": "v5.0",
+  "turns": 19,
+  "ended_by": "customer",
+  "intent": "Register for Clubhouse portal",
+  "intent_context": "Received a letter about the new Vacatia Clubhouse and is having trouble with the ID and registration process",
+  "secondary_intent": "Verify account ID number",
+  "call_scope": "in_scope",
+  "call_outcome": "abandoned",
+  "resolution": "none",
+  "steps": [
+    "Identify intent to register for Clubhouse",
+    "Verify customer identity via name, phone, and state",
+    "Clarify difference between RCI ID and Vacatia ID",
+    "Confirm email address for sending link"
+  ],
+  "escalation_trigger": null,
+  "abandon_stage": "post_delivery",
+  "resolution_confirmed": null,
+  "effectiveness": 5,
+  "quality": 4,
+  "effort": 3,
+  "sentiment_start": "frustrated",
+  "sentiment_end": "neutral",
+  "failure_type": null,
+  "failure_detail": null,
+  "policy_gap": null,
+  "derailed_at": null,
+  "clarifications": [
+    {
+      "turn": 13,
+      "type": "name",
+      "cause": "misheard",
+      "note": "Agent re-verified spelling of last name"
+    },
+    {
+      "turn": 25,
+      "type": "intent",
+      "cause": "ok",
+      "note": "Confirmed if customer wanted registration link"
+    }
+  ],
+  "corrections": [
+    {
+      "turn": 16,
+      "severity": "minor",
+      "note": "Customer corrected spelling of last name"
+    }
+  ],
+  "loops": [],
+  "summary": "Customer called frustrated because they couldn't register for the new Clubhouse portal using their RCI ID. The agent verified the account, explained the ID difference, and was in the process of sending a registration link when the call ended.",
+  "verbatim": "I type in the code that I got from the code, and it says it's not no good... It's ridiculous.",
+  "coaching": null,
+  "repeat_caller": false,
+  "actions": [
+    {
+      "action": "account_lookup",
+      "outcome": "success",
+      "detail": "Located account via phone number"
+    },
+    {
+      "action": "verification",
+      "outcome": "success",
+      "detail": "Verified name, phone, and state"
+    },
+    {
+      "action": "send_clubhouse_link",
+      "outcome": "unknown",
+      "detail": "Confirmed email but call ended before confirmation"
+    }
+  ],
+  "transfer_destination": null,
+  "transfer_queue_detected": false,
+  "duration_seconds": 326.5
+}

@@ -1,0 +1,52 @@
+{
+  "call_id": "30d955ef-1b17-43e4-b0b6-df87e7309002",
+  "schema_version": "v5.0",
+  "turns": 4,
+  "ended_by": "agent",
+  "intent": "Speak to a representative",
+  "intent_context": "Wants to discuss billing issues",
+  "secondary_intent": "Billing inquiry",
+  "call_scope": "in_scope",
+  "call_outcome": "completed",
+  "resolution": "info provided",
+  "steps": [
+    "Offer transfer to representative",
+    "Identify department",
+    "Attempt transfer",
+    "Provide business hours after transfer failure"
+  ],
+  "escalation_trigger": null,
+  "abandon_stage": null,
+  "resolution_confirmed": false,
+  "effectiveness": 4,
+  "quality": 3,
+  "effort": 2,
+  "sentiment_start": "neutral",
+  "sentiment_end": "neutral",
+  "failure_type": null,
+  "failure_detail": null,
+  "policy_gap": null,
+  "derailed_at": null,
+  "clarifications": [],
+  "corrections": [],
+  "loops": [],
+  "summary": "The customer called to speak with a billing representative. The AI attempted a transfer, but after a long hold period in the queue, it informed the customer no agents were available and provided business hours.",
+  "verbatim": "Wait for representative... Billing.",
+  "coaching": "The agent handled the request well, but the transition back from the hold music was messy with overlapping text; the system should detect queue timeouts more cleanly.",
+  "repeat_caller": false,
+  "actions": [
+    {
+      "action": "transfer",
+      "outcome": "failed",
+      "detail": "Attempted transfer to billing department"
+    },
+    {
+      "action": "other",
+      "outcome": "success",
+      "detail": "Provided operating hours for callback"
+    }
+  ],
+  "transfer_destination": "concierge",
+  "transfer_queue_detected": true,
+  "duration_seconds": 1339.7
+}

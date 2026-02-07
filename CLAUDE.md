@@ -1,4 +1,4 @@
-# Voice Agent Analytics - Project Instructions (v3.9.1)
+# Voice Agent Analytics - Project Instructions (v5.0)
 
 ## Environment
 
@@ -40,47 +40,112 @@ Keep archived tool versions in `tools/vX/` directories with their own `VERSION.m
 - Why it was superseded
 - Key differences from current
 
-## Pipeline Architecture (v3.9.1)
+## Pipeline Architecture (v4.3)
 
-### Full Pipeline
+### Two Q&A Tools
+
+| Tool | Reads | Prerequisite | Best for |
+|------|-------|-------------|----------|
+| `ask_raw.py` | raw transcripts (`sampled/`) | sample only | Fast exploration, no per-call LLM cost |
+| `ask.py` | LLM analyses (`analyses/`) | sample + analyze | Structured queries on extracted fields |
+
+### Pipeline Modes
 
 ```
-transcripts/ → sample → preprocess → analyze (parallel) → metrics → extract_nl → insights → report → review
+# Sample only (--sample-only) → ask_raw.py
+transcripts/ → sample → ask_raw.py
+
+# Sample + analyze (default) → ask.py
+transcripts/ → sample → analyze (parallel) → ask.py
+
+# Full pipeline (--insights) → report
+transcripts/ → sample → analyze → metrics → extract_nl → insights → report
 ```
+
+### Typical Workflows
+
+```bash
+# --- Fast exploration (ask_raw.py, no analysis cost) ---
+python3 tools/run_analysis.py -n 30 --sample-only
+python3 tools/ask_raw.py "What are customers calling about?"
+python3 tools/ask_raw.py "What friction patterns do you see?"
+
+# --- Standard workflow (ask.py, with per-call analysis) ---
+python3 tools/run_analysis.py -n 50
+python3 tools/ask.py "Why do calls fail?"
+python3 tools/ask.py "Main friction patterns?"
+
+# --- Grow iteratively, then report ---
+python3 tools/run_analysis.py -n 200        # adds 150 to reach 200
+python3 tools/ask.py "How do loops correlate with failures?"
+python3 tools/run_analysis.py --insights    # full report
+```
+
+### Target-Based Run Augmentation (v4.3)
+
+```bash
+# Day 1: Create run with 50 transcripts
+python3 tools/run_analysis.py -n 50
+
+# Day 2: Grow to 200 total (system calculates delta: +150)
+python3 tools/run_analysis.py -n 200
+
+# Day 3: Grow to 1000 total (system calculates delta: +800)
+python3 tools/run_analysis.py -n 1000
+
+# Target already met? Nothing added
+python3 tools/run_analysis.py -n 100  # "Run already has 1000 transcripts. Nothing to add."
+
+# Use specific run directory
+python3 tools/run_analysis.py -n 500 --run-dir runs/run_xxx
+```
+
+**Key behavior:**
+- New runs: `-n 50` = sample 50 transcripts
+- Existing runs: `-n 200` = TARGET 200 total, system adds difference
+- Manifest tracks all sampled files, excluding already-sampled on augment
+
+### Pipeline Steps
 
 1. `sample_transcripts.py` - Random stratified sampling
-2. `preprocess_transcript.py` - Deterministic turn counting (v3.7: integrated into analyze)
-3. `batch_analyze.py` - LLM analysis with parallel processing (v3.2: default 3 workers)
-4. `compute_metrics.py` - Section A: Deterministic metrics (v3.9: +disposition breakdown)
-5. `extract_nl_fields.py` - Condensed NL data for LLM (v3.9.1: +loop subjects)
-6. `generate_insights.py` - Section B: LLM insights (v3.9.1: +loop subject clustering)
-7. `render_report.py` - Markdown executive summary (v3.9.1: +loop subject breakdown)
-8. `review_report.py` - Editorial review and pipeline suggestions (v3.5.5)
+2. `batch_analyze.py` - LLM analysis with parallel processing (default 3 workers)
+3. `compute_metrics.py` - Section A: Deterministic metrics (requires `--insights`)
+4. `extract_nl_fields.py` - Condensed NL data for LLM (requires `--insights`)
+5. `generate_insights.py` - Section B: LLM insights (requires `--insights`)
+6. `render_report.py` - Markdown executive summary (requires `--insights`)
+7. `review_report.py` - Editorial review (requires `--insights --enable-review`)
 
-### Ad-hoc Q&A Tool
+### SQL Analytics (v5.0)
 
+```bash
+# Load analyses into DuckDB
+python3 tools/load_duckdb.py runs/run_XXXX/analyses/
+
+# Run dashboard queries (scope x outcome, containment rate, etc.)
+python3 tools/query.py runs/run_XXXX/ --dashboard
+
+# Ad-hoc SQL
+python3 tools/query.py runs/run_XXXX/ -q "SELECT call_scope, call_outcome, COUNT(*) FROM calls GROUP BY 1, 2"
+```
+
+### Ad-hoc Q&A Tools
+
+**`ask.py`** — queries LLM analysis outputs (structured fields)
 ```
 analyses/ → ask.py → asks/<timestamp>/
 ```
+- Reads from `analyses/` (requires `batch_analyze.py` to have run)
+- Random sampling from analyses (default 100, configurable)
+- Cites 2-4 illustrative examples, auto-saves to `asks/`
 
-- `ask.py` - Single question answering without full report generation
-- Random sampling from existing analyses (default 100, configurable)
-- Cites 2-4 illustrative examples
-- Auto-saves question, answer, and metadata
-- Use for quick hypothesis testing between pipeline runs
-
-### Report Review (v3.5.5)
-
-```bash
-# Full pipeline with review (default)
-python3 tools/run_analysis.py -n 50
-
-# Skip review for faster runs
-python3 tools/run_analysis.py -n 50 --skip-review
-
-# Review only (no pipeline suggestions)
-python3 tools/run_analysis.py -n 50 --no-suggestions
+**`ask_raw.py`** — queries raw transcripts directly (no analysis needed)
 ```
+sampled/ → ask_raw.py → asks_raw/<timestamp>/
+```
+- Reads from `sampled/` (only needs `sample_transcripts.py`)
+- Preprocesses on-the-fly (coalesces fragmented ASR messages)
+- Lower default limit (30) due to larger per-call context
+- Auto-saves to `asks_raw/`
 
 ### Parallelization (v3.2)
 
@@ -100,6 +165,9 @@ python3 tools/run_analysis.py -n 50 --workers 1
 Always run the test harness before releases:
 ```bash
 python3 tools/test_framework.py
+
+# v4.0: Run intent + sentiment analysis tests
+python3 tools/test_v40_features.py
 
 # v3.9: Run call disposition classification tests
 python3 tools/test_v39_features.py

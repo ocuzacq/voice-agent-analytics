@@ -1,0 +1,89 @@
+{
+  "call_id": "0107c02c-0cae-47f5-98d8-37b036effa10",
+  "schema_version": "v5.0",
+  "turns": 9,
+  "ended_by": "customer",
+  "intent": "Speak to a concierge",
+  "intent_context": "Has questions regarding maintenance fee billing",
+  "secondary_intent": "Check maintenance fee billing",
+  "call_scope": "in_scope",
+  "call_outcome": "escalated",
+  "resolution": "transferred to concierge",
+  "steps": [
+    "Initial request for concierge",
+    "Clarified billing intent",
+    "Verified account via name and state",
+    "Attempted to narrow billing request",
+    "Transferred to concierge per request"
+  ],
+  "escalation_trigger": "customer_requested",
+  "abandon_stage": null,
+  "resolution_confirmed": null,
+  "effectiveness": 5,
+  "quality": 5,
+  "effort": 2,
+  "sentiment_start": "neutral",
+  "sentiment_end": "neutral",
+  "failure_type": null,
+  "failure_detail": null,
+  "policy_gap": null,
+  "derailed_at": null,
+  "clarifications": [
+    {
+      "turn": 3,
+      "type": "intent",
+      "cause": "ok",
+      "note": "Clarifying concierge service type"
+    },
+    {
+      "turn": 5,
+      "type": "intent",
+      "cause": "ok",
+      "note": "Clarifying maintenance vs mortgage"
+    },
+    {
+      "turn": 9,
+      "type": "name",
+      "cause": "ok",
+      "note": "Requested spelling of name"
+    },
+    {
+      "turn": 15,
+      "type": "intent",
+      "cause": "ok",
+      "note": "Narrowing specific billing action"
+    },
+    {
+      "turn": 17,
+      "type": "intent",
+      "cause": "ok",
+      "note": "Clarifying maintenance fee task"
+    }
+  ],
+  "corrections": [],
+  "loops": [],
+  "summary": "The customer wanted to speak with the concierge regarding maintenance fee billing. The agent verified the account and, after the customer reiterated the request for a live person, successfully transferred the call.",
+  "verbatim": "Speak to a concierge.",
+  "coaching": null,
+  "repeat_caller": false,
+  "actions": [
+    {
+      "action": "account_lookup",
+      "outcome": "success",
+      "detail": "Found record via phone number"
+    },
+    {
+      "action": "verification",
+      "outcome": "success",
+      "detail": "Verified name spelling and state"
+    },
+    {
+      "action": "transfer",
+      "outcome": "success",
+      "detail": "Connected to concierge department"
+    }
+  ],
+  "transfer_destination": "concierge",
+  "transfer_queue_detected": true,
+  "duration_seconds": 897.6
+}

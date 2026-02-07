@@ -1,0 +1,48 @@
+{
+  "call_id": "0a095b02-136b-4bcb-adab-98b5705c6089",
+  "schema_version": "v5.0",
+  "turns": 2,
+  "ended_by": "customer",
+  "intent": "Schedule a timeshare week",
+  "intent_context": null,
+  "secondary_intent": null,
+  "call_scope": "out_of_scope",
+  "call_outcome": "abandoned",
+  "resolution": "none",
+  "steps": [
+    "Greeting",
+    "Intent capture",
+    "Name request",
+    "Clarification attempt"
+  ],
+  "escalation_trigger": null,
+  "abandon_stage": "mid_task",
+  "resolution_confirmed": null,
+  "effectiveness": 2,
+  "quality": 3,
+  "effort": 3,
+  "sentiment_start": "neutral",
+  "sentiment_end": "neutral",
+  "failure_type": "customer_confusion",
+  "failure_detail": "Customer provided nonsensical response to name request and then disconnected.",
+  "policy_gap": null,
+  "derailed_at": 4,
+  "clarifications": [
+    {
+      "turn": 5,
+      "type": "intent",
+      "cause": "unclear",
+      "note": "Clarifying intent after nonsensical user response"
+    }
+  ],
+  "corrections": [],
+  "loops": [],
+  "summary": "The customer called to schedule a timeshare week but provided a nonsensical response when asked for their name. The customer disconnected after the agent attempted to clarify the request.",
+  "verbatim": "Which state? Has three sides? Patricia. Star. A triangle, or square.",
+  "coaching": "The agent handled the nonsensical input professionally by attempting to pivot back to the original intent.",
+  "repeat_caller": false,
+  "actions": [],
+  "transfer_destination": null,
+  "transfer_queue_detected": false,
+  "duration_seconds": 37.6
+}

@@ -1,0 +1,77 @@
+{
+  "call_id": "0a0aea06-6cbe-4888-9605-cb52dc8fa52e",
+  "schema_version": "v5.0",
+  "turns": 15,
+  "ended_by": "agent",
+  "intent": "Inquire about resorts in Virginia",
+  "intent_context": "Wants to stay at Massanutten resort or nearby",
+  "secondary_intent": "Trade week via RCI",
+  "call_scope": "mixed",
+  "call_outcome": "completed",
+  "resolution": "info provided and link sent",
+  "steps": [
+    "account_lookup",
+    "verification",
+    "provided property locations",
+    "calculated distance to Massanutten",
+    "send_rci_link"
+  ],
+  "escalation_trigger": null,
+  "abandon_stage": null,
+  "resolution_confirmed": true,
+  "effectiveness": 5,
+  "quality": 5,
+  "effort": 2,
+  "sentiment_start": "neutral",
+  "sentiment_end": "satisfied",
+  "failure_type": null,
+  "failure_detail": null,
+  "policy_gap": null,
+  "derailed_at": null,
+  "clarifications": [
+    {
+      "turn": 7,
+      "type": "name",
+      "cause": "ok",
+      "note": "requested first name spelling"
+    },
+    {
+      "turn": 15,
+      "type": "intent",
+      "cause": "unclear",
+      "note": "clarified 'Mass Nugget' as Massanutten"
+    }
+  ],
+  "corrections": [
+    {
+      "turn": 16,
+      "severity": "minor",
+      "note": "user repeated 'Mass Nugget' pronunciation"
+    }
+  ],
+  "loops": [],
+  "summary": "The customer wanted to know if the company had resorts in Massanutten, Virginia. The agent clarified the location, explained the distance from their Williamsburg properties, and sent an RCI link to help the customer trade their week.",
+  "verbatim": "How can I maybe trade off with one of RCI or something that's right there?",
+  "coaching": null,
+  "repeat_caller": false,
+  "actions": [
+    {
+      "action": "account_lookup",
+      "outcome": "success",
+      "detail": "looked up account via phone number"
+    },
+    {
+      "action": "verification",
+      "outcome": "success",
+      "detail": "verified name and state"
+    },
+    {
+      "action": "send_rci_link",
+      "outcome": "success",
+      "detail": "sent RCI help page link"
+    }
+  ],
+  "transfer_destination": null,
+  "transfer_queue_detected": false,
+  "duration_seconds": 297.1
+}

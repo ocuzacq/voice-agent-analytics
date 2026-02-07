@@ -1,0 +1,71 @@
+{
+  "call_id": "d187d1d7-130f-4436-974d-80d00a57e368",
+  "schema_version": "v5.0",
+  "turns": 8,
+  "ended_by": "agent",
+  "intent": "Pay maintenance fees",
+  "intent_context": null,
+  "secondary_intent": null,
+  "call_scope": "in_scope",
+  "call_outcome": "completed",
+  "resolution": "link sent",
+  "steps": [
+    "Identify intent to pay maintenance fees",
+    "Account lookup via phone number",
+    "Verification of name and state",
+    "Confirmation of contact details",
+    "Sent payment link via email and text"
+  ],
+  "escalation_trigger": null,
+  "abandon_stage": null,
+  "resolution_confirmed": false,
+  "effectiveness": 5,
+  "quality": 5,
+  "effort": 2,
+  "sentiment_start": "neutral",
+  "sentiment_end": "neutral",
+  "failure_type": null,
+  "failure_detail": null,
+  "policy_gap": null,
+  "derailed_at": null,
+  "clarifications": [
+    {
+      "turn": 7,
+      "type": "name",
+      "cause": "misheard",
+      "note": "Agent misheard name, requested spelling"
+    }
+  ],
+  "corrections": [
+    {
+      "turn": 8,
+      "severity": "minor",
+      "note": "User spelled name after misinterpretation"
+    }
+  ],
+  "loops": [],
+  "summary": "The customer called to pay their maintenance fees. The agent verified the account after a brief name clarification and successfully sent a payment link via email and text.",
+  "verbatim": "Pay maintenance fees.",
+  "coaching": null,
+  "repeat_caller": false,
+  "actions": [
+    {
+      "action": "account_lookup",
+      "outcome": "success",
+      "detail": "Found record using phone number"
+    },
+    {
+      "action": "verification",
+      "outcome": "success",
+      "detail": "Verified name spelling and state"
+    },
+    {
+      "action": "send_payment_link",
+      "outcome": "success",
+      "detail": "Sent link to email and text"
+    }
+  ],
+  "transfer_destination": null,
+  "transfer_queue_detected": false,
+  "duration_seconds": 119.4
+}

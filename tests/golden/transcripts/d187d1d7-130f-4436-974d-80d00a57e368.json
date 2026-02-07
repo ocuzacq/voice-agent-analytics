@@ -1,0 +1,142 @@
+{
+  "agent_id": "IdNSnJmoukxviqoTIWOZ",
+  "duration": 119.405136,
+  "ended_reason": "assistant-ended-call",
+  "messages": [
+    {
+      "role": "assistant",
+      "timestamp": 1769716769.7109349,
+      "content": "Hi, thank you for calling Vacation Village Resorts. This is Jamie, a virtual agent on a recorded line. How can I help you today?"
+    },
+    {
+      "role": "user",
+      "timestamp": 1769716779.907525,
+      "content": "Pay maintenance fees."
+    },
+    {
+      "role": "assistant",
+      "timestamp": 1769716782.5969918,
+      "content": "Let me get your maintenance payment link ready. Alright, you want to pay"
+    },
+    {
+      "role": "assistant",
+      "timestamp": 1769716782.5969918,
+      "content": "your maintenance fees. Would you like me"
+    },
+    {
+      "role": "assistant",
+      "timestamp": 1769716786.195149,
+      "content": "to send you a link to make your payment now?"
+    },
+    {
+      "role": "user",
+      "timestamp": 1769716795.9736636,
+      "content": "Yes."
+    },
+    {
+      "role": "assistant",
+      "timestamp": 1769716800.1346812,
+      "content": "I was able to pull up a record using your phone number. Can you tell me your first and last name"
+    },
+    {
+      "role": "assistant",
+      "timestamp": 1769716800.1346812,
+      "content": "so I can make sure I have the right account?"
+    },
+    {
+      "role": "user",
+      "timestamp": 1769716808.8572934,
+      "content": "Cynthia Serum."
+    },
+    {
+      "role": "assistant",
+      "timestamp": 1769716812.65864,
+      "content": "I didn\u2019t find a match for Cynthia Serum. Can you please spell your first and last"
+    },
+    {
+      "role": "assistant",
+      "timestamp": 1769716812.65864,
+      "content": "name for me, just to make sure I have it right?"
+    },
+    {
+      "role": "user",
+      "timestamp": 1769716821.860991,
+      "content": "E m I l."
+    },
+    {
+      "role": "user",
+      "timestamp": 1769716826.8603945,
+      "content": "C I r o n e."
+    },
+    {
+      "role": "assistant",
+      "timestamp": 1769716830.1078746,
+      "content": "Thanks for spelling that out. Can you tell me"
+    },
+    {
+      "role": "assistant",
+      "timestamp": 1769716830.1078746,
+      "content": "your state of residence?"
+    },
+    {
+      "role": "user",
+      "timestamp": 1769716837.0887356,
+      "content": "Florida."
+    },
+    {
+      "role": "assistant",
+      "timestamp": 1769716838.8107607,
+      "content": "Great, I have you verified. Go ahead and let me know what you need help with"
+    },
+    {
+      "role": "assistant",
+      "timestamp": 1769716838.8107607,
+      "content": "regarding your maintenance fees."
+    },
+    {
+      "role": "user",
+      "timestamp": 1769716847.7418416,
+      "content": "Pay."
+    },
+    {
+      "role": "assistant",
+      "timestamp": 1769716851.2228103,
+      "content": "I can help you pay your maintenance fees for your property. The email I have"
+    },
+    {
+      "role": "assistant",
+      "timestamp": 1769716851.2228103,
+      "content": "on file is cccirone@msn.com and the phone number is two zero five -- three eight three -- seven two zero two. Are these correct?"
+    },
+    {
+      "role": "user",
+      "timestamp": 1769716866.6249826,
+      "content": "Yes."
+    },
+    {
+      "role": "assistant",
+      "timestamp": 1769716869.7605357,
+      "content": "Got it, working on your payment link now."
+    },
+    {
+      "role": "assistant",
+      "timestamp": 1769716874.6005914,
+      "content": "Is there anything else I can help you with today?"
+    },
+    {
+      "role": "user",
+      "timestamp": 1769716879.674322,
+      "content": "No."
+    },
+    {
+      "role": "assistant",
+      "timestamp": 1769716882.124488,
+      "content": "Alright, you\u2019ll receive a link to pay your maintenance fees shortly"
+    },
+    {
+      "role": "assistant",
+      "timestamp": 1769716882.124488,
+      "content": "by email and text. Have a great rest of your day."
+    }
+  ]
+}

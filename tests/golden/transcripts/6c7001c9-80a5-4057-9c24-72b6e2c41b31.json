@@ -1,0 +1,27 @@
+{
+  "agent_id": "IdNSnJmoukxviqoTIWOZ",
+  "duration": 45.918696,
+  "ended_reason": "customer-ended-call",
+  "messages": [
+    {
+      "role": "assistant",
+      "timestamp": 1768570152.1006181,
+      "content": "Hi, thank you for calling Vacation Village Resorts. This is Jamie, a virtual agent on a recorded line. How can I help you today?"
+    },
+    {
+      "role": "user",
+      "timestamp": 1768570164.6094627,
+      "content": "It seems like no one is available to take your call at the moment. We request you to please continue with our automated system."
+    },
+    {
+      "role": "assistant",
+      "timestamp": 1768570175.4356189,
+      "content": "Who do I have the pleasure of speaking with?"
+    },
+    {
+      "role": "assistant",
+      "timestamp": 1768570194.4492073,
+      "content": "Hello? Are you still there?"
+    }
+  ]
+}

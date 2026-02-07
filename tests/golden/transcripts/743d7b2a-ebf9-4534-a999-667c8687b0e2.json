@@ -1,0 +1,162 @@
+{
+  "agent_id": "IdNSnJmoukxviqoTIWOZ",
+  "duration": 162.327665,
+  "ended_reason": "assistant-ended-call",
+  "messages": [
+    {
+      "role": "assistant",
+      "timestamp": 1769617240.030935,
+      "content": "Hi, thank you for calling Vacation Village Resorts. This is Jamie, a virtual agent on a recorded line. How can I help you today?"
+    },
+    {
+      "role": "user",
+      "timestamp": 1769617250.8115466,
+      "content": "Questions regarding a bill."
+    },
+    {
+      "role": "assistant",
+      "timestamp": 1769617254.4766908,
+      "content": "Let me check on your billing details. Can you tell me which resort your bill is for?"
+    },
+    {
+      "role": "assistant",
+      "timestamp": 1769617259.7162392,
+      "content": "Just to clarify, are you asking about your yearly maintenance bill or your mortgage bill?"
+    },
+    {
+      "role": "user",
+      "timestamp": 1769617268.5789952,
+      "content": "Maintenance bill."
+    },
+    {
+      "role": "assistant",
+      "timestamp": 1769617274.2603953,
+      "content": "Alright, I can help with that. Can you give me the phone number you have on your"
+    },
+    {
+      "role": "assistant",
+      "timestamp": 1769617274.2603953,
+      "content": "contract?"
+    },
+    {
+      "role": "user",
+      "timestamp": 1769617283.9416854,
+      "content": "Two zero one two one three eight zero eight zero."
+    },
+    {
+      "role": "assistant",
+      "timestamp": 1769617290.3434641,
+      "content": "One moment please, let me check that for you."
+    },
+    {
+      "role": "assistant",
+      "timestamp": 1769617294.4614582,
+      "content": "I was able to pull up a matching record using your phone number. Can you tell me your first and last"
+    },
+    {
+      "role": "assistant",
+      "timestamp": 1769617294.4614582,
+      "content": "name?"
+    },
+    {
+      "role": "user",
+      "timestamp": 1769617306.4976277,
+      "content": "Vincent Creo."
+    },
+    {
+      "role": "assistant",
+      "timestamp": 1769617309.138283,
+      "content": "I have a record on file, but the name I have does not match. Can you please"
+    },
+    {
+      "role": "assistant",
+      "timestamp": 1769617309.138283,
+      "content": "spell your first and last name for me?"
+    },
+    {
+      "role": "user",
+      "timestamp": 1769617317.4358509,
+      "content": "Valerie Creo."
+    },
+    {
+      "role": "assistant",
+      "timestamp": 1769617321.1575696,
+      "content": "Thanks for clarifying. Can you tell me your state"
+    },
+    {
+      "role": "assistant",
+      "timestamp": 1769617321.1575696,
+      "content": "of residence?"
+    },
+    {
+      "role": "user",
+      "timestamp": 1769617327.4763315,
+      "content": "New Jersey."
+    },
+    {
+      "role": "assistant",
+      "timestamp": 1769617330.918483,
+      "content": "You're verified. Go ahead and tell me what you need help"
+    },
+    {
+      "role": "assistant",
+      "timestamp": 1769617330.918483,
+      "content": "with regarding your maintenance bill."
+    },
+    {
+      "role": "user",
+      "timestamp": 1769617343.3109803,
+      "content": "Whose address is on file?"
+    },
+    {
+      "role": "assistant",
+      "timestamp": 1769617348.3125079,
+      "content": "The address I have on file is forty-one Madison Avenue,"
+    },
+    {
+      "role": "assistant",
+      "timestamp": 1769617348.3125079,
+      "content": "number eleven A, Madison, New Jersey, zero seven nine four zero. What would you like to do next regarding your maintenance bill?"
+    },
+    {
+      "role": "user",
+      "timestamp": 1769617361.7874572,
+      "content": "Who owns the unit?"
+    },
+    {
+      "role": "assistant",
+      "timestamp": 1769617365.7076027,
+      "content": "The owner on file for Vacation Village at Williamsburg, unit two one nine, contract number three eight one nine three four, is Valerie Creo."
+    },
+    {
+      "role": "assistant",
+      "timestamp": 1769617365.7076027,
+      "content": "What else would you like to know about this contract?"
+    },
+    {
+      "role": "user",
+      "timestamp": 1769617382.956285,
+      "content": "That's it for now."
+    },
+    {
+      "role": "assistant",
+      "timestamp": 1769617385.2838917,
+      "content": "Is there anything else I can help you with today?"
+    },
+    {
+      "role": "user",
+      "timestamp": 1769617390.8546605,
+      "content": "No. That's it."
+    },
+    {
+      "role": "assistant",
+      "timestamp": 1769617397.375011,
+      "content": "Alright, have a great day."
+    },
+    {
+      "role": "assistant",
+      "timestamp": 1769617397.375011,
+      "content": "Goodbye."
+    }
+  ]
+}

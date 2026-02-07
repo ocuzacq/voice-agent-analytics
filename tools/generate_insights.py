@@ -1,21 +1,28 @@
 #!/usr/bin/env python3
 """
-LLM Insights Generator for Vacatia AI Voice Agent Analytics (v3.9.1)
+LLM Insights Generator for Vacatia AI Voice Agent Analytics (v4.1)
 
 Generates Section B: LLM-powered insights by passing Section A metrics
 and the condensed NL summary (from extract_nl_fields.py) to Gemini.
 
+v4.1 additions:
+- Run-based isolation support via --run-dir argument
+- Reads metrics/NL summary from run's reports/, writes output to same
+- Backwards compatible with legacy flat directory mode
+
+v4.0 additions:
+- intent_analysis: Semantic clustering of caller intents with frequency analysis
+- sentiment_analysis: Emotional journey patterns and improvement opportunities
+- Updated field references for v4.0 schema (verbatim, coaching, disposition, etc.)
+- Backwards-compatible with v3.x NL summaries
+
 v3.9.1 additions:
 - loop_subject_clusters: Semantic clustering of loop subjects by type
-- Loop subject analysis narrative and insights
-- Subject distribution breakdown per loop type
 - Custom questions: --questions flag to answer user-provided analytical questions
-- custom_analysis section in report with question/answer pairs
 
 v3.9 additions:
 - disposition_analysis: Insights on call disposition patterns
 - Funnel analysis recommendations based on disposition breakdown
-- Actionable insights by disposition type (in_scope_partial → confirmation prompts, etc.)
 
 v3.8.5 additions:
 - Backwards-compatible with both v3.8.5 (compact friction) and v3.8 formats
@@ -55,7 +62,8 @@ v3.3 additions:
 - supporting_call_ids in actionable_recommendations
 - customer_ask_clusters: Semantic grouping of similar customer asks
 
-Primary input: nl_summary_v3_{timestamp}.json (from extract_nl_fields.py)
+Primary input: nl_summary_v4_{timestamp}.json (from extract_nl_fields.py)
+Backwards compatible with nl_summary_v3_{timestamp}.json files.
 """
 
 import argparse
@@ -71,6 +79,11 @@ load_dotenv()
 
 from google import genai
 from google.genai import types
+
+from run_utils import (
+    add_run_arguments, resolve_run_from_args, get_run_paths,
+    prompt_for_run, confirm_or_select_run, require_explicit_run_noninteractive
+)
 
 
 INSIGHTS_SYSTEM_PROMPT = """You are a senior call center analytics consultant. Your job is to analyze voice agent performance metrics and natural language data to provide executive-ready insights and actionable recommendations.
@@ -299,6 +312,66 @@ Return ONLY valid JSON matching this structure:
         "recommendation": "Specific fix"
       }
     ]
+  },
+
+  "intent_analysis": {
+    "narrative": "2-3 sentences synthesizing what customers are calling about and patterns in their underlying needs",
+    "top_clusters": [
+      {
+        "intent_cluster": "Normalized intent name (e.g., 'Check balance', 'Make payment')",
+        "count": 50,
+        "pct": "25%",
+        "common_contexts": ["Context 1", "Context 2"],
+        "success_rate": "80% resolved successfully",
+        "insight": "What this reveals about customer needs or agent capabilities"
+      }
+    ],
+    "context_patterns": [
+      {
+        "pattern": "Pattern name (e.g., 'Billing confusion', 'Portal access issues')",
+        "frequency": "15% of calls",
+        "implication": "What this pattern suggests for product/process improvement",
+        "recommendation": "Specific action"
+      }
+    ],
+    "unmet_needs": [
+      {
+        "need": "Description of frequently unmet customer need",
+        "frequency": "count or percentage",
+        "recommendation": "How to address this gap"
+      }
+    ]
+  },
+
+  "sentiment_analysis": {
+    "narrative": "2-3 sentences summarizing customer emotional journeys and what drives sentiment changes",
+    "journey_patterns": [
+      {
+        "pattern": "Journey description (e.g., 'neutral → satisfied', 'frustrated → angry')",
+        "frequency": "count or percentage",
+        "drivers": "What causes this pattern",
+        "outcome_correlation": "How this journey correlates with call outcomes"
+      }
+    ],
+    "improvement_drivers": [
+      {
+        "factor": "What drove sentiment improvement (e.g., 'quick resolution', 'empathy')",
+        "frequency": "count of calls where this was observed",
+        "recommendation": "How to replicate more often"
+      }
+    ],
+    "degradation_drivers": [
+      {
+        "factor": "What caused sentiment to worsen (e.g., 'repeated questions', 'long wait')",
+        "frequency": "count of calls where this was observed",
+        "recommendation": "How to prevent"
+      }
+    ],
+    "health_metrics": {
+      "improvement_rate": "percentage of calls where sentiment improved",
+      "degradation_rate": "percentage of calls where sentiment worsened",
+      "assessment": "healthy | needs_attention | critical"
+    }
   }
 }
 
@@ -402,6 +475,22 @@ Return ONLY valid JSON matching this structure:
     - Identify high-impact patterns: which (loop_type, subject) combinations correlate with failed outcomes?
     - Provide actionable recommendations: e.g., "45% of info_retry loops involve name re-asking, suggesting ASR/name recognition as improvement area"
     - The narrative should explain WHAT subjects are causing friction and WHY
+
+22. **Intent analysis (v4.0)**: Analyze the "Intent Data" section to understand WHY customers call:
+    - **Cluster intents semantically**: Group similar intents (e.g., "Check balance", "View balance", "Balance inquiry" → "Check balance")
+    - **Identify top intent clusters**: What are the most common reasons for calling? What % of calls does each cluster represent?
+    - **Context patterns**: What underlying situations drive these intents? (e.g., "Forgot password", "Invoice not received")
+    - **Success correlation**: Which intents have high success rates? Which consistently fail?
+    - **Unmet needs**: What intents frequently end in failure or escalation? These are capability expansion opportunities
+    - The narrative should explain WHAT customers want and WHY they're calling
+
+23. **Sentiment analysis (v4.0)**: Analyze the "Sentiment Data" section to understand emotional journeys:
+    - **Journey patterns**: What sentiment_start → sentiment_end transitions are most common?
+    - **Improvement drivers**: When sentiment improves (e.g., frustrated → satisfied), what actions caused it?
+    - **Degradation drivers**: When sentiment worsens, what patterns correlate? (loops, corrections, policy gaps)
+    - **Health metrics**: Calculate improvement_rate (% where sentiment improved) and degradation_rate (% where it worsened)
+    - **Correlation with outcomes**: Do calls ending with positive sentiment correlate with success? Vice versa?
+    - Focus on actionable insights: what agent behaviors drive positive sentiment shifts?
 
 Return ONLY the JSON object, no markdown code blocks or additional text.
 """
@@ -825,6 +914,54 @@ def build_insights_prompt(metrics: dict, nl_summary: dict) -> str:
                     parts.append(f'"{entry["verbatim"][:60]}..."' if len(entry.get("verbatim", "")) > 60 else f'"{entry["verbatim"]}"')
                 nl_sections.append(f"- {' | '.join(parts)}")
 
+    # v4.0: Intent Data
+    intent_data = nl_summary.get("intent_data", [])
+    if intent_data:
+        nl_sections.append(f"\n## Intent Data (v4.0) ({len(intent_data)} calls)")
+        nl_sections.append("Cluster intents semantically and analyze patterns:")
+
+        # Show all intent data for clustering
+        for i in intent_data:
+            call_id = i.get("call_id", "?")[:8]
+            intent = i.get("intent", "unknown")
+            context = i.get("intent_context")
+            secondary = i.get("secondary_intent")
+            outcome = i.get("disposition") or i.get("outcome", "unknown")
+
+            parts = [f"[{call_id}]", f"[{outcome}]", f"Intent: {intent}"]
+            if context:
+                parts.append(f"Context: {context}")
+            if secondary:
+                parts.append(f"Secondary: {secondary}")
+            nl_sections.append(f"- {' | '.join(parts)}")
+
+    # v4.0: Sentiment Data
+    sentiment_data = nl_summary.get("sentiment_data", [])
+    if sentiment_data:
+        nl_sections.append(f"\n## Sentiment Data (v4.0) ({len(sentiment_data)} calls)")
+        nl_sections.append("Analyze sentiment journeys and identify drivers:")
+
+        # Group by journey type for analysis
+        from collections import defaultdict
+        by_journey = defaultdict(list)
+        for s in sentiment_data:
+            start = s.get("sentiment_start", "unknown")
+            end = s.get("sentiment_end", "unknown")
+            journey = f"{start} → {end}"
+            by_journey[journey].append(s)
+
+        # Show journey distribution
+        for journey, entries in sorted(by_journey.items(), key=lambda x: -len(x[1])):
+            nl_sections.append(f"\n### {journey} ({len(entries)} calls)")
+            for entry in entries[:5]:  # Sample per journey type
+                call_id = entry.get("call_id", "?")[:8]
+                disposition = entry.get("disposition") or entry.get("outcome", "unknown")
+                summary = entry.get("summary", "")[:80] if entry.get("summary") else ""
+                parts = [f"[{call_id}]", f"[{disposition}]"]
+                if summary:
+                    parts.append(summary)
+                nl_sections.append(f"- {' | '.join(parts)}")
+
     nl_text = "\n".join(nl_sections)
 
     return f"""Analyze this voice agent performance data and generate Section B insights.
@@ -936,7 +1073,7 @@ def combine_report(
 def print_insights_summary(insights: dict) -> None:
     """Print human-readable summary of insights."""
     print("\n" + "=" * 60)
-    print("VACATIA AI VOICE AGENT - INSIGHTS (v3.9.1 - Section B)")
+    print("VACATIA AI VOICE AGENT - INSIGHTS (v4.0 - Section B)")
     print("=" * 60)
 
     # Executive Summary
@@ -1147,6 +1284,81 @@ def print_insights_summary(insights: dict) -> None:
             for p in high_impact[:3]:
                 print(f"    - {p.get('loop_type', 'N/A')}/{p.get('subject', 'N/A')}: {p.get('recommendation', 'N/A')}")
 
+    # v4.0: Intent Analysis
+    intent_analysis = insights.get("intent_analysis", {})
+    if intent_analysis:
+        print("\n" + "-" * 40)
+        print("INTENT ANALYSIS (v4.0)")
+        print("-" * 40)
+        if intent_analysis.get("narrative"):
+            print(f"  {intent_analysis['narrative']}")
+
+        top_clusters = intent_analysis.get("top_clusters", [])
+        if top_clusters:
+            print("\n  Top Intent Clusters:")
+            for c in top_clusters[:5]:
+                cluster = c.get('intent_cluster', 'N/A')
+                count = c.get('count', 0)
+                pct = c.get('pct', 'N/A')
+                success = c.get('success_rate', 'N/A')
+                print(f"    - {cluster}: {count} calls ({pct}), {success}")
+                if c.get('insight'):
+                    print(f"      → {c['insight']}")
+
+        context_patterns = intent_analysis.get("context_patterns", [])
+        if context_patterns:
+            print("\n  Context Patterns:")
+            for p in context_patterns[:3]:
+                print(f"    - {p.get('pattern', 'N/A')} ({p.get('frequency', 'N/A')})")
+                if p.get('recommendation'):
+                    print(f"      → {p['recommendation']}")
+
+        unmet_needs = intent_analysis.get("unmet_needs", [])
+        if unmet_needs:
+            print("\n  Unmet Needs:")
+            for n in unmet_needs[:3]:
+                print(f"    - {n.get('need', 'N/A')} ({n.get('frequency', 'N/A')})")
+
+    # v4.0: Sentiment Analysis
+    sentiment_analysis = insights.get("sentiment_analysis", {})
+    if sentiment_analysis:
+        print("\n" + "-" * 40)
+        print("SENTIMENT ANALYSIS (v4.0)")
+        print("-" * 40)
+        if sentiment_analysis.get("narrative"):
+            print(f"  {sentiment_analysis['narrative']}")
+
+        journey_patterns = sentiment_analysis.get("journey_patterns", [])
+        if journey_patterns:
+            print("\n  Journey Patterns:")
+            for j in journey_patterns[:4]:
+                pattern = j.get('pattern', 'N/A')
+                freq = j.get('frequency', 'N/A')
+                print(f"    - {pattern} ({freq})")
+                if j.get('drivers'):
+                    print(f"      Drivers: {j['drivers']}")
+
+        improvement_drivers = sentiment_analysis.get("improvement_drivers", [])
+        if improvement_drivers:
+            print("\n  What Improves Sentiment:")
+            for d in improvement_drivers[:3]:
+                print(f"    - {d.get('factor', 'N/A')} ({d.get('frequency', 'N/A')})")
+
+        degradation_drivers = sentiment_analysis.get("degradation_drivers", [])
+        if degradation_drivers:
+            print("\n  What Worsens Sentiment:")
+            for d in degradation_drivers[:3]:
+                print(f"    - {d.get('factor', 'N/A')} ({d.get('frequency', 'N/A')})")
+
+        health_metrics = sentiment_analysis.get("health_metrics", {})
+        if health_metrics:
+            assessment = health_metrics.get('assessment', 'N/A')
+            improvement = health_metrics.get('improvement_rate', 'N/A')
+            degradation = health_metrics.get('degradation_rate', 'N/A')
+            print(f"\n  Sentiment Health: {assessment.upper()}")
+            print(f"    Improvement Rate: {improvement}")
+            print(f"    Degradation Rate: {degradation}")
+
     print("\n" + "=" * 60)
 
 
@@ -1181,7 +1393,7 @@ def print_custom_analysis(custom_analysis: list[dict]) -> None:
 
 
 def main():
-    parser = argparse.ArgumentParser(description="Generate v3.9.1 Section B: LLM Insights (loop subject granularity)")
+    parser = argparse.ArgumentParser(description="Generate v4.0 Section B: LLM Insights (intent + sentiment analysis)")
     parser.add_argument("-m", "--metrics", type=Path,
                         help="Path to Section A metrics JSON file")
     parser.add_argument("-n", "--nl-summary", type=Path,
@@ -1196,14 +1408,41 @@ def main():
     parser.add_argument("--questions", type=Path,
                         help="Path to questions file (one question per line) for custom analysis")
 
+    # v4.1: Run-based isolation
+    add_run_arguments(parser)
+
     args = parser.parse_args()
+
+    # v4.1: Resolve run directory from --run-dir or --run-id
+    project_dir = Path(__file__).parent.parent
+    run_dir, run_id, source = resolve_run_from_args(args, project_dir)
+
+    # Non-interactive mode requires explicit --run-id or --run-dir
+    require_explicit_run_noninteractive(source)
+
+    # Interactive run selection/confirmation
+    if source in (".last_run", "$LAST_RUN"):
+        # Implicit source - ask for confirmation
+        run_dir, run_id = confirm_or_select_run(project_dir, run_dir, run_id, source)
+    elif run_dir is None:
+        # No run specified - show selection menu
+        run_dir, run_id = prompt_for_run(project_dir)
+
+    if run_dir:
+        paths = get_run_paths(run_dir, project_dir)
+        args.output_dir = paths["reports_dir"]
+        print(f"Using run: {run_id} ({run_dir})", file=sys.stderr)
 
     reports_dir = args.output_dir
 
-    # Find latest metrics file if not specified
+    # Find latest metrics file if not specified (v4 first, fallback to v3)
     if not args.metrics:
         if reports_dir.exists():
-            metrics_files = sorted(reports_dir.glob("metrics_v3_*.json"), reverse=True)
+            # Try v4 first
+            metrics_files = sorted(reports_dir.glob("metrics_v4_*.json"), reverse=True)
+            if not metrics_files:
+                # Fallback to v3
+                metrics_files = sorted(reports_dir.glob("metrics_v3_*.json"), reverse=True)
             if metrics_files:
                 args.metrics = metrics_files[0]
                 print(f"Using latest metrics: {args.metrics}", file=sys.stderr)
@@ -1212,10 +1451,14 @@ def main():
         print("Error: No metrics file found. Run compute_metrics.py first.", file=sys.stderr)
         return 1
 
-    # Find latest NL summary if not specified
+    # Find latest NL summary if not specified (v4 first, fallback to v3)
     if not args.nl_summary:
         if reports_dir.exists():
-            nl_files = sorted(reports_dir.glob("nl_summary_v3_*.json"), reverse=True)
+            # Try v4 first
+            nl_files = sorted(reports_dir.glob("nl_summary_v4_*.json"), reverse=True)
+            if not nl_files:
+                # Fallback to v3
+                nl_files = sorted(reports_dir.glob("nl_summary_v3_*.json"), reverse=True)
             if nl_files:
                 args.nl_summary = nl_files[0]
                 print(f"Using latest NL summary: {args.nl_summary}", file=sys.stderr)
@@ -1271,7 +1514,7 @@ def main():
     # Create output path
     args.output_dir.mkdir(parents=True, exist_ok=True)
     timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
-    output_path = args.output_dir / f"report_v3_{timestamp}.json"
+    output_path = args.output_dir / f"report_v4_{timestamp}.json"
 
     # Combine and save (v3.9.1: includes custom_analysis)
     full_report = combine_report(args.metrics, insights, output_path, custom_analysis)

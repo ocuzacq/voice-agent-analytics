@@ -1,0 +1,65 @@
+{
+  "call_id": "0a3660cb-5f3a-4055-86c0-ba9e4f014cd9",
+  "schema_version": "v5.0",
+  "turns": 8,
+  "ended_by": "customer",
+  "intent": "Check status of automatic payment",
+  "intent_context": "Maintenance fee has not been withdrawn as expected",
+  "secondary_intent": null,
+  "call_scope": "in_scope",
+  "call_outcome": "abandoned",
+  "resolution": "none",
+  "steps": [
+    "Identify payment type",
+    "Verify account via phone and name",
+    "Identify specific concern",
+    "Collect account number and property name"
+  ],
+  "escalation_trigger": null,
+  "abandon_stage": "mid_task",
+  "resolution_confirmed": null,
+  "effectiveness": 3,
+  "quality": 3,
+  "effort": 3,
+  "sentiment_start": "neutral",
+  "sentiment_end": "frustrated",
+  "failure_type": "other",
+  "failure_detail": "Customer disconnected while agent was repeating back the verified information instead of providing an answer.",
+  "policy_gap": null,
+  "derailed_at": 15,
+  "clarifications": [
+    {
+      "turn": 3,
+      "type": "intent",
+      "cause": "ok",
+      "note": "Clarified maintenance vs mortgage payment"
+    },
+    {
+      "turn": 13,
+      "type": "verify",
+      "cause": "ok",
+      "note": "Requested property name after account number"
+    }
+  ],
+  "corrections": [],
+  "loops": [],
+  "summary": "Customer called to check why an automatic maintenance fee withdrawal hadn't occurred yet. After verifying the account and property details, the customer hung up while the agent was summarizing the request.",
+  "verbatim": "Supposed to be an automatic withdrawal, but it has not come out yet. Is it going to come out?",
+  "coaching": "The agent spent too much time repeating and summarizing information the customer just provided (Turns 15 and 17) rather than moving directly to checking the account status.",
+  "repeat_caller": false,
+  "actions": [
+    {
+      "action": "account_lookup",
+      "outcome": "success",
+      "detail": "Matched record via phone number"
+    },
+    {
+      "action": "verification",
+      "outcome": "success",
+      "detail": "Verified name and state"
+    }
+  ],
+  "transfer_destination": null,
+  "transfer_queue_detected": false,
+  "duration_seconds": 133.1
+}

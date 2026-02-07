@@ -1,0 +1,95 @@
+{
+  "call_id": "6940a110-24bc-4645-8b1b-a52b05878dbf",
+  "schema_version": "v5.0",
+  "turns": 9,
+  "ended_by": "customer",
+  "intent": "Pay maintenance fees",
+  "intent_context": "Cannot access online account to view balance or pay",
+  "secondary_intent": "Check maintenance fee balance",
+  "call_scope": "in_scope",
+  "call_outcome": "escalated",
+  "resolution": "transferred to concierge",
+  "steps": [
+    "Greeted customer",
+    "Requested phone number",
+    "Requested contract ID",
+    "Attempted account lookup",
+    "Failed name verification multiple times",
+    "Transferred to concierge"
+  ],
+  "escalation_trigger": "task_failure",
+  "abandon_stage": null,
+  "resolution_confirmed": null,
+  "effectiveness": 2,
+  "quality": 3,
+  "effort": 4,
+  "sentiment_start": "neutral",
+  "sentiment_end": "frustrated",
+  "failure_type": "nlu_miss",
+  "failure_detail": "Agent pulled up the wrong record (Kenneth Beaumont) despite customer providing a specific contract ID and name.",
+  "policy_gap": null,
+  "derailed_at": 13,
+  "clarifications": [
+    {
+      "turn": 11,
+      "type": "verify",
+      "cause": "ok",
+      "note": "Asked to confirm name on contract"
+    },
+    {
+      "turn": 15,
+      "type": "repeat",
+      "cause": "misheard",
+      "note": "Requested name spelling again after mismatch"
+    },
+    {
+      "turn": 17,
+      "type": "repeat",
+      "cause": "misheard",
+      "note": "Requested letter by letter spelling"
+    }
+  ],
+  "corrections": [
+    {
+      "turn": 14,
+      "severity": "major",
+      "note": "Customer rejected completely incorrect name provided"
+    }
+  ],
+  "loops": [
+    {
+      "turns": [
+        13,
+        15,
+        17
+      ],
+      "type": "info_retry",
+      "subject": "account verification",
+      "note": "Repeatedly failed to verify name against record"
+    }
+  ],
+  "summary": "Customer wanted to pay maintenance fees but couldn't access their account. The agent found a record using the contract ID but it belonged to a different person, leading to a verification failure and transfer.",
+  "verbatim": "I'm looking at owner's invoice. And my name is on the owner's invoice. Sandra... Haining.",
+  "coaching": "The agent should have re-verified the contract ID digits when the name 'Kenneth Beaumont' didn't match 'Sandra Haining' instead of repeatedly asking for the name spelling.",
+  "repeat_caller": false,
+  "actions": [
+    {
+      "action": "account_lookup",
+      "outcome": "success",
+      "detail": "Pulled record using contract ID 350375"
+    },
+    {
+      "action": "verification",
+      "outcome": "failed",
+      "detail": "Name Sandra Haining did not match Kenneth Beaumont"
+    },
+    {
+      "action": "transfer",
+      "outcome": "success",
+      "detail": "Transferred to concierge due to verification failure"
+    }
+  ],
+  "transfer_destination": "concierge",
+  "transfer_queue_detected": true,
+  "duration_seconds": 1119.0
+}

@@ -1,0 +1,65 @@
+{
+  "call_id": "0a5afc8b-170e-4d53-8cb9-414afa914328",
+  "schema_version": "v5.0",
+  "turns": 9,
+  "ended_by": "customer",
+  "intent": "End timeshare ownership",
+  "intent_context": "No longer wants to own the property",
+  "secondary_intent": "Speak to a representative",
+  "call_scope": "out_of_scope",
+  "call_outcome": "completed",
+  "resolution": "info provided",
+  "steps": [
+    "Identify intent to terminate ownership",
+    "Attempt transfer to concierge",
+    "Monitor queue and return to call",
+    "Explain inability to process termination",
+    "Advise on business hours for callback"
+  ],
+  "escalation_trigger": null,
+  "abandon_stage": null,
+  "resolution_confirmed": false,
+  "effectiveness": 4,
+  "quality": 4,
+  "effort": 3,
+  "sentiment_start": "neutral",
+  "sentiment_end": "neutral",
+  "failure_type": "policy_gap",
+  "failure_detail": "Agent cannot process ownership termination or schedule callbacks.",
+  "policy_gap": {
+    "category": "capability_limit",
+    "specific_gap": "Cannot process ownership termination or schedule outbound callbacks",
+    "customer_ask": "End ownership and receive a callback",
+    "blocker": "AI is restricted to general info and inbound routing only"
+  },
+  "derailed_at": null,
+  "clarifications": [
+    {
+      "turn": 7,
+      "type": "intent",
+      "cause": "ok",
+      "note": "Asked for reason for calling"
+    }
+  ],
+  "corrections": [],
+  "loops": [],
+  "summary": "The customer wanted to end their timeshare ownership and requested a live representative. After a long hold in the queue, the AI explained it could not process terminations or schedule callbacks, advising the customer to call back during business hours.",
+  "verbatim": "We want to no longer have ownership over it.",
+  "coaching": "The agent performed well given the constraints, but the transition back from the long hold could be smoother by acknowledging the specific wait time elapsed.",
+  "repeat_caller": false,
+  "actions": [
+    {
+      "action": "transfer",
+      "outcome": "failed",
+      "detail": "Attempted transfer to concierge, no agents available"
+    },
+    {
+      "action": "other",
+      "outcome": "success",
+      "detail": "Provided business hours and callback instructions"
+    }
+  ],
+  "transfer_destination": "concierge",
+  "transfer_queue_detected": true,
+  "duration_seconds": 1644.8
+}
