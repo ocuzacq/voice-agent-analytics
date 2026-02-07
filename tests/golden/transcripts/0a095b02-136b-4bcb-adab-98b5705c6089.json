@@ -1,0 +1,47 @@
+{
+  "agent_id": "IdNSnJmoukxviqoTIWOZ",
+  "duration": 37.560978,
+  "ended_reason": "customer-ended-call",
+  "messages": [
+    {
+      "role": "assistant",
+      "timestamp": 1769103685.9717004,
+      "content": "Hi, thank you for calling Vacation Village Resorts. This is Jamie, a virtual agent on a recorded line. How can I help you today?"
+    },
+    {
+      "role": "user",
+      "timestamp": 1769103696.486651,
+      "content": "Which which I wanted to schedule"
+    },
+    {
+      "role": "user",
+      "timestamp": 1769103701.0199466,
+      "content": "a timeshare week"
+    },
+    {
+      "role": "assistant",
+      "timestamp": 1769103704.033583,
+      "content": "Who do I have the pleasure of speaking with?"
+    },
+    {
+      "role": "user",
+      "timestamp": 1769103707.1867194,
+      "content": "Which state? Has three sides? Patricia."
+    },
+    {
+      "role": "user",
+      "timestamp": 1769103710.598117,
+      "content": "Star."
+    },
+    {
+      "role": "user",
+      "timestamp": 1769103711.3478599,
+      "content": "A triangle, or square."
+    },
+    {
+      "role": "assistant",
+      "timestamp": 1769103714.2724345,
+      "content": "Just to clarify, are you asking about booking a stay at a specific resort, or do you need information about your ownership week?"
+    }
+  ]
+}

@@ -1,0 +1,87 @@
+{
+  "call_id": "042dfaf7-8265-4bdd-a957-1cbec199b173",
+  "schema_version": "v5.0",
+  "turns": 14,
+  "ended_by": "customer",
+  "intent": "Sell timeshare ownership entirely",
+  "intent_context": null,
+  "secondary_intent": "Speak to a representative",
+  "call_scope": "out_of_scope",
+  "call_outcome": "abandoned",
+  "resolution": "none",
+  "steps": [
+    "Attempted to identify intent",
+    "Attempted transfer to concierge",
+    "Monitored queue",
+    "Offered callback/AI help after queue timeout"
+  ],
+  "escalation_trigger": null,
+  "abandon_stage": "mid_task",
+  "resolution_confirmed": null,
+  "effectiveness": 2,
+  "quality": 3,
+  "effort": 4,
+  "sentiment_start": "neutral",
+  "sentiment_end": "frustrated",
+  "failure_type": "policy_gap",
+  "failure_detail": "Agent cannot process timeshare sales and no live representatives were available to take the transfer.",
+  "policy_gap": {
+    "category": "capability_limit",
+    "specific_gap": "AI cannot handle selling/transferring ownership",
+    "customer_ask": "Sell time shift / ownership entirely",
+    "blocker": "Out of scope for AI and no human agents available"
+  },
+  "derailed_at": 13,
+  "clarifications": [
+    {
+      "turn": 11,
+      "type": "intent",
+      "cause": "ok",
+      "note": "Clarifying rent vs sell ownership"
+    },
+    {
+      "turn": 17,
+      "type": "intent",
+      "cause": "unclear",
+      "note": "Confirming selling week outright"
+    }
+  ],
+  "corrections": [
+    {
+      "turn": 14,
+      "severity": "minor",
+      "note": "Customer corrected agent's rental assumption"
+    },
+    {
+      "turn": 18,
+      "severity": "minor",
+      "note": "Customer rejected agent's specific phrasing"
+    }
+  ],
+  "loops": [
+    {
+      "turns": [
+        15,
+        17,
+        19
+      ],
+      "type": "intent_retry",
+      "subject": "selling timeshare",
+      "note": "Repeatedly asking for explanation of intent"
+    }
+  ],
+  "summary": "The customer wanted to sell their timeshare ownership entirely. The AI attempted to clarify the request but ultimately could not help as the task is out of scope and no live representatives were available after a long hold.",
+  "verbatim": "Instead of ownership entirely. ... You just saw it out right. ... You can't help.",
+  "coaching": "The agent should have recognized 'sell ownership entirely' as an out-of-scope request immediately and transitioned to the transfer/callback flow rather than looping on intent clarification.",
+  "repeat_caller": false,
+  "actions": [
+    {
+      "action": "transfer",
+      "outcome": "failed",
+      "detail": "Queue timeout after 25 minutes"
+    }
+  ],
+  "transfer_destination": "concierge",
+  "transfer_queue_detected": true,
+  "duration_seconds": 1708.3
+}

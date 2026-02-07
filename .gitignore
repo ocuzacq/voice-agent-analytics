@@ -12,6 +12,10 @@ runs/
 analyses/*
 !analyses/test-v3-*.json
 
+# Golden test set (override general ignores above)
+!tests/golden/
+!tests/golden/**
+
 # Python
 __pycache__/
 *.py[cod]

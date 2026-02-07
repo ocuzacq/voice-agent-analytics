@@ -79,6 +79,16 @@ Each call analysis contains (v4.0 fields, with v3.x fallback names in parenthese
 - turns: total conversation turns
 - clarifications, corrections, loops: friction events
 
+**Disposition Model (v5.0):**
+- call_scope: in_scope/out_of_scope/mixed/no_request — was the request within AI capabilities?
+- call_outcome: completed/escalated/abandoned — what happened?
+- escalation_trigger: customer_requested/scope_limit/task_failure/policy_routing (when escalated)
+- abandon_stage: pre_greeting/pre_intent/mid_task/post_delivery (when abandoned)
+- resolution_confirmed: true/false/null — did customer explicitly confirm resolution? (when completed)
+- actions: list of {action, outcome, detail} — agent tool/action attempts
+- transfer_destination: concierge/specific_department/ivr/unknown
+- transfer_queue_detected: boolean — post-transfer queue evidence
+
 **Coaching:**
 - coaching (v3: agent_miss_detail): agent improvement recommendations
 
@@ -157,7 +167,9 @@ def format_call_for_prompt(analysis: dict) -> str:
     """
     call_id = analysis.get("call_id", "unknown")[:8]
 
-    # v4.0: unified disposition | v3.x: outcome + call_disposition
+    # v5.0: call_scope + call_outcome | v4.0: disposition | v3.x: outcome + call_disposition
+    call_scope = analysis.get("call_scope")
+    call_outcome = analysis.get("call_outcome")
     disposition = analysis.get("disposition") or analysis.get("call_disposition", "unknown")
     outcome = analysis.get("outcome")  # Only in v3.x
 
@@ -187,8 +199,10 @@ def format_call_for_prompt(analysis: dict) -> str:
     # Build the formatted entry
     lines = [f"### Call {call_id}"]
 
-    # v4.0: single disposition | v3.x: outcome (disposition)
-    if outcome:
+    # v5.0: scope + outcome | v4.0: disposition | v3.x: outcome (disposition)
+    if call_scope and call_outcome:
+        lines.append(f"- Scope: {call_scope} | Outcome: {call_outcome}")
+    elif outcome:
         lines.append(f"- Outcome: {outcome} ({disposition})")
     else:
         lines.append(f"- Disposition: {disposition}")
@@ -217,6 +231,27 @@ def format_call_for_prompt(analysis: dict) -> str:
 
     if verbatim:
         lines.append(f'- Customer: "{verbatim}"')
+
+    # v5.0: Conditional qualifiers
+    if analysis.get("escalation_trigger"):
+        lines.append(f"- Escalation Trigger: {analysis['escalation_trigger']}")
+    if analysis.get("abandon_stage"):
+        lines.append(f"- Abandon Stage: {analysis['abandon_stage']}")
+    if analysis.get("resolution_confirmed") is not None:
+        lines.append(f"- Resolution Confirmed: {analysis['resolution_confirmed']}")
+    # v4.5 backward compat
+    if analysis.get("pre_intent_subtype"):
+        lines.append(f"- Pre-Intent Subtype: {analysis['pre_intent_subtype']}")
+    if analysis.get("escalation_initiator"):
+        lines.append(f"- Escalation Initiator: {analysis['escalation_initiator']}")
+    # Shared fields
+    if analysis.get("actions"):
+        action_strs = [f"{a['action']}\u2192{a['outcome']}" for a in analysis["actions"]]
+        lines.append(f"- Actions: {', '.join(action_strs)}")
+    if analysis.get("transfer_destination"):
+        lines.append(f"- Transfer Destination: {analysis['transfer_destination']}")
+    if analysis.get("transfer_queue_detected"):
+        lines.append(f"- Transfer Queue Detected: yes")
 
     # Friction summary
     friction_parts = [f"{turns} turns"]

@@ -1,0 +1,384 @@
+{
+  "description": "Golden test set: 23 representative call transcripts covering the v5.0 orthogonal disposition model (call_scope x call_outcome), escalation triggers, abandon stages, and key operational patterns.",
+  "created": "2026-02-06",
+  "updated": "2026-02-07",
+  "schema_version": "v5.0",
+  "source_run": "run_20260204_234844",
+  "calls": [
+    {
+      "call_id": "743d7b2a-ebf9-4534-a999-667c8687b0e2",
+      "call_scope": "in_scope",
+      "call_outcome": "completed",
+      "category": "happy_path",
+      "why": "Clean info lookup with confirmed resolution. Agent found account, verified identity, provided maintenance fee details.",
+      "key_fields": {
+        "resolution_confirmed": true,
+        "actions": ["account_lookup:success", "verification:success", "other:success"],
+        "sentiment_journey": "neutral->satisfied",
+        "turns": 10,
+        "duration_seconds": 162.3
+      }
+    },
+    {
+      "call_id": "8c10f101-1bc6-4735-a744-b8207cc06e0b",
+      "call_scope": "in_scope",
+      "call_outcome": "completed",
+      "category": "complex_success",
+      "why": "Complex multi-step resolution with retry. Clubhouse portal registration requiring account lookup retry, successful verification, and link delivery.",
+      "key_fields": {
+        "resolution_confirmed": true,
+        "actions": ["account_lookup:failed", "account_lookup:success", "verification:success", "send_clubhouse_link:success"],
+        "sentiment_journey": "neutral->satisfied",
+        "turns": 24,
+        "duration_seconds": 409.3
+      }
+    },
+    {
+      "call_id": "97b367dd-18a5-49fb-8867-fd8d8a7edd00",
+      "call_scope": "in_scope",
+      "call_outcome": "completed",
+      "category": "link_delivery",
+      "why": "Successful rental agreement link delivery. Clean verification flow.",
+      "key_fields": {
+        "resolution_confirmed": false,
+        "actions": ["account_lookup:success", "verification:success", "send_rental_link:success"],
+        "sentiment_journey": "neutral->neutral",
+        "turns": 9,
+        "duration_seconds": 137.9
+      }
+    },
+    {
+      "call_id": "d187d1d7-130f-4436-974d-80d00a57e368",
+      "call_scope": "in_scope",
+      "call_outcome": "completed",
+      "category": "unconfirmed_resolution",
+      "why": "Payment link sent but customer did NOT confirm receipt. Tests resolution_confirmed=false vs true.",
+      "key_fields": {
+        "resolution_confirmed": false,
+        "actions": ["account_lookup:success", "verification:success", "send_payment_link:success"],
+        "sentiment_journey": "neutral->neutral",
+        "turns": 8,
+        "duration_seconds": 119.4
+      }
+    },
+    {
+      "call_id": "0a434683-1ac4-4f26-83ee-c6fce1040ef4",
+      "call_scope": "in_scope",
+      "call_outcome": "completed",
+      "category": "clubhouse_success",
+      "why": "Successful Clubhouse portal login. Tests send_clubhouse_link action type coverage.",
+      "key_fields": {
+        "resolution_confirmed": true,
+        "actions": ["account_lookup:success", "verification:success", "send_clubhouse_link:success"],
+        "sentiment_journey": "neutral->satisfied",
+        "turns": 12,
+        "duration_seconds": 187.9
+      }
+    },
+    {
+      "call_id": "0a2feaf7-b27a-435b-8f6a-f81a4890d1d6",
+      "call_scope": "in_scope",
+      "call_outcome": "completed",
+      "category": "multi_intent_success",
+      "why": "Multi-intent (payment + Clubhouse portal). Payment link sent, portal not confirmed. Tests secondary_intent handling.",
+      "key_fields": {
+        "resolution_confirmed": false,
+        "actions": ["account_lookup:success", "verification:success", "send_payment_link:success"],
+        "secondary_intent": "Log into Clubhouse portal",
+        "sentiment_journey": "neutral->neutral",
+        "turns": 11,
+        "duration_seconds": 190.9
+      }
+    },
+    {
+      "call_id": "30d955ef-1b17-43e4-b0b6-df87e7309002",
+      "call_scope": "in_scope",
+      "call_outcome": "completed",
+      "category": "queue_timeout_fallback",
+      "why": "Transfer failed after 25+ min queue, agent provided alternative info. Tests transfer:failed with graceful fallback.",
+      "key_fields": {
+        "resolution_confirmed": false,
+        "actions": ["transfer:failed", "other:success"],
+        "transfer_queue_detected": true,
+        "sentiment_journey": "neutral->neutral",
+        "turns": 4,
+        "duration_seconds": 1339.7
+      }
+    },
+    {
+      "call_id": "0107c02c-0cae-47f5-98d8-37b036effa10",
+      "call_scope": "in_scope",
+      "call_outcome": "escalated",
+      "category": "customer_requested_escalation",
+      "why": "Customer explicitly requested human agent. Clean escalation path. Tests escalation_trigger=customer_requested.",
+      "key_fields": {
+        "escalation_trigger": "customer_requested",
+        "transfer_destination": "concierge",
+        "actions": ["account_lookup:success", "verification:success", "transfer:success"],
+        "sentiment_journey": "neutral->neutral",
+        "turns": 9,
+        "duration_seconds": 897.6
+      }
+    },
+    {
+      "call_id": "77d49f12-fbd9-43c1-b7a4-985af65da04a",
+      "call_scope": "in_scope",
+      "call_outcome": "escalated",
+      "category": "immediate_escalation",
+      "why": "Customer demanded human agent at greeting. Minimal interaction, immediate transfer. Tests customer_requested with pre-intent-like behavior.",
+      "key_fields": {
+        "escalation_trigger": "customer_requested",
+        "transfer_destination": "concierge",
+        "actions": ["transfer:success"],
+        "sentiment_journey": "neutral->neutral",
+        "turns": 2,
+        "duration_seconds": 283.4
+      }
+    },
+    {
+      "call_id": "00abd708-ff74-43bb-b8cd-9e2a8a72deed",
+      "call_scope": "in_scope",
+      "call_outcome": "escalated",
+      "category": "customer_requested_after_failure",
+      "why": "Account lookup failed, verification failed, customer requested transfer. Tests customer_requested trigger with preceding tech failures.",
+      "key_fields": {
+        "escalation_trigger": "customer_requested",
+        "transfer_destination": "concierge",
+        "actions": ["account_lookup:failed", "account_lookup:success", "verification:failed", "transfer:success"],
+        "failure_type": "tech_issue",
+        "sentiment_journey": "neutral->frustrated",
+        "turns": 10,
+        "duration_seconds": 575.0
+      }
+    },
+    {
+      "call_id": "25d30736-73bb-44fa-a42a-2e38a1ea3b73",
+      "call_scope": "in_scope",
+      "call_outcome": "escalated",
+      "category": "task_failure_escalation",
+      "why": "Payment link send failed (tech_issue), agent proactively escalated. Tests escalation_trigger=task_failure.",
+      "key_fields": {
+        "escalation_trigger": "task_failure",
+        "transfer_destination": "concierge",
+        "actions": ["account_lookup:success", "verification:success", "send_payment_link:failed", "transfer:success"],
+        "failure_type": "tech_issue",
+        "sentiment_journey": "neutral->neutral",
+        "turns": 7,
+        "duration_seconds": 749.7
+      }
+    },
+    {
+      "call_id": "6940a110-24bc-4645-8b1b-a52b05878dbf",
+      "call_scope": "in_scope",
+      "call_outcome": "escalated",
+      "category": "nlu_miss_escalation",
+      "why": "Agent pulled wrong account due to NLU/verification failure. Tests task_failure trigger with nlu_miss failure type.",
+      "key_fields": {
+        "escalation_trigger": "task_failure",
+        "transfer_destination": "concierge",
+        "actions": ["account_lookup:success", "verification:failed", "transfer:success"],
+        "failure_type": "nlu_miss",
+        "sentiment_journey": "neutral->frustrated",
+        "turns": 9,
+        "duration_seconds": 1119.0
+      }
+    },
+    {
+      "call_id": "00b6db65-af59-4332-bdcb-1d62b354b7d3",
+      "call_scope": "in_scope",
+      "call_outcome": "escalated",
+      "category": "task_failure_tech",
+      "why": "Account lookup failed, agent transferred. Tests task_failure trigger with tech_issue.",
+      "key_fields": {
+        "escalation_trigger": "task_failure",
+        "transfer_destination": "concierge",
+        "actions": ["account_lookup:failed", "transfer:success"],
+        "failure_type": "tech_issue",
+        "sentiment_journey": "neutral->neutral",
+        "turns": 8,
+        "duration_seconds": 205.6
+      }
+    },
+    {
+      "call_id": "0a3660cb-5f3a-4055-86c0-ba9e4f014cd9",
+      "call_scope": "in_scope",
+      "call_outcome": "abandoned",
+      "category": "mid_task_abandon",
+      "why": "Customer checking payment status, agent couldn't answer, customer frustrated and hung up. Tests abandon_stage=mid_task.",
+      "key_fields": {
+        "abandon_stage": "mid_task",
+        "actions": ["account_lookup:success", "verification:success"],
+        "failure_type": "other",
+        "sentiment_journey": "neutral->frustrated",
+        "turns": 8,
+        "duration_seconds": 133.1
+      }
+    },
+    {
+      "call_id": "0acca17b-d9c5-476c-965a-ac8697b4a21d",
+      "call_scope": "in_scope",
+      "call_outcome": "abandoned",
+      "category": "post_delivery_abandon",
+      "why": "Clubhouse portal link sent but customer left after delivery. Tests abandon_stage=post_delivery + sentiment recovery (frustrated->neutral).",
+      "key_fields": {
+        "abandon_stage": "post_delivery",
+        "actions": ["account_lookup:success", "verification:success", "send_clubhouse_link:unknown"],
+        "sentiment_journey": "frustrated->neutral",
+        "turns": 19,
+        "duration_seconds": 326.5
+      }
+    },
+    {
+      "call_id": "0a0aea06-6cbe-4888-9605-cb52dc8fa52e",
+      "call_scope": "mixed",
+      "call_outcome": "completed",
+      "category": "mixed_scope_completed",
+      "why": "Customer asked about resorts (OOS) + RCI trading (partially in scope). Agent provided RCI link. Tests mixed:completed combination.",
+      "key_fields": {
+        "resolution_confirmed": true,
+        "actions": ["account_lookup:success", "verification:success", "send_rci_link:success"],
+        "sentiment_journey": "neutral->satisfied",
+        "turns": 15,
+        "duration_seconds": 297.1
+      }
+    },
+    {
+      "call_id": "00a05f6e-f144-4c37-97d4-fe7d22a3211b",
+      "call_scope": "mixed",
+      "call_outcome": "escalated",
+      "category": "mixed_scope_escalated",
+      "why": "Payment (in scope) succeeded, but contact update (OOS sub-task) required transfer. Tests mixed:escalated + scope_limit trigger.",
+      "key_fields": {
+        "escalation_trigger": "scope_limit",
+        "transfer_destination": "concierge",
+        "actions": ["account_lookup:success", "verification:success", "send_payment_link:success", "transfer:success"],
+        "failure_type": "policy_gap",
+        "sentiment_journey": "neutral->neutral",
+        "turns": 9,
+        "duration_seconds": 1119.8
+      }
+    },
+    {
+      "call_id": "0b59f63d-d6d7-41da-89e6-68a36eb3c07b",
+      "call_scope": "mixed",
+      "call_outcome": "escalated",
+      "category": "angry_recovery_escalated",
+      "why": "Customer angry about reservation issues. Agent de-escalated (angry->neutral) and transferred. Tests mixed:escalated + scope_limit + sentiment recovery.",
+      "key_fields": {
+        "escalation_trigger": "scope_limit",
+        "transfer_destination": "concierge",
+        "actions": ["account_lookup:success", "verification:success", "transfer:success"],
+        "failure_type": "policy_gap",
+        "sentiment_journey": "angry->neutral",
+        "turns": 16,
+        "duration_seconds": 448.6
+      }
+    },
+    {
+      "call_id": "0a5afc8b-170e-4d53-8cb9-414afa914328",
+      "call_scope": "out_of_scope",
+      "call_outcome": "completed",
+      "category": "oos_handled",
+      "why": "Customer wanted to end timeshare ownership (OOS). Transfer failed but agent provided business hours info. Tests out_of_scope:completed.",
+      "key_fields": {
+        "resolution_confirmed": false,
+        "actions": ["transfer:failed", "other:success"],
+        "failure_type": "policy_gap",
+        "transfer_queue_detected": true,
+        "sentiment_journey": "neutral->neutral",
+        "turns": 9,
+        "duration_seconds": 1644.8
+      }
+    },
+    {
+      "call_id": "0a195db9-a53b-4f0e-9f10-c2545a0a5528",
+      "call_scope": "out_of_scope",
+      "call_outcome": "escalated",
+      "category": "oos_escalated",
+      "why": "Payment request outside agent capabilities, transfer to concierge. Tests out_of_scope:escalated + scope_limit trigger.",
+      "key_fields": {
+        "escalation_trigger": "scope_limit",
+        "transfer_destination": "concierge",
+        "actions": ["send_payment_link:retry", "transfer:success"],
+        "sentiment_journey": "neutral->neutral",
+        "turns": 4,
+        "duration_seconds": 1710.0
+      }
+    },
+    {
+      "call_id": "042dfaf7-8265-4bdd-a957-1cbec199b173",
+      "call_scope": "out_of_scope",
+      "call_outcome": "abandoned",
+      "category": "oos_frustrated_abandon",
+      "why": "Customer wanted to sell timeshare (OOS). Agent confused sell vs rent. Transfer failed after 25m queue. Tests OOS:abandoned + mid_task + sentiment degradation.",
+      "key_fields": {
+        "abandon_stage": "mid_task",
+        "actions": ["transfer:failed"],
+        "transfer_queue_detected": true,
+        "failure_type": "policy_gap",
+        "sentiment_journey": "neutral->frustrated",
+        "turns": 14,
+        "duration_seconds": 1708.3
+      }
+    },
+    {
+      "call_id": "0a095b02-136b-4bcb-adab-98b5705c6089",
+      "call_scope": "out_of_scope",
+      "call_outcome": "abandoned",
+      "category": "oos_quick_abandon",
+      "why": "Customer with nonsensical OOS request, quickly hung up. Tests OOS:abandoned with minimal interaction.",
+      "key_fields": {
+        "abandon_stage": "mid_task",
+        "failure_type": "customer_confusion",
+        "sentiment_journey": "neutral->neutral",
+        "turns": 2,
+        "duration_seconds": 37.6
+      }
+    },
+    {
+      "call_id": "6c7001c9-80a5-4057-9c24-72b6e2c41b31",
+      "call_scope": "no_request",
+      "call_outcome": "abandoned",
+      "category": "no_request_abandon",
+      "why": "System message or wrong number, 1 turn only. Tests no_request:abandoned + pre_intent stage.",
+      "key_fields": {
+        "abandon_stage": "pre_intent",
+        "actions": [],
+        "failure_type": "customer_confusion",
+        "sentiment_journey": "neutral->neutral",
+        "turns": 1,
+        "duration_seconds": 45.9
+      }
+    }
+  ],
+  "coverage": {
+    "call_scopes": ["in_scope", "out_of_scope", "mixed", "no_request"],
+    "call_outcomes": ["completed", "escalated", "abandoned"],
+    "scope_outcome_combinations": [
+      "in_scope:completed",
+      "in_scope:escalated",
+      "in_scope:abandoned",
+      "out_of_scope:completed",
+      "out_of_scope:escalated",
+      "out_of_scope:abandoned",
+      "mixed:completed",
+      "mixed:escalated",
+      "no_request:abandoned"
+    ],
+    "escalation_triggers": ["customer_requested", "scope_limit", "task_failure"],
+    "abandon_stages": ["pre_intent", "mid_task", "post_delivery"],
+    "resolution_confirmed_values": [true, false],
+    "action_types": ["account_lookup", "verification", "send_payment_link", "send_clubhouse_link", "send_rci_link", "send_rental_link", "transfer", "other"],
+    "action_outcomes": ["success", "failed", "retry", "unknown"],
+    "transfer_destinations": ["concierge"],
+    "failure_types": ["policy_gap", "tech_issue", "nlu_miss", "customer_confusion", "other"],
+    "sentiment_journeys": ["neutral->neutral", "neutral->satisfied", "neutral->frustrated", "frustrated->neutral", "angry->neutral"],
+    "turn_range": [1, 24],
+    "duration_range": [37.6, 1710.0]
+  },
+  "not_covered": {
+    "scope_outcome": ["no_request:completed (invalid by design)", "no_request:escalated (rare)"],
+    "escalation_triggers": ["policy_routing (rare in corpus, most policy cases map to scope_limit)"],
+    "abandon_stages": ["pre_greeting (requires call drop before speech, very rare)"]
+  }
+}

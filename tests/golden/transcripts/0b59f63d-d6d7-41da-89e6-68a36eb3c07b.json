@@ -1,0 +1,207 @@
+{
+  "agent_id": "IdNSnJmoukxviqoTIWOZ",
+  "duration": 448.620846,
+  "ended_reason": "customer-ended-call",
+  "messages": [
+    {
+      "role": "assistant",
+      "timestamp": 1768924572.5945408,
+      "content": "Hi, thank you for calling Vacation Village Resorts. This is Jamie, a virtual agent on a recorded line. How can I help you today?"
+    },
+    {
+      "role": "user",
+      "timestamp": 1768924584.589151,
+      "content": "Customer complaint."
+    },
+    {
+      "role": "assistant",
+      "timestamp": 1768924587.3123052,
+      "content": "Who do I have the pleasure of speaking with?"
+    },
+    {
+      "role": "user",
+      "timestamp": 1768924592.1887174,
+      "content": "A very unhappy customer, James McCartney."
+    },
+    {
+      "role": "assistant",
+      "timestamp": 1768924597.349967,
+      "content": "James, can you tell me a bit more about your complaint so I can see how best to assist you?"
+    },
+    {
+      "role": "user",
+      "timestamp": 1768924606.0558805,
+      "content": "Yeah. I'm gonna lose two weeks, and nobody's helping me. And you've thrown me off your website, you, Jamie, have hung up on me four times now. After holding for ten minutes."
+    },
+    {
+      "role": "assistant",
+      "timestamp": 1768924616.897025,
+      "content": "I hear your frustration, James. Are you looking for help with your website access, or is your main concern about losing your two weeks?"
+    },
+    {
+      "role": "user",
+      "timestamp": 1768924606.0558805,
+      "content": "Okay."
+    },
+    {
+      "role": "user",
+      "timestamp": 1768924629.6026633,
+      "content": "Both."
+    },
+    {
+      "role": "user",
+      "timestamp": 1768924634.0975327,
+      "content": "And I wanna talk to a human, not you."
+    },
+    {
+      "role": "assistant",
+      "timestamp": 1768924639.738642,
+      "content": "James, I can connect you to a representative, but just so you know, there may be a wait of up to twenty minutes. Would you like to hold for a representative, or continue with the automated system for faster help?"
+    },
+    {
+      "role": "user",
+      "timestamp": 1768924657.1849406,
+      "content": "Automated system."
+    },
+    {
+      "role": "assistant",
+      "timestamp": 1768924662.066469,
+      "content": "Alright, I was able to pull up a record using your phone number. Can you confirm your first and last name for me?"
+    },
+    {
+      "role": "user",
+      "timestamp": 1768924671.9521198,
+      "content": "James McCartney."
+    },
+    {
+      "role": "assistant",
+      "timestamp": 1768924675.993551,
+      "content": "Thanks, James. Can you tell me what state you live in?"
+    },
+    {
+      "role": "user",
+      "timestamp": 1768924683.3427703,
+      "content": "South Carolina."
+    },
+    {
+      "role": "assistant",
+      "timestamp": 1768924686.8637993,
+      "content": "Got it, James. Your record is verified. Go ahead and tell me what you need help with first."
+    },
+    {
+      "role": "user",
+      "timestamp": 1768924697.034156,
+      "content": "I need two weeks at Bonaventure next January."
+    },
+    {
+      "role": "user",
+      "timestamp": 1768924699.998207,
+      "content": "For the last two weeks of the year here."
+    },
+    {
+      "role": "assistant",
+      "timestamp": 1768924703.9612262,
+      "content": "Just to clarify, are"
+    },
+    {
+      "role": "user",
+      "timestamp": 1768924705.4365745,
+      "content": "Preston Bonaventure."
+    },
+    {
+      "role": "assistant",
+      "timestamp": 1768924708.1187449,
+      "content": "I don\u2019t see a contract for Bonaventure under your name, James. The only property I have for you is Vacation Village Voyages, contract number seven zero zero five zero zero zero. Can you confirm if you have a separate ownership at Bonaventure, or is this about your Vacation Village Voyages contract?"
+    },
+    {
+      "role": "user",
+      "timestamp": 1768924732.2416775,
+      "content": "Vacation Village Voyages contract."
+    },
+    {
+      "role": "assistant",
+      "timestamp": 1768924736.082872,
+      "content": "Alright, James. For your Vacation Village Voyages contract, can you tell me your week number, check-in day, and the year you need the exact dates for?"
+    },
+    {
+      "role": "user",
+      "timestamp": 1768924749.2538347,
+      "content": "Yes. Check-in. The tenth of January."
+    },
+    {
+      "role": "user",
+      "timestamp": 1768924754.21707,
+      "content": "Checkout"
+    },
+    {
+      "role": "user",
+      "timestamp": 1768924757.1355665,
+      "content": "The twenty fourth of January."
+    },
+    {
+      "role": "assistant",
+      "timestamp": 1768924760.6176887,
+      "content": "James, just to confirm, are you looking for"
+    },
+    {
+      "role": "user",
+      "timestamp": 1768924762.9597015,
+      "content": "Twenty twenty seven."
+    },
+    {
+      "role": "assistant",
+      "timestamp": 1768924765.3864338,
+      "content": "Thanks for clarifying, James. For the year twenty twenty seven, if your check-in is January tenth and check-out is January twenty fourth, that would not match the standard fixed week schedule. Can you confirm if your check-in day is a Friday, Saturday, or Sunday, and which week numbers you are referring to?"
+    },
+    {
+      "role": "user",
+      "timestamp": 1768924791.9739993,
+      "content": "It would be checking in January seventeenth Sunday,"
+    },
+    {
+      "role": "user",
+      "timestamp": 1768924797.9196436,
+      "content": "and checking out two weeks later"
+    },
+    {
+      "role": "user",
+      "timestamp": 1768924800.6299174,
+      "content": "in February."
+    },
+    {
+      "role": "assistant",
+      "timestamp": 1768924803.3015816,
+      "content": "James, for twenty twenty seven, if you check in on Sunday, January seventeenth, your first week runs January seventeenth to January twenty fourth, and your second week runs January twenty fourth to January thirty first. So your check-in date is January seventeenth twenty twenty seven, and your check-out date is January thirty first twenty twenty seven."
+    },
+    {
+      "role": "user",
+      "timestamp": 1768924833.0719137,
+      "content": "Correct."
+    },
+    {
+      "role": "assistant",
+      "timestamp": 1768924835.4962537,
+      "content": "Is there anything else I can help you with today?"
+    },
+    {
+      "role": "user",
+      "timestamp": 1768924840.9802878,
+      "content": "Yeah. I would just like to pay for those two weeks and get an a unit."
+    },
+    {
+      "role": "assistant",
+      "timestamp": 1768924847.869802,
+      "content": "James, for your Vacation Village Voyages contract number seven zero zero five zero zero zero, I can help with your mortgage or maintenance payments, but I can't book or assign units. Would you like to pay your mortgage balance of six hundred sixty five dollars and seventy cents, or do you need something else?"
+    },
+    {
+      "role": "user",
+      "timestamp": 1768924872.143313,
+      "content": "I need something else."
+    },
+    {
+      "role": "assistant",
+      "timestamp": 1768924877.878445,
+      "content": "Your request is best handled by our concierge department, please hold while I get you connected"
+    }
+  ]
+}

@@ -1,0 +1,232 @@
+{
+  "agent_id": "IdNSnJmoukxviqoTIWOZ",
+  "duration": 1708.3044,
+  "ended_reason": "customer-ended-call",
+  "messages": [
+    {
+      "role": "assistant",
+      "timestamp": 1769724336.8308816,
+      "content": "Hi, thank you for calling Vacation Village Resorts. This is Jamie, a virtual agent on a recorded line. How can I help you today?"
+    },
+    {
+      "role": "user",
+      "timestamp": 1769724346.5320878,
+      "content": "Representative."
+    },
+    {
+      "role": "assistant",
+      "timestamp": 1769724349.308757,
+      "content": "Let me get you connected with a representative now. Alright, let me connect you with a live representative now."
+    },
+    {
+      "role": "assistant",
+      "timestamp": 1769724371.7567437,
+      "content": "Is"
+    },
+    {
+      "role": "assistant",
+      "timestamp": 1769724371.7567437,
+      "content": "there anything else you need help with right now?"
+    },
+    {
+      "role": "user",
+      "timestamp": 1769724377.4534574,
+      "content": "Mister representative."
+    },
+    {
+      "role": "assistant",
+      "timestamp": 1769724379.175513,
+      "content": "So, just letting you know there are unusually long wait times right now and I'm working on getting someone on the line"
+    },
+    {
+      "role": "assistant",
+      "timestamp": 1769724379.175513,
+      "content": "for you. Can I get your name?"
+    },
+    {
+      "role": "user",
+      "timestamp": 1769724388.2740464,
+      "content": "Pan."
+    },
+    {
+      "role": "assistant",
+      "timestamp": 1769724390.1636896,
+      "content": "Alright, Pan. What are you calling in about?"
+    },
+    {
+      "role": "user",
+      "timestamp": 1769724397.253545,
+      "content": "I know."
+    },
+    {
+      "role": "assistant",
+      "timestamp": 1769724399.0152407,
+      "content": "Got it, Pan. What can I help you with today?"
+    },
+    {
+      "role": "user",
+      "timestamp": 1769724415.1599467,
+      "content": "Sell time shift."
+    },
+    {
+      "role": "assistant",
+      "timestamp": 1769724416.9239025,
+      "content": "Just to clarify, are you looking to rent out your timeshare week or are you interested in selling your ownership entirely?"
+    },
+    {
+      "role": "user",
+      "timestamp": 1769724426.232483,
+      "content": "Instead of ownership entirely."
+    },
+    {
+      "role": "assistant",
+      "timestamp": 1769724430.2756522,
+      "content": "So, are you looking to rent out your owned week through Vacation Village?"
+    },
+    {
+      "role": "user",
+      "timestamp": 1769724437.8196468,
+      "content": "No."
+    },
+    {
+      "role": "assistant",
+      "timestamp": 1769724441.3500218,
+      "content": "Alright, can you tell me a bit more about what you want to do with your timeshare?"
+    },
+    {
+      "role": "user",
+      "timestamp": 1769724448.1530938,
+      "content": "You just saw it out right."
+    },
+    {
+      "role": "assistant",
+      "timestamp": 1769724450.5147572,
+      "content": "Are you asking about selling your timeshare week outright?"
+    },
+    {
+      "role": "user",
+      "timestamp": 1769724456.287346,
+      "content": "No."
+    },
+    {
+      "role": "assistant",
+      "timestamp": 1769724459.40881,
+      "content": "Can you explain a bit more about what you want to do with your timeshare?"
+    },
+    {
+      "role": "user",
+      "timestamp": 1769724465.2748537,
+      "content": "No. Representative."
+    },
+    {
+      "role": "assistant",
+      "timestamp": 1769724472.0024855,
+      "content": "Please hold while I connect you"
+    },
+    {
+      "role": "assistant",
+      "timestamp": 1769724715.2798162,
+      "content": "Thank you for calling the concierge department for the Vacation Village family of resorts, where owner satisfaction is our top priority. We apologize for the brief wait, and we appreciate your patience. Our hours of operation are 8:30 AM to 6:00 PM Eastern Standard Time. We understand that sometimes nothing beats speaking to a real person. Our team is working diligently to ensure your call is answered as soon as possible. In the meantime, why not explore our website and discover all that Vacation Village Resorts has to offer? Our website is a valuable resource filled with product information, frequently asked questions, important contact information for mortgage services and maintenance fee payments, and much more. Save time and find the answers you need at vacationvillageresorts.com. For real-time assistance, we encourage you to try out our Text Us Now feature. Simply visit our website and look for the Text Us button at the bottom right corner of the screen. With just a few taps, you can connect with one of our dedicated agents who will be happy to assist you promptly. At Vacation Village Resorts, we believe in providing exceptional customer service at every touchpoint. If you prefer to remain on the line, rest assured that your call is essential to us, and we'll be with you shortly."
+    },
+    {
+      "role": "assistant",
+      "timestamp": null,
+      "content": "Thank you for calling the concierge department for the Vacation Village family of resorts, where owner satisfaction is our top priority. We apologize for the brief wait, and we appreciate your patience. Our hours of operation are 8:30 AM to 6:00 PM Eastern Standard Time. We understand that sometimes nothing beats speaking to a real person. Our team is working diligently to ensure your call is answered as soon as possible. In the meantime, why not explore our website and discover all that Vacation Village Resorts has to offer? Our website is a valuable resource filled with product information, frequently asked questions, important contact information for mortgage services and maintenance fee payments, and much more. Save time and find the answers you need at vacationvillageresorts.com. For real-time assistance, we encourage you to try out our Text Us Now feature. Simply visit our website and look for the Text Us button at the bottom right corner of the screen. With just a few taps, you can connect with one of our dedicated agents who will be happy to assist you promptly. At Vacation Village Resorts, we believe in providing exceptional customer service at every touchpoint. If you prefer to remain on the line, rest assured that your call is essential to us, and we'll be with you shortly."
+    },
+    {
+      "role": "assistant",
+      "timestamp": 1769725013.8916907,
+      "content": "Thank you for calling the concierge department for the Vacation Village family of resorts, where owner satisfaction is our top priority. We apologize for the brief wait, and we appreciate your patience. Our hours of operation are 8:30 AM to 6:00 PM Eastern Standard Time. We understand that sometimes nothing beats speaking to a real person. Our team is working diligently to ensure your call is answered as soon as possible. In the meantime, why not explore our website and discover all that Vacation Village Resorts has to offer? Our website is a valuable resource filled with product information, frequently asked questions, important contact information for mortgage services and maintenance fee payments, and much more. Save time and find the answers you need at vacationvillageresorts.com. For real-time assistance, we encourage you to try out our Text Us Now feature. Simply visit our website and look for the Text Us button at the bottom right corner of the screen. With just a few taps, you can connect with one of our dedicated agents who will be happy to assist you promptly. At Vacation Village Resorts, we believe in providing exceptional customer service at every touchpoint. If you prefer to remain on the line, rest assured that your call is essential to us, and we'll be with you shortly."
+    },
+    {
+      "role": "assistant",
+      "timestamp": null,
+      "content": "Thank you for calling the concierge department for the Vacation Village family of resorts, where owner satisfaction is our top priority. We apologize for the brief wait, and we appreciate your patience. Our hours of operation are 8:30 AM to 6:00 PM Eastern Standard Time. We understand that sometimes nothing beats speaking to a real person. Our team is working diligently to ensure your call is answered as soon as possible. In the meantime, why not explore our website and discover all that Vacation Village Resorts has to offer? Our website is a valuable resource filled with product information, frequently asked questions, important contact information for mortgage services and maintenance fee payments, and much more. Save time and find the answers you need at vacationvillageresorts.com. For real-time assistance, we encourage you to try out our Text Us Now feature. Simply visit our website and look for the Text Us button at the bottom right corner of the screen. With just a few taps, you can connect with one of our dedicated agents who will be happy to assist you promptly. At Vacation Village Resorts, we believe in providing exceptional customer service at every touchpoint. If you prefer to remain on the line, rest assured that your call is essential to us, and we'll be with you shortly."
+    },
+    {
+      "role": "assistant",
+      "timestamp": 1769725309.3030176,
+      "content": "Thank you for calling the concierge department for the Vacation Village family of resorts, where owner satisfaction is our top priority. We apologize for the brief wait, and we appreciate your patience. Our hours of operation are 8:30 AM to 6:00 PM Eastern Standard Time. We understand that sometimes nothing beats speaking to a real person. Our team is working diligently to ensure your call is answered as soon as possible. In the meantime, why not explore our website and discover all that Vacation Village Resorts has to offer? Our website is a valuable resource filled with product information, frequently asked questions, important contact information for mortgage services and maintenance fee payments, and much more. Save time and find the answers you need at vacationvillageresorts.com. For real-time assistance, we encourage you to try out our Text Us Now feature. Simply visit our website and look for the Text Us button at the bottom right corner of the screen. With just a few taps, you can connect with one of our dedicated agents who will be happy to assist you promptly. At Vacation Village Resorts, we believe in providing exceptional customer service at every touchpoint. If you prefer to remain on the line, rest assured that your call is essential to us, and we'll be with you shortly."
+    },
+    {
+      "role": "assistant",
+      "timestamp": null,
+      "content": "Thank you for calling the concierge department for the Vacation Village family of resorts, where owner satisfaction is our top priority. We apologize for the brief wait, and we appreciate your patience. Our hours of operation are 8:30 AM to 6:00 PM Eastern Standard Time. We understand that sometimes nothing beats speaking to a real person. Our team is working diligently to ensure your call is answered as soon as possible. In the meantime, why not explore our website and discover all that Vacation Village Resorts has to offer? Our website is a valuable resource filled with product information, frequently asked questions, important contact information for mortgage services and maintenance fee payments, and much more. Save time and find the answers you need at vacationvillageresorts.com. For real-time assistance, we encourage you to try out our Text Us Now feature. Simply visit our website and look for the Text Us button at the bottom right corner of the screen. With just a few taps, you can connect with one of our dedicated agents who will be happy to assist you promptly. At Vacation Village Resorts, we believe in providing exceptional customer service at every touchpoint. If you prefer to remain on the line, rest assured that your call is essential to us, and we'll be with you shortly."
+    },
+    {
+      "role": "assistant",
+      "timestamp": 1769725610.1186576,
+      "content": "Thank you for calling the concierge department for the Vacation Village family of resorts, where owner satisfaction is our top priority. We apologize for the brief wait, and we appreciate your patience. Our hours of operation are 8:30 AM to 6:00 PM Eastern Standard Time. We understand that sometimes nothing beats speaking to a real person. Our team is working diligently to ensure your call is answered as soon as possible. In the meantime, why not explore our website and discover all that Vacation Village Resorts has to offer? Our website is a valuable resource filled with product information, frequently asked questions, important contact information for mortgage services and maintenance fee payments, and much more. Save time and find the answers you need at vacationvillageresorts.com. For real-time assistance, we encourage you to try out our Text Us Now feature. Simply visit our website and look for the Text Us button at the bottom right corner of the screen. With just a few taps, you can connect with one of our dedicated agents who will be happy to assist you promptly. At Vacation Village Resorts, we believe in providing exceptional customer service at every touchpoint. If you prefer to remain on the line, rest assured that your call is essential to us, and we'll be with you shortly."
+    },
+    {
+      "role": "assistant",
+      "timestamp": null,
+      "content": "Thank you for calling the concierge department for the Vacation Village family of resorts, where owner satisfaction is our top priority. We apologize for the brief wait, and we appreciate your patience. Our hours of operation are 8:30 AM to 6:00 PM Eastern Standard Time. We understand that sometimes nothing beats speaking to a real person. Our team is working diligently to ensure your call is answered as soon as possible. In the meantime, why not explore our website and discover all that Vacation Village Resorts has to offer? Our website is a valuable resource filled with product information, frequently asked questions, important contact information for mortgage services and maintenance fee payments, and much more. Save time and find the answers you need at vacationvillageresorts.com. For real-time assistance, we encourage you to try out our Text Us Now feature. Simply visit our website and look for the Text Us button at the bottom right corner of the screen. With just a few taps, you can connect with one of our dedicated agents who will be happy to assist you promptly. At Vacation Village Resorts, we believe in providing exceptional customer service at every touchpoint. If you prefer to remain on the line, rest assured that your call is essential to us, and we'll be with you shortly."
+    },
+    {
+      "role": "assistant",
+      "timestamp": 1769725911.135394,
+      "content": "Thank you for calling the concierge department for the Vacation Village family of resorts, where owner satisfaction is our top priority. We apologize for the brief wait, and we appreciate your patience. Our hours of operation are 8:30 AM to 6:00 PM Eastern Standard Time. We understand that sometimes nothing beats speaking to a real person. Our team is working diligently to ensure your call is answered as soon as possible. In the meantime, why not explore our website and discover all that Vacation Village Resorts has to offer? Our website is a valuable resource filled with product information, frequently asked questions, important contact information for mortgage services and maintenance fee payments, and much more. Save time and find the answers you need at vacationvillageresorts.com. For real-time assistance, we encourage you to try out our Text Us Now feature. Simply visit our website and look for the Text Us button at the bottom right corner of the screen. With just a few taps, you can connect with one of our dedicated agents who will be happy to assist you promptly. At Vacation Village Resorts, we believe in providing exceptional customer service at every touchpoint. If you prefer to remain on the line, rest assured that your call is essential to us, and we'll be with you shortly."
+    },
+    {
+      "role": "assistant",
+      "timestamp": null,
+      "content": "Thank you for calling the concierge department for the Vacation Village family of resorts, where owner satisfaction is our top priority. We apologize for the brief wait, and we appreciate your patience. Our hours of operation are 8:30 AM to 6:00 PM Eastern Standard Time. We understand that sometimes nothing beats speaking to a real person. Our team is working diligently to ensure your call is answered as soon as possible. In the meantime, why not explore our website and discover all that Vacation Village Resorts has to offer? Our website is a valuable resource filled with product information, frequently asked questions, important contact information for mortgage services and maintenance fee payments, and much more. Save time and find the answers you need at vacationvillageresorts.com. For real-time assistance, we encourage you to try out our Text Us Now feature. Simply visit our website and look for the Text Us button at the bottom right corner of the screen. With just a few taps, you can connect with one of our dedicated agents who will be happy to assist you promptly. At Vacation Village Resorts, we believe in providing exceptional customer service at every touchpoint. If you prefer to remain on the line, rest assured that your call is essential to us, and we'll be with you shortly."
+    },
+    {
+      "role": "assistant",
+      "timestamp": 1769725996.6255972,
+      "content": "All representatives are currently busy and not available to take your call right now. I can help with your request, or if you prefer,"
+    },
+    {
+      "role": "assistant",
+      "timestamp": 1769725996.6255972,
+      "content": "you can call back later. What would you like to do?"
+    },
+    {
+      "role": "user",
+      "timestamp": 1769726008.9070284,
+      "content": "Representative."
+    },
+    {
+      "role": "assistant",
+      "timestamp": 1769726011.8286493,
+      "content": "There are no representatives available to take your call right now. Would you like me to help with your request?"
+    },
+    {
+      "role": "user",
+      "timestamp": 1769726017.6335177,
+      "content": "I'll wait."
+    },
+    {
+      "role": "assistant",
+      "timestamp": 1769726020.1951,
+      "content": "There are no representatives available to take your call right now, so waiting will not connect you with someone."
+    },
+    {
+      "role": "assistant",
+      "timestamp": 1769726020.1951,
+      "content": "Would you like me to help with your request?"
+    },
+    {
+      "role": "user",
+      "timestamp": 1769726030.358197,
+      "content": "You can't help."
+    },
+    {
+      "role": "assistant",
+      "timestamp": 1769726032.8906085,
+      "content": "If you prefer, you can call back later when a representative is available. Would you like"
+    },
+    {
+      "role": "assistant",
+      "timestamp": 1769726032.8906085,
+      "content": "to do that?"
+    },
+    {
+      "role": "user",
+      "timestamp": 1769726042.5515482,
+      "content": "I got the wrong choice."
+    }
+  ]
+}

@@ -1,0 +1,103 @@
+{
+  "call_id": "00abd708-ff74-43bb-b8cd-9e2a8a72deed",
+  "schema_version": "v5.0",
+  "turns": 10,
+  "ended_by": "customer",
+  "intent": "Pay maintenance fee",
+  "intent_context": null,
+  "secondary_intent": "Speak to a representative",
+  "call_scope": "in_scope",
+  "call_outcome": "escalated",
+  "resolution": "transferred to concierge",
+  "steps": [
+    "Attempted account lookup by name",
+    "Attempted account lookup by contract ID",
+    "Failed name verification multiple times",
+    "Transferred to concierge"
+  ],
+  "escalation_trigger": "customer_requested",
+  "abandon_stage": null,
+  "resolution_confirmed": null,
+  "effectiveness": 2,
+  "quality": 3,
+  "effort": 4,
+  "sentiment_start": "neutral",
+  "sentiment_end": "frustrated",
+  "failure_type": "tech_issue",
+  "failure_detail": "Agent failed to verify the customer's name despite multiple correct spellings and a successful contract ID lookup.",
+  "policy_gap": null,
+  "derailed_at": 5,
+  "clarifications": [
+    {
+      "turn": 5,
+      "type": "name",
+      "cause": "misheard",
+      "note": "Agent failed initial name match"
+    },
+    {
+      "turn": 11,
+      "type": "name",
+      "cause": "misheard",
+      "note": "Second failure to match name"
+    },
+    {
+      "turn": 13,
+      "type": "intent",
+      "cause": "ok",
+      "note": "Switched to contract ID lookup"
+    }
+  ],
+  "corrections": [
+    {
+      "turn": 6,
+      "severity": "minor",
+      "note": "Customer spelled name for agent"
+    },
+    {
+      "turn": 12,
+      "severity": "minor",
+      "note": "Customer re-spelled name after failure"
+    }
+  ],
+  "loops": [
+    {
+      "turns": [
+        5,
+        11,
+        19
+      ],
+      "type": "info_retry",
+      "subject": "name verification",
+      "note": "Repeatedly failed to verify name"
+    }
+  ],
+  "summary": "The customer wanted to pay a maintenance fee but the agent was unable to verify her name despite multiple attempts and a successful contract ID lookup. The customer became frustrated and requested a live representative, leading to a transfer.",
+  "verbatim": "Talk to representative. Talk Take me to take me to representative. I don't wanna talk to you.",
+  "coaching": "The agent should have a higher tolerance for name matching once a unique Contract ID is provided, or should have escalated sooner after the second failed name verification attempt.",
+  "repeat_caller": false,
+  "actions": [
+    {
+      "action": "account_lookup",
+      "outcome": "failed",
+      "detail": "Lookup by name Caroline Vasquez failed"
+    },
+    {
+      "action": "account_lookup",
+      "outcome": "success",
+      "detail": "Lookup by contract ID 5516928 successful"
+    },
+    {
+      "action": "verification",
+      "outcome": "failed",
+      "detail": "Failed to verify name against contract"
+    },
+    {
+      "action": "transfer",
+      "outcome": "success",
+      "detail": "Transferred to concierge per customer request"
+    }
+  ],
+  "transfer_destination": "concierge",
+  "transfer_queue_detected": true,
+  "duration_seconds": 575.0
+}

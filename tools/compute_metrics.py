@@ -1,37 +1,23 @@
 #!/usr/bin/env python3
 """
-Aggregate Metrics Calculator for Vacatia AI Voice Agent Analytics (v4.1)
+Aggregate Metrics Calculator for Vacatia AI Voice Agent Analytics (v5.0)
 
 Computes Section A: Deterministic Metrics - all Python-calculated, reproducible and auditable.
 
-v4.1 additions:
-- Run-based isolation support via --run-dir argument
-- Reads from run's analyses/, writes to run's reports/
-- Backwards compatible with legacy flat directory mode
+v5.0 changes:
+- Orthogonal disposition model: call_scope × call_outcome (replaces single disposition enum)
+- New scope-outcome cross-tabulation replaces disposition_breakdown
+- Call funnel uses call_scope (no_request / out_of_scope / in_scope)
+- In-scope outcomes use call_outcome + conditional qualifiers
+  (escalation_trigger, abandon_stage, resolution_confirmed)
+- Handle time grouped by scope and outcome
+- Backward compatible with v3.x/v4.x via get_disposition() bridge
 
-v4.0 additions:
-- Full support for v4.0 schema with backwards compatibility for v3.x
-- intent_stats: Aggregation of intent field for understanding caller needs
-- sentiment_stats: Start vs end sentiment distribution and journey tracking
-- Updated field mappings: disposition (unified), effectiveness, quality, effort
-- Flattened friction parsing: turns, derailed_at, clarifications, corrections, loops at top-level
-- Renamed fields: failure_type (was failure_point), coaching (was agent_miss_detail), etc.
-
-v3.9.1 additions:
-- loop_subject_stats: Aggregation of subject field from friction loops
-- by_subject: Subject distribution per loop type
-- total_loops_with_subject: Count of loops that have subject data
-
-v3.9 additions:
-- disposition_breakdown: Aggregation of call_disposition values for funnel analysis
-- in_scope_success_rate: Success rate among in-scope calls
-- out_of_scope_recovery_rate: Rate of graceful handling for out-of-scope requests
-- pre_intent_rate: Rate of calls ending before customer stated need
-
-v3.8.5 additions:
-- Backwards-compatible parsing for both v3.8.5 (compact friction) and v3.8 (verbose) formats
-- Parsing helpers: parse_clarifications(), parse_corrections(), parse_loops()
-- Supports both friction.turns and conversation_turns for turn stats
+v4.4: Handle time / AHT (duration_seconds field, per-disposition breakdown)
+v4.1: Run-based isolation support via --run-dir argument
+v4.0: Intent/sentiment tracking, flattened friction, unified disposition
+v3.9: Call disposition classification, funnel metrics
+v3.8.5: Compact friction parsing
 
 Note: NL field extraction is now handled by the dedicated extract_nl_fields.py script.
 """
@@ -95,9 +81,9 @@ def load_analyses(analyses_dir: Path, schema_version: str = "v4", manifest_ids: 
                     # Track version distribution
                     version_counts[version] = version_counts.get(version, 0) + 1
 
-                    # v4.0: Accept v4.x, v3.x, or v2 (all backwards-compatible)
+                    # v4.0+: Accept v5.x, v4.x, v3.x, or v2 (all backwards-compatible)
                     if schema_version == "v4":
-                        if version.startswith("v4") or version.startswith("v3") or version == "v2":
+                        if version.startswith("v5") or version.startswith("v4") or version.startswith("v3") or version == "v2":
                             analyses.append(data)
                     # v3: Accept v3.x or v2
                     elif schema_version == "v3":
@@ -348,36 +334,41 @@ def get_turns_to_failure(analysis: dict) -> int | None:
 
 def validate_failure_consistency(analyses: list[dict]) -> dict:
     """
-    Flag failure_type inconsistencies (v4.0/v3.3).
+    Flag failure_type inconsistencies (v5.0/v4.0/v3.x).
 
-    For failed dispositions, failure_type should be populated.
-    This indicates a data quality issue when missing.
+    For non-completed calls, failure_type should typically be populated.
     """
     warnings = []
     for a in analyses:
-        # v4.0 uses disposition, v3.x uses outcome
-        disposition = get_disposition(a)
-        outcome = a.get("outcome")
-
-        # v4.0 uses failure_type, v3.x uses failure_point
         failure_type = a.get("failure_type") or a.get("failure_point")
 
-        # Check for inconsistencies
-        # v4.0: Failed dispositions should have failure_type
-        if disposition in ("in_scope_failed", "out_of_scope_failed", "escalated"):
-            if not failure_type:
-                warnings.append({
-                    "call_id": a.get("call_id"),
-                    "disposition": disposition,
-                    "issue": "failure_type missing for failed disposition"
-                })
-        # v3.x compatibility: Non-resolved outcomes should have failure_point
-        elif outcome in ("abandoned", "escalated", "unclear") and failure_type == "none":
+        # v5.0: escalated calls should have failure_type
+        if a.get("call_outcome") == "escalated" and not failure_type:
             warnings.append({
                 "call_id": a.get("call_id"),
-                "outcome": outcome,
-                "issue": "failure_type='none' invalid for non-resolved call"
+                "call_scope": a.get("call_scope"),
+                "call_outcome": "escalated",
+                "issue": "failure_type missing for escalated call"
             })
+        # v4.0: Failed dispositions should have failure_type
+        elif "disposition" in a:
+            disposition = get_disposition(a)
+            if disposition in ("in_scope_failed", "out_of_scope_failed", "escalated"):
+                if not failure_type:
+                    warnings.append({
+                        "call_id": a.get("call_id"),
+                        "disposition": disposition,
+                        "issue": "failure_type missing for failed disposition"
+                    })
+        # v3.x compatibility
+        else:
+            outcome = a.get("outcome")
+            if outcome in ("abandoned", "escalated", "unclear") and failure_type == "none":
+                warnings.append({
+                    "call_id": a.get("call_id"),
+                    "outcome": outcome,
+                    "issue": "failure_type='none' invalid for non-resolved call"
+                })
 
     return {"failure_consistency_warnings": warnings}
 
@@ -439,11 +430,28 @@ def extract_policy_gap_breakdown(analyses: list[dict]) -> dict:
 
 
 def get_disposition(analysis: dict) -> str | None:
-    """Get disposition from v4.0 (disposition) or v3.x (call_disposition).
+    """Get disposition with v5.0/v4.0/v3.x compatibility.
 
-    v4.0 uses unified "disposition" field.
-    v3.x uses "call_disposition" (sometimes with separate "outcome").
+    v5.0: Synthesizes legacy disposition from call_scope × call_outcome.
+    v4.0: Uses unified "disposition" field.
+    v3.x: Uses "call_disposition".
     """
+    # v5.0: synthesize from orthogonal dimensions
+    if "call_scope" in analysis and "call_outcome" in analysis:
+        scope = analysis["call_scope"]
+        outcome = analysis["call_outcome"]
+        if scope == "no_request":
+            return "pre_intent"
+        elif scope == "out_of_scope":
+            return "out_of_scope_handled" if outcome == "completed" else "out_of_scope_failed"
+        elif scope in ("in_scope", "mixed"):
+            if outcome == "completed":
+                return "in_scope_success"
+            elif outcome == "escalated":
+                return "escalated"
+            elif outcome == "abandoned":
+                return "in_scope_failed"
+
     # v4.0 format: unified disposition field
     if "disposition" in analysis:
         return analysis["disposition"]
@@ -454,78 +462,103 @@ def get_disposition(analysis: dict) -> str | None:
 
 def compute_disposition_breakdown(analyses: list[dict]) -> dict:
     """
-    Compute call disposition breakdown for funnel analysis (v4.0/v3.9+).
+    Compute call disposition breakdown (v5.0/v4.0/v3.9+).
 
-    Aggregates disposition values and computes key funnel metrics:
-    - in_scope_success_rate: Success among in-scope calls
-    - out_of_scope_recovery_rate: Graceful handling of out-of-scope requests
-    - pre_intent_rate: Calls ending before customer stated need
-
-    Supports both v4.0 (disposition) and v3.x (call_disposition) fields.
+    v5.0: Returns scope × outcome cross-tabulation with key containment metrics.
+    v4.x/v3.x: Returns legacy disposition-based breakdown.
     """
     n = len(analyses)
     if n == 0:
         return {}
 
-    # Valid disposition values (v4.0 uses out_of_scope_failed instead of out_of_scope_abandoned)
-    valid_dispositions = [
-        "pre_intent",
-        "out_of_scope_handled",
-        "out_of_scope_abandoned",  # v3.x
-        "out_of_scope_failed",      # v4.0
-        "in_scope_success",
-        "in_scope_partial",
-        "in_scope_failed",
-        "escalated"  # v4.0 adds explicit escalated disposition
-    ]
+    has_v5 = any("call_scope" in a for a in analyses)
 
-    # Count dispositions
-    dispositions = Counter()
-    for a in analyses:
-        disposition = get_disposition(a)
-        if disposition and disposition in valid_dispositions:
-            dispositions[disposition] += 1
-        else:
-            # Track unknown/missing for backwards compatibility
-            dispositions["unknown"] = dispositions.get("unknown", 0) + 1
+    if has_v5:
+        # v5.0: Scope and outcome distributions
+        scopes = Counter(a.get("call_scope") for a in analyses)
+        outcomes = Counter(a.get("call_outcome") for a in analyses)
 
-    # Calculate funnel metrics
-    in_scope_total = (
-        dispositions.get("in_scope_success", 0) +
-        dispositions.get("in_scope_partial", 0) +
-        dispositions.get("in_scope_failed", 0)
-    )
-    in_scope_confirmed = dispositions.get("in_scope_success", 0)
+        # Cross-tab: scope × outcome
+        cross_tab = {}
+        for a in analyses:
+            scope = a.get("call_scope", "unknown")
+            outcome = a.get("call_outcome", "unknown")
+            key = f"{scope}:{outcome}"
+            cross_tab[key] = cross_tab.get(key, 0) + 1
 
-    # Combine out_of_scope_abandoned (v3.x) and out_of_scope_failed (v4.0)
-    out_of_scope_failed_total = (
-        dispositions.get("out_of_scope_abandoned", 0) +
-        dispositions.get("out_of_scope_failed", 0)
-    )
-    out_of_scope_total = (
-        dispositions.get("out_of_scope_handled", 0) +
-        out_of_scope_failed_total
-    )
-    out_of_scope_handled = dispositions.get("out_of_scope_handled", 0)
+        # Key metrics
+        in_scope_count = sum(1 for a in analyses if a.get("call_scope") in ("in_scope", "mixed"))
+        in_scope_completed = sum(1 for a in analyses
+                                  if a.get("call_scope") in ("in_scope", "mixed")
+                                  and a.get("call_outcome") == "completed")
+        total_escalated = outcomes.get("escalated", 0)
 
-    pre_intent_count = dispositions.get("pre_intent", 0)
-    escalated_count = dispositions.get("escalated", 0)
-
-    return {
-        "by_disposition": {
-            k: {"count": v, "rate": safe_rate(v, n)}
-            for k, v in dispositions.most_common()
-        },
-        "funnel_metrics": {
-            "in_scope_success_rate": safe_rate(in_scope_confirmed, in_scope_total),
-            "out_of_scope_recovery_rate": safe_rate(out_of_scope_handled, out_of_scope_total),
-            "pre_intent_rate": safe_rate(pre_intent_count, n),
-            "escalation_rate": safe_rate(escalated_count, n),
-            "in_scope_total": in_scope_total,
-            "out_of_scope_total": out_of_scope_total,
-            "calls_with_disposition": n - dispositions.get("unknown", 0)
+        return {
+            "by_scope": {
+                k: {"count": v, "rate": safe_rate(v, n)}
+                for k, v in scopes.most_common()
+                if k is not None
+            },
+            "by_outcome": {
+                k: {"count": v, "rate": safe_rate(v, n)}
+                for k, v in outcomes.most_common()
+                if k is not None
+            },
+            "cross_tab": {
+                k: {"count": v, "rate": safe_rate(v, n)}
+                for k, v in sorted(cross_tab.items(), key=lambda x: -x[1])
+            },
+            "funnel_metrics": {
+                "containment_rate": safe_rate(in_scope_completed, in_scope_count),
+                "escalation_rate": safe_rate(total_escalated, n),
+                "in_scope_total": in_scope_count,
+                "calls_with_scope": n - scopes.get(None, 0),
+            }
         }
-    }
+    else:
+        # v4.x/v3.x: Legacy disposition-based breakdown
+        valid_dispositions = [
+            "pre_intent", "out_of_scope_handled", "out_of_scope_abandoned",
+            "out_of_scope_failed", "in_scope_success", "in_scope_partial",
+            "in_scope_failed", "escalated"
+        ]
+
+        dispositions = Counter()
+        for a in analyses:
+            disposition = get_disposition(a)
+            if disposition and disposition in valid_dispositions:
+                dispositions[disposition] += 1
+            else:
+                dispositions["unknown"] = dispositions.get("unknown", 0) + 1
+
+        in_scope_total = (
+            dispositions.get("in_scope_success", 0) +
+            dispositions.get("in_scope_partial", 0) +
+            dispositions.get("in_scope_failed", 0)
+        )
+        in_scope_confirmed = dispositions.get("in_scope_success", 0)
+        out_of_scope_total = (
+            dispositions.get("out_of_scope_handled", 0) +
+            dispositions.get("out_of_scope_abandoned", 0) +
+            dispositions.get("out_of_scope_failed", 0)
+        )
+        out_of_scope_handled = dispositions.get("out_of_scope_handled", 0)
+        escalated_count = dispositions.get("escalated", 0)
+
+        return {
+            "by_disposition": {
+                k: {"count": v, "rate": safe_rate(v, n)}
+                for k, v in dispositions.most_common()
+            },
+            "funnel_metrics": {
+                "containment_rate": safe_rate(in_scope_confirmed, in_scope_total),
+                "out_of_scope_recovery_rate": safe_rate(out_of_scope_handled, out_of_scope_total),
+                "escalation_rate": safe_rate(escalated_count, n),
+                "in_scope_total": in_scope_total,
+                "out_of_scope_total": out_of_scope_total,
+                "calls_with_disposition": n - dispositions.get("unknown", 0)
+            }
+        }
 
 
 def compute_intent_stats(analyses: list[dict]) -> dict:
@@ -647,6 +680,368 @@ def _sentiment_degraded(analysis: dict) -> bool:
 
     levels = {"angry": 0, "frustrated": 1, "neutral": 2, "positive": 3, "satisfied": 3}
     return levels.get(end, 2) < levels.get(start, 2)
+
+
+def compute_handle_time_stats(analyses: list[dict]) -> dict:
+    """
+    Compute handle time statistics from v4.4+ duration_seconds field.
+
+    Returns overall AHT stats plus breakdowns by scope and outcome.
+    v5.0: Groups by call_scope and call_outcome.
+    v4.x: Falls back to legacy disposition grouping.
+    """
+    durations = [a["duration_seconds"] for a in analyses if a.get("duration_seconds") is not None]
+
+    if not durations:
+        return {}
+
+    result = {"overall": safe_stats(durations)}
+
+    # v5.0: Group by call_scope and call_outcome
+    has_v5 = any("call_scope" in a for a in analyses)
+    if has_v5:
+        by_scope = {}
+        for scope in ("in_scope", "out_of_scope", "mixed", "no_request"):
+            scope_durations = [
+                a["duration_seconds"] for a in analyses
+                if a.get("call_scope") == scope and a.get("duration_seconds") is not None
+            ]
+            if scope_durations:
+                by_scope[scope] = safe_stats(scope_durations)
+        result["by_scope"] = by_scope
+
+        by_outcome = {}
+        for outcome in ("completed", "escalated", "abandoned"):
+            outcome_durations = [
+                a["duration_seconds"] for a in analyses
+                if a.get("call_outcome") == outcome and a.get("duration_seconds") is not None
+            ]
+            if outcome_durations:
+                by_outcome[outcome] = safe_stats(outcome_durations)
+        result["by_outcome"] = by_outcome
+    else:
+        # Legacy: group by disposition
+        disposition_values = [
+            "pre_intent", "out_of_scope_handled", "out_of_scope_failed",
+            "in_scope_success", "in_scope_partial", "in_scope_failed", "escalated"
+        ]
+        by_disposition = {}
+        for disp in disposition_values:
+            disp_durations = [
+                a["duration_seconds"] for a in analyses
+                if get_disposition(a) == disp and a.get("duration_seconds") is not None
+            ]
+            if disp_durations:
+                by_disposition[disp] = safe_stats(disp_durations)
+        result["by_disposition"] = by_disposition
+
+    return result
+
+
+def compute_call_funnel(analyses: list[dict]) -> dict:
+    """
+    Compute MECE call funnel from entry (v5.0 dashboard).
+
+    v5.0: Uses call_scope for scope split, call_outcome for outcome split.
+    v4.x fallback: Uses legacy disposition values.
+    """
+    n = len(analyses)
+    if n == 0:
+        return {}
+
+    has_v5 = any("call_scope" in a for a in analyses)
+
+    if has_v5:
+        # v5.0: Scope-based funnel
+        no_request = [a for a in analyses if a.get("call_scope") == "no_request"]
+        request_made = [a for a in analyses if a.get("call_scope") != "no_request"]
+
+        no_request_count = len(no_request)
+        request_made_count = len(request_made)
+
+        # No-request breakdown by abandon_stage
+        abandon_stages = Counter(a.get("abandon_stage") for a in no_request)
+
+        # Request-made scope breakdown
+        in_scope = [a for a in request_made if a.get("call_scope") == "in_scope"]
+        out_of_scope = [a for a in request_made if a.get("call_scope") == "out_of_scope"]
+        mixed_scope = [a for a in request_made if a.get("call_scope") == "mixed"]
+
+        in_scope_count = len(in_scope)
+        out_of_scope_count = len(out_of_scope)
+        mixed_count = len(mixed_scope)
+
+        return {
+            "total": n,
+            "no_request": {
+                "count": no_request_count,
+                "rate": safe_rate(no_request_count, n),
+                "by_stage": {
+                    k: {"count": v, "rate": safe_rate(v, no_request_count)}
+                    for k, v in abandon_stages.most_common()
+                    if k is not None
+                }
+            },
+            "request_made": {
+                "count": request_made_count,
+                "rate": safe_rate(request_made_count, n),
+                "in_scope": {
+                    "count": in_scope_count,
+                    "rate": safe_rate(in_scope_count, request_made_count),
+                },
+                "out_of_scope": {
+                    "count": out_of_scope_count,
+                    "rate": safe_rate(out_of_scope_count, request_made_count),
+                },
+                "mixed": {
+                    "count": mixed_count,
+                    "rate": safe_rate(mixed_count, request_made_count),
+                },
+            },
+            "_invariants": {
+                "no_request_plus_request_eq_total": no_request_count + request_made_count == n,
+                "scope_sum_eq_request_made": in_scope_count + out_of_scope_count + mixed_count == request_made_count,
+            }
+        }
+    else:
+        # v4.x fallback: disposition-based funnel
+        pre_intent_calls = [a for a in analyses if get_disposition(a) == "pre_intent"]
+        intent_captured_calls = [a for a in analyses if get_disposition(a) != "pre_intent"]
+
+        pre_intent_count = len(pre_intent_calls)
+        intent_captured_count = len(intent_captured_calls)
+
+        pre_intent_subtypes = Counter(a.get("pre_intent_subtype") for a in pre_intent_calls)
+
+        oos_dispositions = {"out_of_scope_handled", "out_of_scope_failed"}
+        is_dispositions = {"in_scope_success", "in_scope_partial", "in_scope_failed", "escalated"}
+
+        out_of_scope_count = sum(1 for a in intent_captured_calls if get_disposition(a) in oos_dispositions)
+        in_scope_count = sum(1 for a in intent_captured_calls if get_disposition(a) in is_dispositions)
+
+        return {
+            "total": n,
+            "no_request": {
+                "count": pre_intent_count,
+                "rate": safe_rate(pre_intent_count, n),
+                "by_stage": {
+                    k: {"count": v, "rate": safe_rate(v, pre_intent_count)}
+                    for k, v in pre_intent_subtypes.most_common()
+                    if k is not None
+                }
+            },
+            "request_made": {
+                "count": intent_captured_count,
+                "rate": safe_rate(intent_captured_count, n),
+                "in_scope": {
+                    "count": in_scope_count,
+                    "rate": safe_rate(in_scope_count, intent_captured_count),
+                },
+                "out_of_scope": {
+                    "count": out_of_scope_count,
+                    "rate": safe_rate(out_of_scope_count, intent_captured_count),
+                },
+                "mixed": {
+                    "count": 0,
+                    "rate": None,
+                },
+            },
+            "_invariants": {
+                "no_request_plus_request_eq_total": pre_intent_count + intent_captured_count == n,
+                "scope_sum_eq_request_made": out_of_scope_count + in_scope_count == intent_captured_count,
+            }
+        }
+
+
+def compute_in_scope_outcomes(analyses: list[dict]) -> dict:
+    """
+    Compute in-scope outcome breakdown (v5.0 dashboard).
+
+    v5.0: Base = calls with call_scope in {in_scope, mixed}.
+          Outcomes split by call_outcome (completed/escalated/abandoned).
+    v4.x fallback: Uses legacy disposition values.
+    """
+    has_v5 = any("call_scope" in a for a in analyses)
+
+    if has_v5:
+        # v5.0: in_scope and mixed-scope calls
+        in_scope = [a for a in analyses if a.get("call_scope") in ("in_scope", "mixed")]
+        is_count = len(in_scope)
+        if is_count == 0:
+            return {}
+
+        # Completed
+        completed = [a for a in in_scope if a.get("call_outcome") == "completed"]
+        completed_count = len(completed)
+        confirmed_count = sum(1 for a in completed if a.get("resolution_confirmed") is True)
+        unconfirmed_count = sum(1 for a in completed if a.get("resolution_confirmed") is False)
+
+        # Escalated
+        escalated = [a for a in in_scope if a.get("call_outcome") == "escalated"]
+        escalated_count = len(escalated)
+        trigger_counts = Counter(a.get("escalation_trigger") for a in escalated)
+
+        # Abandoned
+        abandoned = [a for a in in_scope if a.get("call_outcome") == "abandoned"]
+        abandoned_count = len(abandoned)
+        stage_counts = Counter(a.get("abandon_stage") for a in abandoned)
+
+        return {
+            "in_scope_total": is_count,
+            "completed": {
+                "count": completed_count,
+                "rate": safe_rate(completed_count, is_count),
+                "confirmed": {"count": confirmed_count, "rate": safe_rate(confirmed_count, completed_count)},
+                "unconfirmed": {"count": unconfirmed_count, "rate": safe_rate(unconfirmed_count, completed_count)},
+            },
+            "escalated": {
+                "count": escalated_count,
+                "rate": safe_rate(escalated_count, is_count),
+                "by_trigger": {
+                    k: {"count": v, "rate": safe_rate(v, escalated_count)}
+                    for k, v in trigger_counts.most_common()
+                    if k is not None
+                },
+            },
+            "abandoned": {
+                "count": abandoned_count,
+                "rate": safe_rate(abandoned_count, is_count),
+                "by_stage": {
+                    k: {"count": v, "rate": safe_rate(v, abandoned_count)}
+                    for k, v in stage_counts.most_common()
+                    if k is not None
+                },
+            },
+            "_invariant": {
+                "sum_eq_total": completed_count + escalated_count + abandoned_count == is_count,
+            }
+        }
+    else:
+        # v4.x fallback
+        is_dispositions = {"in_scope_success", "in_scope_partial", "in_scope_failed", "escalated"}
+        in_scope = [a for a in analyses if get_disposition(a) in is_dispositions]
+        is_count = len(in_scope)
+        if is_count == 0:
+            return {}
+
+        resolved = [a for a in in_scope if get_disposition(a) in {"in_scope_success", "in_scope_partial"}]
+        resolved_count = len(resolved)
+        confirmed_count = sum(1 for a in resolved if a.get("resolution_confirmed") is True)
+        unconfirmed_count = sum(1 for a in resolved if a.get("resolution_confirmed") is False)
+
+        escalated = [a for a in in_scope if get_disposition(a) == "escalated"]
+        escalated_count = len(escalated)
+
+        abandoned = [a for a in in_scope if get_disposition(a) == "in_scope_failed" and a.get("ended_by") == "customer"]
+        abandoned_count = len(abandoned)
+
+        failed_other = [a for a in in_scope if get_disposition(a) == "in_scope_failed" and a.get("ended_by") != "customer"]
+        failed_other_count = len(failed_other)
+
+        return {
+            "in_scope_total": is_count,
+            "completed": {
+                "count": resolved_count,
+                "rate": safe_rate(resolved_count, is_count),
+                "confirmed": {"count": confirmed_count, "rate": safe_rate(confirmed_count, resolved_count)},
+                "unconfirmed": {"count": unconfirmed_count, "rate": safe_rate(unconfirmed_count, resolved_count)},
+            },
+            "escalated": {
+                "count": escalated_count,
+                "rate": safe_rate(escalated_count, is_count),
+                "by_trigger": {},
+            },
+            "abandoned": {
+                "count": abandoned_count + failed_other_count,
+                "rate": safe_rate(abandoned_count + failed_other_count, is_count),
+                "by_stage": {},
+            },
+            "_invariant": {
+                "sum_eq_total": resolved_count + escalated_count + abandoned_count + failed_other_count == is_count,
+            }
+        }
+
+
+def compute_action_performance(analyses: list[dict]) -> dict:
+    """
+    Compute per-action-type performance metrics (v4.5 dashboard).
+
+    Counts attempted, success, retry, failed, unknown per action type.
+    """
+    action_stats = {}  # action_type -> {attempted, success, retry, failed, unknown}
+
+    for a in analyses:
+        for act in a.get("actions", []):
+            action_type = act.get("action", "unknown")
+            outcome = act.get("outcome", "unknown")
+
+            if action_type not in action_stats:
+                action_stats[action_type] = Counter()
+            action_stats[action_type]["attempted"] += 1
+            action_stats[action_type][outcome] += 1
+
+    if not action_stats:
+        return {}
+
+    result = {}
+    for action_type, counts in sorted(action_stats.items(), key=lambda x: -x[1]["attempted"]):
+        attempted = counts["attempted"]
+        result[action_type] = {
+            "attempted": attempted,
+            "success": counts.get("success", 0),
+            "retry": counts.get("retry", 0),
+            "failed": counts.get("failed", 0),
+            "unknown": counts.get("unknown", 0),
+            "success_rate": safe_rate(counts.get("success", 0), attempted),
+            "retry_rate": safe_rate(counts.get("retry", 0), attempted),
+            "failure_rate": safe_rate(counts.get("failed", 0), attempted),
+        }
+
+    # Overall stats
+    total_actions = sum(c["attempted"] for c in action_stats.values())
+    total_success = sum(c.get("success", 0) for c in action_stats.values())
+    calls_with_actions = sum(1 for a in analyses if a.get("actions"))
+
+    return {
+        "by_action": result,
+        "overall": {
+            "total_actions": total_actions,
+            "calls_with_actions": calls_with_actions,
+            "overall_success_rate": safe_rate(total_success, total_actions),
+            "action_types_seen": len(action_stats),
+        }
+    }
+
+
+def compute_transfer_quality(analyses: list[dict]) -> dict:
+    """
+    Compute transfer quality metrics (v4.5 dashboard).
+
+    Base = all calls with transfer_destination not null.
+    """
+    transfers = [a for a in analyses if a.get("transfer_destination") is not None]
+    total_transfers = len(transfers)
+
+    if total_transfers == 0:
+        return {}
+
+    # By destination
+    destinations = Counter(a.get("transfer_destination") for a in transfers)
+
+    # Queue detection rate
+    queue_detected = sum(1 for a in transfers if a.get("transfer_queue_detected") is True)
+
+    return {
+        "total_transfers": total_transfers,
+        "by_destination": {
+            dest: {"count": count, "rate": safe_rate(count, total_transfers)}
+            for dest, count in destinations.most_common()
+        },
+        "queue_detected": {
+            "count": queue_detected,
+            "rate": safe_rate(queue_detected, total_transfers),
+        }
+    }
 
 
 def compute_conversation_quality_metrics(analyses: list[dict]) -> dict:
@@ -920,8 +1315,12 @@ def get_failure_info(analysis: dict) -> tuple:
 
 
 def is_success(analysis: dict) -> bool:
-    """Check if call was successful with v4.0/v3.x compatibility."""
-    # v4.0 uses disposition, v3.x uses outcome
+    """Check if call was successful with v5.0/v4.0/v3.x compatibility."""
+    # v5.0: completed outcome
+    if "call_outcome" in analysis:
+        return analysis["call_outcome"] == "completed"
+
+    # v4.0 uses disposition
     disposition = get_disposition(analysis)
     if disposition:
         return disposition in ("in_scope_success", "in_scope_partial")
@@ -932,13 +1331,14 @@ def is_success(analysis: dict) -> bool:
 
 
 def generate_report(analyses: list[dict]) -> dict:
-    """Generate Section A: Deterministic Metrics report (v4.0 with v3.x backwards compat)."""
+    """Generate Section A: Deterministic Metrics report (v5.0 with v4.x/v3.x backwards compat)."""
     if not analyses:
         return {"error": "No analyses to process"}
 
     n = len(analyses)
 
     # Detect schema version distribution
+    v5_count = sum(1 for a in analyses if a.get("schema_version", "").startswith("v5"))
     v4_count = sum(1 for a in analyses if a.get("schema_version", "").startswith("v4"))
     v3_count = sum(1 for a in analyses if a.get("schema_version", "").startswith("v3"))
 
@@ -994,11 +1394,12 @@ def generate_report(analyses: list[dict]) -> dict:
         if crit is True:
             critical_count += 1
 
-    # Actionable flags (v4.0/v3.x compatible)
-    escalation_requested = sum(1 for a in analyses if a.get("escalation_requested"))
-    # v4.0 uses repeat_caller, v3.x uses repeat_caller_signals
+    # Actionable flags (v5.0/v4.0/v3.x compatible)
+    # v5.0: escalation_requested removed (covered by escalation_trigger=customer_requested)
+    escalation_requested = sum(1 for a in analyses
+                                if a.get("escalation_requested")
+                                or a.get("escalation_trigger") == "customer_requested")
     repeat_callers = sum(1 for a in analyses if a.get("repeat_caller") or a.get("repeat_caller_signals"))
-    # v4.0 uses secondary_intent, v3.x uses additional_intents
     multi_intent = sum(1 for a in analyses if a.get("secondary_intent") or a.get("additional_intents"))
 
     # Training opportunities (v3.x only - merged into coaching in v4.0)
@@ -1022,21 +1423,31 @@ def generate_report(analyses: list[dict]) -> dict:
     # v4.0: Sentiment statistics
     sentiment_stats = compute_sentiment_stats(analyses)
 
-    # Calculate key rates from disposition (preferred) or outcome (fallback)
-    disp_by = disposition_breakdown.get("by_disposition", {})
-    if disp_by:
-        success_count = disp_by.get("in_scope_success", {}).get("count", 0)
-        partial_count = disp_by.get("in_scope_partial", {}).get("count", 0)
-        resolved_count = success_count + partial_count
-        escalated_count = disp_by.get("escalated", {}).get("count", 0)
+    # v4.4: Handle time statistics
+    handle_time_stats = compute_handle_time_stats(analyses)
+
+    # Calculate key rates
+    has_v5 = any("call_scope" in a for a in analyses)
+    if has_v5:
+        # v5.0: Use call_outcome directly
+        completed_count = sum(1 for a in analyses if a.get("call_outcome") == "completed")
+        escalated_count = sum(1 for a in analyses if a.get("call_outcome") == "escalated")
+        abandoned_count = sum(1 for a in analyses if a.get("call_outcome") == "abandoned")
+        # Containment = all calls NOT escalated to human
+        containment_count = completed_count + abandoned_count
+        resolved_count = completed_count
     else:
-        resolved_count = outcomes.get("resolved", 0)
-        escalated_count = outcomes.get("escalated", 0)
-
-    abandoned_count = outcomes.get("abandoned", 0)
-
-    # Containment = resolved + abandoned (not escalated to human)
-    containment_count = resolved_count + abandoned_count
+        disp_by = disposition_breakdown.get("by_disposition", {})
+        if disp_by:
+            success_count = disp_by.get("in_scope_success", {}).get("count", 0)
+            partial_count = disp_by.get("in_scope_partial", {}).get("count", 0)
+            resolved_count = success_count + partial_count
+            escalated_count = disp_by.get("escalated", {}).get("count", 0)
+        else:
+            resolved_count = outcomes.get("resolved", 0)
+            escalated_count = outcomes.get("escalated", 0)
+        abandoned_count = outcomes.get("abandoned", 0)
+        containment_count = resolved_count + abandoned_count
 
     # Validation warnings
     validation_warnings = validate_failure_consistency(analyses)
@@ -1044,13 +1455,14 @@ def generate_report(analyses: list[dict]) -> dict:
     report = {
         "metadata": {
             "report_generated": datetime.now().isoformat(),
-            "schema_version": "v4.0",
+            "schema_version": "v5.0",
             "total_calls_analyzed": n,
             "date_range": date_range,
             "source_versions": {
+                "v5": v5_count,
                 "v4": v4_count,
                 "v3": v3_count,
-                "other": n - v4_count - v3_count
+                "other": n - v5_count - v4_count - v3_count
             }
         },
 
@@ -1112,13 +1524,34 @@ def generate_report(analyses: list[dict]) -> dict:
     if sentiment_stats:
         report["sentiment_stats"] = sentiment_stats
 
+    # v4.4: Handle time stats
+    if handle_time_stats:
+        report["handle_time"] = handle_time_stats
+
+    # v4.5: Dashboard metrics
+    call_funnel = compute_call_funnel(analyses)
+    in_scope_outcomes = compute_in_scope_outcomes(analyses)
+    action_performance = compute_action_performance(analyses)
+    transfer_quality = compute_transfer_quality(analyses)
+
+    if call_funnel or in_scope_outcomes or action_performance or transfer_quality:
+        report["dashboard"] = {}
+        if call_funnel:
+            report["dashboard"]["call_funnel"] = call_funnel
+        if in_scope_outcomes:
+            report["dashboard"]["in_scope_outcomes"] = in_scope_outcomes
+        if action_performance:
+            report["dashboard"]["action_performance"] = action_performance
+        if transfer_quality:
+            report["dashboard"]["transfer_quality"] = transfer_quality
+
     return report
 
 
 def print_summary(report: dict) -> None:
     """Print human-readable summary of Section A metrics."""
     print("\n" + "=" * 60)
-    print("VACATIA AI VOICE AGENT - ANALYTICS REPORT (v4.0 - Section A)")
+    print("VACATIA AI VOICE AGENT - ANALYTICS REPORT (v5.0 - Section A)")
     print("=" * 60)
 
     m = report.get("metadata", {})
@@ -1126,7 +1559,13 @@ def print_summary(report: dict) -> None:
     print(f"Generated: {m.get('report_generated', 'N/A')}")
     versions = m.get("source_versions", {})
     if versions:
-        print(f"Source Versions: v4={versions.get('v4', 0)}, v3={versions.get('v3', 0)}")
+        parts = []
+        for v in ("v5", "v4", "v3"):
+            c = versions.get(v, 0)
+            if c > 0:
+                parts.append(f"{v}={c}")
+        if parts:
+            print(f"Source Versions: {', '.join(parts)}")
 
     # Key Rates
     print("\n" + "-" * 40)
@@ -1196,28 +1635,43 @@ def print_summary(report: dict) -> None:
         for item in top_asks[:5]:
             print(f"    - {item['ask']}: {item['count']}")
 
-    # Disposition Breakdown (v3.9)
+    # Disposition Breakdown
     print("\n" + "-" * 40)
-    print("CALL DISPOSITION (v3.9)")
+    print("CALL DISPOSITION")
     print("-" * 40)
     db = report.get("disposition_breakdown", {})
+    by_scope = db.get("by_scope", {})
+    by_outcome = db.get("by_outcome", {})
     by_disp = db.get("by_disposition", {})
-    if by_disp:
+
+    if by_scope:
+        # v5.0: scope × outcome
+        print("  By Scope:")
+        for scope, data in by_scope.items():
+            print(f"    {scope}: {data['count']} ({data['rate']*100:.1f}%)" if data.get('rate') else f"    {scope}: {data['count']}")
+        print("  By Outcome:")
+        for outcome, data in by_outcome.items():
+            print(f"    {outcome}: {data['count']} ({data['rate']*100:.1f}%)" if data.get('rate') else f"    {outcome}: {data['count']}")
+        cross = db.get("cross_tab", {})
+        if cross:
+            print("  Cross-Tab (scope:outcome):")
+            for combo, data in cross.items():
+                print(f"    {combo}: {data['count']} ({data['rate']*100:.1f}%)" if data.get('rate') else f"    {combo}: {data['count']}")
+    elif by_disp:
+        # v4.x/v3.x: legacy disposition
         print("  By Disposition:")
         for disp, data in by_disp.items():
             print(f"    {disp}: {data['count']} ({data['rate']*100:.1f}%)" if data.get('rate') else f"    {disp}: {data['count']}")
 
-        funnel = db.get("funnel_metrics", {})
-        if funnel:
-            print("\n  Funnel Metrics:")
-            if funnel.get("in_scope_success_rate") is not None:
-                print(f"    In-Scope Success Rate: {funnel['in_scope_success_rate']*100:.1f}% ({funnel.get('in_scope_total', 0)} in-scope calls)")
-            if funnel.get("out_of_scope_recovery_rate") is not None:
-                print(f"    Out-of-Scope Recovery: {funnel['out_of_scope_recovery_rate']*100:.1f}% ({funnel.get('out_of_scope_total', 0)} out-of-scope calls)")
-            if funnel.get("pre_intent_rate") is not None:
-                print(f"    Pre-Intent Rate: {funnel['pre_intent_rate']*100:.1f}%")
-    else:
-        print("  No disposition data (pre-v3.9 analyses)")
+    funnel = db.get("funnel_metrics", {})
+    if funnel:
+        print("\n  Funnel Metrics:")
+        if funnel.get("containment_rate") is not None:
+            print(f"    Containment Rate: {funnel['containment_rate']*100:.1f}% ({funnel.get('in_scope_total', 0)} in-scope calls)")
+        if funnel.get("escalation_rate") is not None:
+            print(f"    Escalation Rate: {funnel['escalation_rate']*100:.1f}%")
+        if funnel.get("out_of_scope_recovery_rate") is not None:
+            print(f"    Out-of-Scope Recovery: {funnel['out_of_scope_recovery_rate']*100:.1f}%")
 
     # Actionable Flags
     print("\n" + "-" * 40)
@@ -1337,6 +1791,101 @@ def print_summary(report: dict) -> None:
             print("  End Sentiment:")
             for sent, data in end_dist.items():
                 print(f"    {sent}: {data['count']} ({data['rate']*100:.1f}%)")
+
+    # Handle Time Statistics
+    handle_time = report.get("handle_time", {})
+    if handle_time:
+        print("\n" + "-" * 40)
+        print("HANDLE TIME / AHT")
+        print("-" * 40)
+        overall = handle_time.get("overall", {})
+        if overall.get("mean"):
+            print(f"  Overall: {overall['mean']:.1f}s mean, {overall['median']:.1f}s median (n={overall['n']}, range {overall['min']:.0f}-{overall['max']:.0f}s)")
+        by_scope = handle_time.get("by_scope", {})
+        if by_scope:
+            print("  By Scope:")
+            for scope, stats in by_scope.items():
+                if stats.get("mean"):
+                    print(f"    {scope}: {stats['mean']:.1f}s mean, {stats['median']:.1f}s median (n={stats['n']})")
+        by_outcome = handle_time.get("by_outcome", {})
+        if by_outcome:
+            print("  By Outcome:")
+            for outcome, stats in by_outcome.items():
+                if stats.get("mean"):
+                    print(f"    {outcome}: {stats['mean']:.1f}s mean, {stats['median']:.1f}s median (n={stats['n']})")
+        by_disp = handle_time.get("by_disposition", {})
+        if by_disp:
+            print("  By Disposition:")
+            for disp, stats in by_disp.items():
+                if stats.get("mean"):
+                    print(f"    {disp}: {stats['mean']:.1f}s mean, {stats['median']:.1f}s median (n={stats['n']})")
+
+    # Dashboard Metrics
+    dashboard = report.get("dashboard", {})
+    if dashboard:
+        print("\n" + "-" * 40)
+        print("DASHBOARD (v5.0)")
+        print("-" * 40)
+
+        # Call Funnel
+        cf = dashboard.get("call_funnel", {})
+        if cf:
+            print(f"  Call Funnel (N={cf.get('total', 0)}):")
+            nr = cf.get("no_request", {})
+            rm = cf.get("request_made", {})
+            print(f"    No Request: {nr.get('count', 0)} ({(nr.get('rate') or 0)*100:.1f}%)")
+            stages = nr.get("by_stage", {})
+            for st, data in stages.items():
+                print(f"      {st}: {data['count']}")
+            print(f"    Request Made: {rm.get('count', 0)} ({(rm.get('rate') or 0)*100:.1f}%)")
+            isc = rm.get("in_scope", {})
+            oos = rm.get("out_of_scope", {})
+            mx = rm.get("mixed", {})
+            parts = [f"In-Scope: {isc.get('count', 0)}", f"Out-of-Scope: {oos.get('count', 0)}"]
+            if mx.get("count", 0) > 0:
+                parts.append(f"Mixed: {mx['count']}")
+            print(f"      {' | '.join(parts)}")
+
+        # In-Scope Outcomes
+        iso = dashboard.get("in_scope_outcomes", {})
+        if iso:
+            print(f"\n  In-Scope Outcomes (N={iso.get('in_scope_total', 0)}):")
+            comp = iso.get("completed", {})
+            print(f"    Completed: {comp.get('count', 0)} ({(comp.get('rate') or 0)*100:.1f}%)")
+            conf = comp.get("confirmed", {})
+            unconf = comp.get("unconfirmed", {})
+            print(f"      Confirmed: {conf.get('count', 0)} | Unconfirmed: {unconf.get('count', 0)}")
+            esc = iso.get("escalated", {})
+            print(f"    Escalated: {esc.get('count', 0)} ({(esc.get('rate') or 0)*100:.1f}%)")
+            triggers = esc.get("by_trigger", {})
+            if triggers:
+                trigger_parts = [f"{k}: {v['count']}" for k, v in triggers.items()]
+                print(f"      {' | '.join(trigger_parts)}")
+            ab = iso.get("abandoned", {})
+            print(f"    Abandoned: {ab.get('count', 0)} ({(ab.get('rate') or 0)*100:.1f}%)")
+            stages = ab.get("by_stage", {})
+            if stages:
+                stage_parts = [f"{k}: {v['count']}" for k, v in stages.items()]
+                print(f"      {' | '.join(stage_parts)}")
+
+        # Action Performance
+        ap = dashboard.get("action_performance", {})
+        if ap:
+            overall = ap.get("overall", {})
+            print(f"\n  Action Performance ({overall.get('total_actions', 0)} actions, {overall.get('action_types_seen', 0)} types):")
+            for action_type, data in ap.get("by_action", {}).items():
+                sr = data.get("success_rate")
+                sr_str = f"{sr*100:.0f}%" if sr is not None else "N/A"
+                print(f"    {action_type}: {data['attempted']} attempted, {sr_str} success")
+
+        # Transfer Quality
+        tq = dashboard.get("transfer_quality", {})
+        if tq:
+            print(f"\n  Transfer Quality ({tq.get('total_transfers', 0)} transfers):")
+            for dest, data in tq.get("by_destination", {}).items():
+                print(f"    {dest}: {data['count']} ({(data.get('rate') or 0)*100:.0f}%)")
+            qd = tq.get("queue_detected", {})
+            print(f"    Queue detected: {qd.get('count', 0)} ({(qd.get('rate') or 0)*100:.0f}%)")
 
     # Training Priorities
     print("\n" + "-" * 40)

@@ -1,0 +1,65 @@
+{
+  "call_id": "743d7b2a-ebf9-4534-a999-667c8687b0e2",
+  "schema_version": "v5.0",
+  "turns": 10,
+  "ended_by": "agent",
+  "intent": "Check maintenance bill details",
+  "intent_context": "Wants to verify account ownership and address",
+  "secondary_intent": "Verify account address and ownership",
+  "call_scope": "in_scope",
+  "call_outcome": "completed",
+  "resolution": "info provided",
+  "steps": [
+    "Identify bill type",
+    "Account lookup via phone",
+    "Verification via name and state",
+    "Provided address on file",
+    "Provided owner name on file"
+  ],
+  "escalation_trigger": null,
+  "abandon_stage": null,
+  "resolution_confirmed": true,
+  "effectiveness": 5,
+  "quality": 5,
+  "effort": 2,
+  "sentiment_start": "neutral",
+  "sentiment_end": "satisfied",
+  "failure_type": null,
+  "failure_detail": null,
+  "policy_gap": null,
+  "derailed_at": null,
+  "clarifications": [
+    {
+      "turn": 9,
+      "type": "name",
+      "cause": "unclear",
+      "note": "Initial name provided did not match"
+    }
+  ],
+  "corrections": [],
+  "loops": [],
+  "summary": "The customer called to ask questions about their maintenance bill, specifically wanting to verify the address and owner on file. The agent successfully verified the account and provided the requested information.",
+  "verbatim": "Whose address is on file?",
+  "coaching": null,
+  "repeat_caller": false,
+  "actions": [
+    {
+      "action": "account_lookup",
+      "outcome": "success",
+      "detail": "Found record using phone number"
+    },
+    {
+      "action": "verification",
+      "outcome": "success",
+      "detail": "Verified via name and state"
+    },
+    {
+      "action": "other",
+      "outcome": "success",
+      "detail": "Provided address and owner information"
+    }
+  ],
+  "transfer_destination": null,
+  "transfer_queue_detected": false,
+  "duration_seconds": 162.3
+}

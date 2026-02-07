@@ -1,44 +1,19 @@
 #!/usr/bin/env python3
 """
-Single Transcript Analyzer for Vacatia AI Voice Agent Analytics (v4.0)
+Single Transcript Analyzer for Vacatia AI Voice Agent Analytics (v5.0)
 
-Clean schema redesign with:
-- Primary intent capture (WHAT the customer wants + WHY)
-- Sentiment tracking (start → end emotional journey)
-- Flattened friction structure (no more nested friction object)
-- Unified disposition field (replaces outcome + call_disposition)
-- Cleaner naming (shorter, more consistent field names)
+v5.0 changes - Disposition Model Redesign:
+- REPLACED: single `disposition` enum → `call_scope` + `call_outcome` (orthogonal dimensions)
+- REPLACED: `escalation_initiator` → `escalation_trigger` (why, not who)
+- REPLACED: `pre_intent_subtype` → `abandon_stage` (generalized to all abandons)
+- REMOVED: `abandoned_path_viable` (covered by call_scope + abandon_stage)
+- REMOVED: `escalation_requested` (covered by escalation_trigger = customer_requested)
+- REMOVED: `failure_recoverable` (covered by failure_type + outcome)
+- REMOVED: `failure_critical` (rare, covered by coaching)
+- KEPT: resolution_confirmed (bool, only when call_outcome = completed)
+- KEPT: actions[], transfer_destination, transfer_queue_detected
 
-v4.0 changes - Schema Redesign:
-- NEW: intent, intent_context, secondary_intent (primary caller intent)
-- NEW: sentiment_start, sentiment_end (emotional journey tracking)
-- RENAMED: outcome → disposition (unified with call_disposition)
-- RENAMED: resolution_type → resolution
-- RENAMED: ended_reason → ended_by (simplified: "agent" | "customer" | "error" | "unknown")
-- RENAMED: agent_effectiveness → effectiveness
-- RENAMED: conversation_quality → quality
-- RENAMED: customer_effort → effort
-- RENAMED: failure_point → failure_type
-- RENAMED: failure_description → failure_detail
-- RENAMED: was_recoverable → failure_recoverable
-- RENAMED: critical_failure → failure_critical
-- RENAMED: repeat_caller_signals → repeat_caller
-- RENAMED: additional_intents → secondary_intent
-- RENAMED: customer_verbatim → verbatim
-- RENAMED: agent_miss_detail → coaching
-- RENAMED: resolution_steps → steps
-- RENAMED: policy_gap_detail → policy_gap
-- REMOVED: outcome (redundant with disposition)
-- REMOVED: call_disposition (merged into disposition)
-- REMOVED: training_opportunity (merged into coaching)
-- PROMOTED: friction.turns → turns (top-level)
-- PROMOTED: friction.derailed_at → derailed_at (top-level)
-- PROMOTED: friction.clarifications → clarifications (top-level)
-- PROMOTED: friction.corrections → corrections (top-level)
-- PROMOTED: friction.loops → loops (top-level)
-- RENAMED in arrays: t → turn/turns, ctx → note, sev → severity
-
-Previous versions archived in tools/v3/ directory.
+Previous schema versions: v4.5 (dashboard fields), v4.4 (handle time), v4.0 (schema redesign).
 """
 
 import argparse
@@ -58,45 +33,42 @@ from google.genai import types
 from preprocess_transcript import preprocess_transcript, format_for_llm
 
 
-# v4.0 Schema - Clean redesign with intent, sentiment, flattened friction
+# v5.0 Schema - Orthogonal disposition model: call_scope × call_outcome
 ANALYSIS_SCHEMA = """
 {
   "call_id": "string (UUID from filename)",
-  "schema_version": "v4.0",
+  "schema_version": "v5.0",
 
-  // === METADATA ===
   "turns": "integer (total conversation turns - count user messages)",
   "ended_by": "enum: 'agent' | 'customer' | 'error' | 'unknown'",
 
-  // === INTENT (NEW - captures WHAT + WHY) ===
   "intent": "string (customer's primary request in 3-8 words, normalized phrase starting with action verb)",
   "intent_context": "string or null (WHY they need it - underlying situation/reason)",
   "secondary_intent": "string or null (additional request beyond main intent)",
 
-  // === RESOLUTION ===
-  "disposition": "enum: 'pre_intent' | 'out_of_scope_handled' | 'out_of_scope_failed' | 'in_scope_success' | 'in_scope_partial' | 'in_scope_failed' | 'escalated'",
-  "resolution": "string (what was accomplished: 'payment processed', 'callback scheduled', 'info provided', 'none', etc.)",
+  "call_scope": "enum: 'in_scope' | 'out_of_scope' | 'mixed' | 'no_request'",
+  "call_outcome": "enum: 'completed' | 'escalated' | 'abandoned'",
+  "resolution": "string (what was accomplished: 'info provided', 'link sent', 'transferred to concierge', 'none', etc.)",
   "steps": "array of strings or null (sequence of actions taken/attempted)",
 
-  // === QUALITY ===
+  "escalation_trigger": "enum or null: 'customer_requested' | 'scope_limit' | 'task_failure' | 'policy_routing' (required when call_outcome = escalated, null otherwise)",
+  "abandon_stage": "enum or null: 'pre_greeting' | 'pre_intent' | 'mid_task' | 'post_delivery' (required when call_outcome = abandoned, null otherwise)",
+  "resolution_confirmed": "boolean or null (true=customer explicitly confirmed, false=action taken but unconfirmed, null when call_outcome != completed)",
+
   "effectiveness": "integer 1-5 (did agent understand and respond appropriately?)",
   "quality": "integer 1-5 (flow, tone, clarity combined)",
   "effort": "integer 1-5 (how hard did customer work? 1=effortless, 5=painful)",
   "sentiment_start": "enum: 'positive' | 'neutral' | 'frustrated' | 'angry'",
   "sentiment_end": "enum: 'satisfied' | 'neutral' | 'frustrated' | 'angry'",
 
-  // === FAILURE ===
   "failure_type": "enum or null: 'nlu_miss' | 'wrong_action' | 'policy_gap' | 'customer_confusion' | 'tech_issue' | 'other'",
   "failure_detail": "string or null (one sentence: what went wrong)",
-  "failure_recoverable": "boolean or null (could agent have saved this call?)",
-  "failure_critical": "boolean (wrong info given, impossible promise made, compliance issue)",
-  "policy_gap": "object or null - REQUIRED when failure_type='policy_gap'. Structure: { 'category': enum 'capability_limit' | 'data_access' | 'auth_restriction' | 'business_rule' | 'integration_missing', 'specific_gap': string, 'customer_ask': string, 'blocker': string }",
+  "policy_gap": "object or null - REQUIRED when failure_type='policy_gap'. Structure: { 'category': enum, 'specific_gap': string, 'customer_ask': string, 'blocker': string }",
 
-  // === FRICTION (flattened from friction object) ===
   "derailed_at": "integer or null (turn where call started failing; null if successful)",
   "clarifications": [
     {
-      "turn": "integer (turn number)",
+      "turn": "integer",
       "type": "enum: 'name' | 'phone' | 'intent' | 'repeat' | 'verify'",
       "cause": "enum: 'misheard' | 'unclear' | 'refused' | 'tech' | 'ok'",
       "note": "string (5-8 words, telegraph style)"
@@ -104,32 +76,39 @@ ANALYSIS_SCHEMA = """
   ],
   "corrections": [
     {
-      "turn": "integer (turn number)",
+      "turn": "integer",
       "severity": "enum: 'minor' | 'moderate' | 'major'",
       "note": "string (5-8 words, telegraph style)"
     }
   ],
   "loops": [
     {
-      "turns": "array of integers (turn numbers involved in this loop)",
+      "turns": "array of integers",
       "type": "enum: 'info_retry' | 'intent_retry' | 'deflection' | 'comprehension' | 'action_retry'",
-      "subject": "string (what is being looped on)",
+      "subject": "string",
       "note": "string (5-8 words, telegraph style)"
     }
   ],
 
-  // === INSIGHTS ===
   "summary": "string (1-2 sentence summary: what customer wanted, what happened, outcome)",
   "verbatim": "string or null (key quote capturing customer's core need/frustration)",
   "coaching": "string or null (what the agent should have done differently, actionable)",
 
-  // === FLAGS ===
-  "escalation_requested": "boolean (did customer ask for a human?)",
-  "repeat_caller": "boolean (customer mentioned prior calls, ongoing frustration)"
+  "repeat_caller": "boolean (customer mentioned prior calls, ongoing frustration)",
+
+  "actions": [
+    {
+      "action": "enum: 'account_lookup' | 'verification' | 'send_payment_link' | 'send_portal_link' | 'send_autopay_link' | 'send_rental_link' | 'send_clubhouse_link' | 'send_rci_link' | 'transfer' | 'other'",
+      "outcome": "enum: 'success' | 'failed' | 'retry' | 'unknown'",
+      "detail": "string (5-10 words, telegraph style)"
+    }
+  ],
+  "transfer_destination": "string or null ('concierge' | 'specific_department' | 'ivr' | 'unknown' | null if no transfer)",
+  "transfer_queue_detected": "boolean (true if transcript shows post-transfer queue content)"
 }
 """
 
-SYSTEM_PROMPT = """You are an expert call center quality analyst. Analyze this Vacatia AI voice agent call transcript and produce a focused JSON analysis using the v4.0 schema.
+SYSTEM_PROMPT = """You are an expert call center quality analyst. Analyze this Vacatia AI voice agent call transcript and produce a focused JSON analysis using the v5.0 schema.
 
 ## Context
 Vacatia is a timeshare management company. Their AI handles: RCI membership, timeshare deposits, reservations, payments, account verification.
@@ -146,120 +125,93 @@ Use these turn numbers EXACTLY when referencing specific turns.
 **intent**: The customer's primary request in a normalized phrase (3-8 words).
 - Start with an action verb when possible
 - Be specific but concise
-- Use consistent terminology (see examples)
 
 **intent_context**: The underlying reason or situation behind the intent (or null).
-- Captures WHY the customer needs this
-- Includes relevant background that explains the request
-- Helps understand root cause, not just surface request
 
-### Intent Examples (WHAT + WHY)
+**secondary_intent**: Additional request beyond main intent (or null).
+
+### Intent Examples
 
 | intent | intent_context |
 |--------|----------------|
-| "Log into Clubhouse portal" | "Forgot which email address is registered" |
-| "Log into Clubhouse portal" | "Registration link never arrived" |
 | "Check maintenance fee balance" | "Has not received invoice by mail as usual" |
-| "Check maintenance fee balance" | "Wants to verify amount before paying" |
 | "Make a payment" | "Received past-due notice" |
-| "Make a payment" | "Setting up recurring payments for first time" |
-| "Get reservation dates" | "Booking confirmation email was lost" |
-| "Get reservation dates" | "Planning travel and needs exact check-in time" |
+| "Log into Clubhouse portal" | "Registration link never arrived" |
 | "Speak to a representative" | "Agent could not resolve booking code issue" |
-| "Speak to a representative" | "Frustrated after multiple failed verification attempts" |
-| "Update contact information" | "Recently moved to new address" |
 | "Cancel reservation" | null |
 
-### Normalization Guidelines
+**DO**: "Check balance" not "find out how much I owe". Put the WHY in intent_context, not intent.
 
-**DO**: Use consistent verb phrases
-- "Check balance" not "find out how much I owe"
-- "Make a payment" not "pay my bill"
-- "Log into portal" not "access my account online"
-- "Get reservation dates" not "find out when my trip is"
+## CALL SCOPE — Could the AI handle this request?
 
-**DON'T**: Put the WHY in the intent field
-- BAD: "Check balance because invoice didn't arrive"
-- GOOD: intent="Check maintenance fee balance", intent_context="Invoice didn't arrive"
+Evaluate the customer's request(s) against the agent's capabilities. This is independent of what actually happened on the call.
 
-## DISPOSITION Classification (replaces outcome + call_disposition)
+**call_scope values:**
 
-**disposition**: Unified call outcome using this decision tree:
+- `in_scope` — ALL of the customer's requests fall within AI capabilities
+- `out_of_scope` — ALL requests require human judgment or systems the AI lacks
+- `mixed` — Multiple intents where at least one is in-scope and at least one is out-of-scope
+- `no_request` — Customer never articulated a specific request (hung up, silence, greeting-only)
 
-1. Did customer state a specific, actionable request?
-   - NO → `pre_intent` (greeting-only, ≤2 turns, hung up before stating need)
-
-2. Was call transferred to human agent?
-   - YES → `escalated`
-
-3. Could the agent handle this type of request? (See scope reference below)
-   - NO + customer redirected/informed → `out_of_scope_handled`
-   - NO + customer abandoned/gave up → `out_of_scope_failed`
-
-4. Did agent complete the requested action?
-   - NO → `in_scope_failed` (verification failed, system error, couldn't help)
-
-5. Did customer express explicit satisfaction? ("thank you", "that helps", "perfect", "great")
-   - YES → `in_scope_success`
-   - NO → `in_scope_partial` (completed but customer just said "okay" or hung up)
-
-**Scope Reference - IN-SCOPE (agent CAN handle):**
+**Scope Reference — IN-SCOPE (agent CAN handle):**
 - Info lookup: maintenance fees, balances, due dates, property info, payment history
 - Send links: Payment, Auto Pay, Account History, Rental Agreement, Clubhouse, RCI
 - Account verification via phone/name/state
 - Transfer to concierge (on-hours) or route to IVR callback (off-hours)
 
-**Scope Reference - OUT-OF-SCOPE (agent CANNOT handle):**
+**Scope Reference — OUT-OF-SCOPE (agent CANNOT handle):**
 - Process payments directly (only sends links)
 - Update contact info (email, phone, address)
 - Book/modify/cancel reservations
 - RCI exchanges, week banking/rollover
-- Live transfers when unavailable
+- Sell/transfer timeshare ownership
 - Complex issues: deceased owner, disputes, tax breakdown, international customers
+
+## CALL OUTCOME — What actually happened?
+
+**call_outcome values:**
+
+- `completed` — AI agent finished its task flow (looked up info, sent link, verified account, etc.)
+- `escalated` — Call was transferred to a human agent
+- `abandoned` — Customer disconnected or call ended without completion or transfer
+
+### escalation_trigger (REQUIRED when call_outcome = escalated, null otherwise)
+- `customer_requested` — Customer explicitly asked for a human/live agent/manager
+- `scope_limit` — AI recognized the request as beyond its capabilities and initiated transfer
+- `task_failure` — AI was attempting an in-scope task but hit an unrecoverable error and escalated
+- `policy_routing` — Business rules require human handling for this request type
+
+### abandon_stage (REQUIRED when call_outcome = abandoned, null otherwise)
+- `pre_greeting` — Disconnected before or during AI greeting
+- `pre_intent` — Disconnected after greeting but before stating a request
+- `mid_task` — Disconnected while AI was working on request
+- `post_delivery` — Disconnected after AI delivered info/action but before explicit confirmation
+
+### resolution_confirmed (only when call_outcome = completed, null otherwise)
+- true: Customer EXPLICITLY acknowledged completion ("got it", "I see the link", "thanks that worked")
+- false: Agent took action but customer did NOT explicitly confirm receipt/completion
 
 ## SENTIMENT Tracking
 
 **sentiment_start**: Customer's mood at conversation start
 **sentiment_end**: Customer's mood at conversation end
 
-Values:
-- `positive`: Happy, enthusiastic, grateful
-- `neutral`: Calm, matter-of-fact, businesslike
-- `frustrated`: Annoyed, impatient, exasperated
-- `angry`: Explicitly upset, hostile, demanding
+Values: `positive` | `neutral` | `frustrated` | `angry`
+End-only value: `satisfied` (explicitly pleased with outcome)
 
-End sentiment for successful calls:
-- `satisfied`: Explicitly pleased with outcome ("thank you", "perfect", "great")
-- Use `neutral` if customer just acknowledged without emotion
+## ended_by
 
-## ended_by (simplified from ended_reason)
-
-Map the metadata `ended_reason` to these simplified values:
-- `assistant-ended-call` → `agent`
-- `user-ended-call` → `customer`
-- `error` or technical issues → `error`
-- Otherwise → `unknown`
+Map the metadata `ended_reason` to: `agent` | `customer` | `error` | `unknown`
 
 ## Scoring Guidelines (1-5 scale)
 
-**effectiveness** - Did the agent understand and respond appropriately?
-- 5: Perfect understanding, ideal responses
-- 3: Adequate, some minor misses
-- 1: Frequent misunderstandings, poor responses
-
-**quality** - Flow, tone, clarity combined
-- 5: Natural, professional, clear
-- 3: Functional but robotic or slightly awkward
-- 1: Stilted, confusing, or inappropriate tone
-
-**effort** - How hard did the customer work? (1=best)
-- 1: Effortless, smooth experience
-- 3: Some repetition or confusion to work through
-- 5: Frustrating, excessive effort required
+**effectiveness** — Did the agent understand and respond appropriately? (5=perfect, 1=poor)
+**quality** — Flow, tone, clarity combined (5=natural, 1=stilted)
+**effort** — How hard did the customer work? (1=effortless, 5=painful)
 
 ## FAILURE Classification
 
-**failure_type** categories (null for successful calls):
+**failure_type** (null when call_outcome = completed with no issues):
 - `nlu_miss`: Agent misunderstood what customer said/wanted
 - `wrong_action`: Agent understood but took wrong action
 - `policy_gap`: Agent couldn't help due to business rules/limitations
@@ -267,83 +219,73 @@ Map the metadata `ended_reason` to these simplified values:
 - `tech_issue`: System errors, call quality problems
 - `other`: Anything else
 
-**failure_critical**: Set to true ONLY if:
-- Agent provided incorrect information
-- Agent promised something impossible
-- Compliance/security issue occurred
-- Customer could be harmed by following agent's guidance
-
 **policy_gap** (REQUIRED when failure_type='policy_gap'):
 - `category`: capability_limit | data_access | auth_restriction | business_rule | integration_missing
 - `specific_gap`: What exactly couldn't be done
 - `customer_ask`: What the customer wanted
 - `blocker`: Why it couldn't be fulfilled
 
-## FRICTION Tracking (flattened - no more nested object)
+## FRICTION Tracking
 
-### turns
-Count total conversation turns (count user messages).
+**derailed_at**: Turn where call started failing. Null if successful.
 
-### derailed_at
-Turn where call started failing. Null for successful calls.
+**clarifications**: Every time agent asks customer to clarify. `{turn, type, cause, note}`
+Types: name | phone | intent | repeat | verify
+Causes: misheard | unclear | refused | tech | ok
 
-### clarifications
-Track EVERY time agent asks customer to clarify. Format: `{turn, type, cause, note}`
+**corrections**: When customer corrects agent. `{turn, severity, note}`
+Severities: minor | moderate | major
 
-**Types**: name | phone | intent | repeat | verify
-**Causes**: misheard | unclear | refused | tech | ok
+**loops**: Agent friction loops (NOT benign repetition). `{turns, type, subject, note}`
+Types: info_retry | intent_retry | deflection | comprehension | action_retry
 
-### corrections
-Track when CUSTOMER corrects agent's understanding. Format: `{turn, severity, note}`
+**Note style**: Telegraph, 5-8 words max. "re-spelled after mishearing", NOT "The agent asked the customer to spell their name again"
 
-**Severities**: minor | moderate | major
+## INSIGHTS
 
-### loops
-Detect agent friction loops (NOT benign repetition). Format: `{turns, type, subject, note}`
+**summary**: 1-2 sentences: what customer wanted, what happened, outcome.
+**verbatim**: Direct quote capturing customer's emotional state or core need.
+**coaching**: What agent should have done differently. Null if agent performed well.
 
-**Types**: info_retry | intent_retry | deflection | comprehension | action_retry
+## ACTIONS
 
-**subject values by type**:
-- info_retry: name, phone, address, zip, state, account, email
-- intent_retry: fee_info, balance, payment_link, autopay_link, history_link, rental_link, clubhouse_link, rci_link, transfer, callback
-- deflection: anything_else, other_help, clarify_request
-- comprehension: unclear_speech, background_noise, connection
-- action_retry: verification, link_send, lookup, transfer_attempt
+Track EVERY distinct tool/action the agent attempted:
+- account_lookup, verification, send_payment_link, send_portal_link, send_autopay_link, send_rental_link, send_clubhouse_link, send_rci_link, transfer, other
+- Outcome: success | failed | retry | unknown
+- Detail: 5-10 words telegraph style
+- List each attempt separately if same action tried multiple times.
 
-### Note Style (CRITICAL)
-Use **telegraph style** (5-8 words max):
-- GOOD: "re-spelled after mishearing"
-- GOOD: "asked 3x despite refusal"
-- BAD: "The agent asked the customer to spell their name again"
-
-## INSIGHTS Fields
-
-**summary**: 1-2 sentences covering: what customer wanted, what happened, outcome.
-
-**verbatim**: Direct quote (1-2 sentences) capturing customer's emotional state or core need.
-
-**coaching**: What the agent should have done differently. Be specific and actionable. Null if agent performed well.
+**transfer_destination**: concierge | specific_department | ivr | unknown | null
+**transfer_queue_detected**: true if post-transfer queue evidence in transcript
 
 ## VALIDATION RULES (CRITICAL)
 
-1. **failure_type consistency**:
-   - If disposition is in_scope_failed, out_of_scope_failed, or escalated → failure_type SHOULD be populated
-   - If disposition is in_scope_success → failure_type MUST be null
+1. **call_scope + call_outcome independence**: Evaluate scope BEFORE looking at outcome. A call can be in_scope + escalated, or out_of_scope + abandoned.
 
-2. **policy_gap required**:
-   - If failure_type is "policy_gap" → policy_gap MUST be a complete object with all 4 fields
+2. **Conditional field consistency**:
+   - call_outcome = escalated → escalation_trigger MUST be non-null
+   - call_outcome = abandoned → abandon_stage MUST be non-null
+   - call_outcome = completed → resolution_confirmed MUST be true or false (not null)
+   - call_outcome != escalated → escalation_trigger MUST be null
+   - call_outcome != abandoned → abandon_stage MUST be null
+   - call_outcome != completed → resolution_confirmed MUST be null
 
-3. **coaching conditional**:
-   - If failure_recoverable is true → coaching SHOULD be populated with actionable guidance
+3. **Invalid combinations**:
+   - no_request + completed is INVALID (can't complete what was never requested)
+   - failure_type must be null when call_outcome = completed with no issues
 
-4. **sentiment_end alignment**:
-   - If disposition is in_scope_success → sentiment_end should typically be "satisfied" or "neutral"
-   - If disposition is in_scope_failed → sentiment_end should typically be "frustrated" or "angry"
+4. **failure_type consistency**:
+   - When call_outcome = escalated with escalation_trigger = task_failure → failure_type SHOULD be populated
+   - When call_outcome = completed successfully → failure_type MUST be null
+
+5. **policy_gap required**: If failure_type = policy_gap → policy_gap object MUST have all 4 fields
+
+6. **sentiment alignment**:
+   - call_outcome = completed + resolution_confirmed = true → sentiment_end typically "satisfied" or "neutral"
 
 ## Output Requirements
 - Return ONLY valid JSON (no markdown code blocks)
 - Be concise and actionable
-- Focus on what matters for improving the agent
 - Ensure all validation rules are followed
 - Use the EXACT turn numbers from the preprocessed transcript
 """
@@ -470,11 +412,7 @@ def map_ended_reason_to_ended_by(ended_reason: str | None) -> str:
 def analyze_transcript(transcript_path: Path, model_name: str = "gemini-3-flash-preview", client: genai.Client = None) -> dict:
     """Analyze a single transcript using the LLM.
 
-    v4.0: Complete schema redesign with intent, sentiment, flattened friction.
-    - New fields: intent, intent_context, secondary_intent, sentiment_start, sentiment_end
-    - Renamed fields: outcome→disposition, resolution_type→resolution, etc.
-    - Flattened: friction.* → top-level turns, derailed_at, clarifications, corrections, loops
-    - Simplified: ended_reason → ended_by (agent/customer/error/unknown)
+    v5.0: Orthogonal disposition model (call_scope × call_outcome).
     """
     # Preprocess transcript for deterministic turn numbers
     preprocessed = preprocess_transcript(transcript_path)
@@ -523,21 +461,37 @@ def analyze_transcript(transcript_path: Path, model_name: str = "gemini-3-flash-
 
     analysis = extract_json_from_response(response.text)
     analysis["call_id"] = call_id
-    analysis["schema_version"] = "v4.0"
+    analysis["schema_version"] = "v5.0"
 
-    # v4.0: Map ended_reason from preprocessing to simplified ended_by
+    # Inject duration_seconds from raw transcript (deterministic, not LLM-extracted)
+    raw_duration = preprocessed.get("metadata", {}).get("duration")
+    analysis["duration_seconds"] = round(raw_duration, 1) if raw_duration is not None else None
+
+    # Map ended_reason from preprocessing to simplified ended_by
     ended_reason = preprocessed.get("metadata", {}).get("ended_reason")
     analysis["ended_by"] = map_ended_reason_to_ended_by(ended_reason)
 
-    # v4.0: Ensure arrays exist even if empty (for consistent parsing downstream)
-    if "clarifications" not in analysis:
-        analysis["clarifications"] = []
-    if "corrections" not in analysis:
-        analysis["corrections"] = []
-    if "loops" not in analysis:
-        analysis["loops"] = []
-    if "steps" not in analysis:
-        analysis["steps"] = []
+    # Ensure arrays exist even if empty
+    for arr_field in ("clarifications", "corrections", "loops", "steps", "actions"):
+        if arr_field not in analysis:
+            analysis[arr_field] = []
+    if "transfer_queue_detected" not in analysis:
+        analysis["transfer_queue_detected"] = False
+
+    # v5.0: Enforce conditional field consistency based on call_outcome
+    outcome = analysis.get("call_outcome")
+    if outcome != "escalated":
+        analysis["escalation_trigger"] = None
+    if outcome != "abandoned":
+        analysis["abandon_stage"] = None
+    if outcome != "completed":
+        analysis["resolution_confirmed"] = None
+
+    # Clean up any deprecated fields the LLM might still produce
+    for old_field in ("disposition", "escalation_initiator", "pre_intent_subtype",
+                      "abandoned_path_viable", "escalation_requested",
+                      "failure_recoverable", "failure_critical"):
+        analysis.pop(old_field, None)
 
     return analysis
 
@@ -554,7 +508,7 @@ def save_analysis(analysis: dict, output_dir: Path) -> Path:
 
 
 def main():
-    parser = argparse.ArgumentParser(description="Analyze call transcript (v4.0 - Schema redesign with intent & sentiment)")
+    parser = argparse.ArgumentParser(description="Analyze call transcript (v5.0 - Orthogonal scope × outcome model)")
     parser.add_argument("transcript", type=Path, help="Path to transcript file")
     parser.add_argument("-o", "--output-dir", type=Path,
                         default=Path(__file__).parent.parent / "analyses",

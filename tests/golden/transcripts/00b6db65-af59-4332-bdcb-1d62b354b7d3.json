@@ -1,0 +1,177 @@
+{
+  "agent_id": "IdNSnJmoukxviqoTIWOZ",
+  "duration": 205.571003,
+  "ended_reason": "customer-ended-call",
+  "messages": [
+    {
+      "role": "assistant",
+      "timestamp": 1769710620.8577313,
+      "content": "Hi, thank you for calling Vacation Village Resorts. This is Jamie, a virtual agent on a recorded line. How can I help you today?"
+    },
+    {
+      "role": "user",
+      "timestamp": 1769710632.123186,
+      "content": "I need to make a payment."
+    },
+    {
+      "role": "assistant",
+      "timestamp": 1769710634.3373764,
+      "content": "Let me check which payment you need to make. Is this for your annual maintenance fees or your mortgage?"
+    },
+    {
+      "role": "assistant",
+      "timestamp": 1769710634.3373764,
+      "content": "Alright, who do I have the pleasure of speaking with?"
+    },
+    {
+      "role": "user",
+      "timestamp": 1769710644.1490967,
+      "content": "No. Willis Clifton the second."
+    },
+    {
+      "role": "assistant",
+      "timestamp": 1769710649.4747849,
+      "content": "Okay Willis Clifton the second, can you share"
+    },
+    {
+      "role": "assistant",
+      "timestamp": 1769710649.4747849,
+      "content": "the phone number you have on your contract?"
+    },
+    {
+      "role": "user",
+      "timestamp": 1769710656.5833564,
+      "content": "I don't know what number I have on my contract."
+    },
+    {
+      "role": "assistant",
+      "timestamp": 1769710661.1441536,
+      "content": "No problem, I can look up your record using your contract ID"
+    },
+    {
+      "role": "assistant",
+      "timestamp": 1769710661.1441536,
+      "content": "instead. Can you provide your contract ID?"
+    },
+    {
+      "role": "user",
+      "timestamp": 1769710669.7185645,
+      "content": "I've got a vacation ID."
+    },
+    {
+      "role": "user",
+      "timestamp": 1769710672.8997607,
+      "content": "An account number,"
+    },
+    {
+      "role": "user",
+      "timestamp": 1769710676.1010613,
+      "content": "Which one do you want?"
+    },
+    {
+      "role": "assistant",
+      "timestamp": 1769710679.1827512,
+      "content": "If you have your contract ID handy, that would be perfect."
+    },
+    {
+      "role": "assistant",
+      "timestamp": 1769710679.1827512,
+      "content": "Can you share that with me?"
+    },
+    {
+      "role": "user",
+      "timestamp": 1769710685.671481,
+      "content": "Hello?"
+    },
+    {
+      "role": "user",
+      "timestamp": 1769710686.5965197,
+      "content": "I don't know which one is a contract ID. Could you help me with that?"
+    },
+    {
+      "role": "assistant",
+      "timestamp": 1769710694.3987994,
+      "content": "If you have an account number or vacation"
+    },
+    {
+      "role": "assistant",
+      "timestamp": 1769710694.3987994,
+      "content": "ID, you can share either one and I can check for you."
+    },
+    {
+      "role": "user",
+      "timestamp": 1769710703.0266304,
+      "content": "Okay. Hold on just a second."
+    },
+    {
+      "role": "assistant",
+      "timestamp": 1769710706.7571385,
+      "content": "Sure, take your time."
+    },
+    {
+      "role": "assistant",
+      "timestamp": 1769710725.964785,
+      "content": "Are you"
+    },
+    {
+      "role": "assistant",
+      "timestamp": 1769710725.964785,
+      "content": "still there?"
+    },
+    {
+      "role": "user",
+      "timestamp": 1769710729.736668,
+      "content": "Yes."
+    },
+    {
+      "role": "assistant",
+      "timestamp": 1769710731.6193798,
+      "content": "Alright, whenever you're ready,"
+    },
+    {
+      "role": "user",
+      "timestamp": 1769710732.9484951,
+      "content": "I just put the account number in there."
+    },
+    {
+      "role": "user",
+      "timestamp": 1769710736.0405133,
+      "content": "You have to state It's"
+    },
+    {
+      "role": "user",
+      "timestamp": 1769710739.096913,
+      "content": "eight seven"
+    },
+    {
+      "role": "user",
+      "timestamp": 1769710740.0015461,
+      "content": "two one zero zero"
+    },
+    {
+      "role": "user",
+      "timestamp": 1769710744.4143376,
+      "content": "two seven"
+    },
+    {
+      "role": "user",
+      "timestamp": 1769710746.6697345,
+      "content": "five two one o."
+    },
+    {
+      "role": "assistant",
+      "timestamp": 1769710748.7611184,
+      "content": "Just a sec while I pull that up for you."
+    },
+    {
+      "role": "assistant",
+      "timestamp": 1769710748.7611184,
+      "content": "There was an issue"
+    },
+    {
+      "role": "assistant",
+      "timestamp": 1769710752.600407,
+      "content": "verifying your account, I will now be transferring you to our concierge department"
+    }
+  ]
+}

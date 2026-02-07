@@ -1,0 +1,51 @@
+{
+  "call_id": "0a195db9-a53b-4f0e-9f10-c2545a0a5528",
+  "schema_version": "v5.0",
+  "turns": 4,
+  "ended_by": "customer",
+  "intent": "Make a maintenance payment",
+  "intent_context": "Wants to pay over the phone",
+  "secondary_intent": null,
+  "call_scope": "out_of_scope",
+  "call_outcome": "escalated",
+  "resolution": "transferred to concierge",
+  "steps": [
+    "Agent offered payment link",
+    "Customer requested phone payment",
+    "Agent initiated transfer to concierge"
+  ],
+  "escalation_trigger": "scope_limit",
+  "abandon_stage": null,
+  "resolution_confirmed": null,
+  "effectiveness": 5,
+  "quality": 4,
+  "effort": 2,
+  "sentiment_start": "neutral",
+  "sentiment_end": "neutral",
+  "failure_type": null,
+  "failure_detail": null,
+  "policy_gap": null,
+  "derailed_at": null,
+  "clarifications": [],
+  "corrections": [],
+  "loops": [],
+  "summary": "The customer called to make a maintenance fee payment over the phone. Since the AI can only send payment links, it correctly identified the scope limit and transferred the caller to the concierge department.",
+  "verbatim": "I'm gonna call and make it over the phone payment.",
+  "coaching": null,
+  "repeat_caller": false,
+  "actions": [
+    {
+      "action": "send_payment_link",
+      "outcome": "retry",
+      "detail": "Offered link; customer refused for phone"
+    },
+    {
+      "action": "transfer",
+      "outcome": "success",
+      "detail": "Transferred to concierge for phone payment"
+    }
+  ],
+  "transfer_destination": "concierge",
+  "transfer_queue_detected": true,
+  "duration_seconds": 1710.0
+}

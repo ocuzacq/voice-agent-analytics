@@ -1,0 +1,207 @@
+{
+  "agent_id": "IdNSnJmoukxviqoTIWOZ",
+  "duration": 297.08978,
+  "ended_reason": "assistant-ended-call",
+  "messages": [
+    {
+      "role": "assistant",
+      "timestamp": 1768667387.395463,
+      "content": "Hi, thank you for calling Vacation Village Resorts. This is Jamie, a virtual agent on a recorded line. How can I help you today?"
+    },
+    {
+      "role": "user",
+      "timestamp": 1768667398.413003,
+      "content": "Yeah, Jamie. I wanna know, do you have anything in Virginia and Nat Mac? And nugget?"
+    },
+    {
+      "role": "assistant",
+      "timestamp": 1768667405.254508,
+      "content": "So you're asking about resorts in Virginia and also mentioned Nat Mac and Nugget. Who do I have the pleasure of speaking with today?"
+    },
+    {
+      "role": "user",
+      "timestamp": 1768667416.5830827,
+      "content": "Eight s Nichols, n I c h o l s."
+    },
+    {
+      "role": "assistant",
+      "timestamp": 1768667422.9504926,
+      "content": "Got it, Nichols. Can I get the phone number you have on your contract?"
+    },
+    {
+      "role": "user",
+      "timestamp": 1768667429.5132964,
+      "content": "Four four three two five five zero seven six o."
+    },
+    {
+      "role": "assistant",
+      "timestamp": 1768667434.0294783,
+      "content": "Just a moment while I look that up for you."
+    },
+    {
+      "role": "assistant",
+      "timestamp": 1768667438.991851,
+      "content": "Let me confirm, you said your last name is Nichols. Can you please spell your first name for me as well?"
+    },
+    {
+      "role": "user",
+      "timestamp": 1768667444.008317,
+      "content": "And last week,"
+    },
+    {
+      "role": "user",
+      "timestamp": 1768667447.366509,
+      "content": "First name Ada, a d a."
+    },
+    {
+      "role": "assistant",
+      "timestamp": 1768667449.9783514,
+      "content": "Alright, so I have your name as Ada Nichols. Can you tell me which state you currently reside in?"
+    },
+    {
+      "role": "user",
+      "timestamp": 1768667460.751579,
+      "content": "Baltimore, Maryland."
+    },
+    {
+      "role": "assistant",
+      "timestamp": 1768667462.9312284,
+      "content": "Thanks for confirming your information. Go ahead and let me know what you need help with today."
+    },
+    {
+      "role": "user",
+      "timestamp": 1768667470.3533757,
+      "content": "I wanna know, do you have anything in Virginia?"
+    },
+    {
+      "role": "assistant",
+      "timestamp": 1768667478.098894,
+      "content": "We do"
+    },
+    {
+      "role": "user",
+      "timestamp": 1768667478.3647103,
+      "content": "A friend of mine wants to go to Mass Nugget."
+    },
+    {
+      "role": "assistant",
+      "timestamp": 1768667482.6927922,
+      "content": "Just to clarify, are you asking if we have any resorts near Massanutten in Virginia, or are you looking for information about a different location?"
+    },
+    {
+      "role": "user",
+      "timestamp": 1768667478.3647103,
+      "content": "Yes."
+    },
+    {
+      "role": "user",
+      "timestamp": 1768667495.3466008,
+      "content": "Do you have any resource, Bob?"
+    },
+    {
+      "role": "user",
+      "timestamp": 1768667497.5909028,
+      "content": "Mass Nugget in Virginia?"
+    },
+    {
+      "role": "assistant",
+      "timestamp": 1768667501.443442,
+      "content": "We don't have a resort called Mass Nugget, but in Virginia we do have Vacation Village at Williamsburg, The Colonies at Williamsburg, and Patriots Inn. Would you like information about any of these resorts?"
+    },
+    {
+      "role": "user",
+      "timestamp": 1768667518.4775937,
+      "content": "So you do have where I can go to Mass Nugget"
+    },
+    {
+      "role": "assistant",
+      "timestamp": 1768667524.654596,
+      "content": "We do not have a resort at Massanutten, but we do have several properties in Virginia, specifically in Williamsburg. If you are looking for a stay at Massanutten, you may want to check directly with their resort or through RCI for exchange options. Would you like details about our Virginia resorts or guidance on how to explore exchange options?"
+    },
+    {
+      "role": "user",
+      "timestamp": 1768667550.299385,
+      "content": "Okay."
+    },
+    {
+      "role": "user",
+      "timestamp": 1768667552.3244936,
+      "content": "No. How far are you from? Mass Nugget?"
+    },
+    {
+      "role": "assistant",
+      "timestamp": 1768667555.856204,
+      "content": "Vacation Village at"
+    },
+    {
+      "role": "user",
+      "timestamp": 1768667557.0782812,
+      "content": "If I decided to take"
+    },
+    {
+      "role": "user",
+      "timestamp": 1768667559.9669678,
+      "content": "yes."
+    },
+    {
+      "role": "user",
+      "timestamp": 1768667561.4530687,
+      "content": "Go ahead."
+    },
+    {
+      "role": "assistant",
+      "timestamp": 1768667563.2884166,
+      "content": "Vacation Village at Williamsburg, The Colonies at Williamsburg, and Patriots Inn are all located in Williamsburg, Virginia. Massanutten Resort is in McGaheysville, Virginia, which is about two hours and fifteen minutes by car from Williamsburg. Would you like more information about our Williamsburg resorts?"
+    },
+    {
+      "role": "user",
+      "timestamp": 1768667588.3584085,
+      "content": "No."
+    },
+    {
+      "role": "user",
+      "timestamp": 1768667591.164001,
+      "content": "How can I"
+    },
+    {
+      "role": "user",
+      "timestamp": 1768667595.1676164,
+      "content": "maybe trade off with one of RCI or something that's right there?"
+    },
+    {
+      "role": "assistant",
+      "timestamp": 1768667602.2319598,
+      "content": "I can't assist directly with RCI trading or deposits, but you can learn more about how to trade or deposit your week for a stay at Massanutten through the RCI website. Would you like me to send you a link to the RCI help page via text message?"
+    },
+    {
+      "role": "user",
+      "timestamp": 1768667621.8319063,
+      "content": "Is there anyone that I can talk to?"
+    },
+    {
+      "role": "assistant",
+      "timestamp": 1768667627.4820101,
+      "content": "I can't connect you directly to RCI support, but you can find all the details about trading, depositing, and banking your weeks on the RCI website. Would you like a link to their help page sent to your phone?"
+    },
+    {
+      "role": "user",
+      "timestamp": 1768667644.755642,
+      "content": "Yes."
+    },
+    {
+      "role": "assistant",
+      "timestamp": 1768667647.7629507,
+      "content": "Alright, I'll send you the RCI help page link via text message now. I've sent a link to the RCI help page to your phone. Is there anything else I can assist you with today?"
+    },
+    {
+      "role": "user",
+      "timestamp": 1768667664.5093727,
+      "content": "No. Thank you. But I can do a trade with them."
+    },
+    {
+      "role": "assistant",
+      "timestamp": 1768667667.3750908,
+      "content": "You can definitely explore trading your week with RCI for a stay at Massanutten. If you have any other questions in the future, feel free to reach out. Have a wonderful day."
+    }
+  ]
+}

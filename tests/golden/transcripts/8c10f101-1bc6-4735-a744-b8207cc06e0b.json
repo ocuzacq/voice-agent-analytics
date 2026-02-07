@@ -1,0 +1,382 @@
+{
+  "agent_id": "IdNSnJmoukxviqoTIWOZ",
+  "duration": 409.291799,
+  "ended_reason": "assistant-ended-call",
+  "messages": [
+    {
+      "role": "assistant",
+      "timestamp": 1769533844.8254628,
+      "content": "Hi, thank you for calling Vacation Village Resorts. This is Jamie, a virtual agent on a recorded line. How can I help you today?"
+    },
+    {
+      "role": "user",
+      "timestamp": 1769533856.001651,
+      "content": "So I have to complete my re re in Vacatia Village site website."
+    },
+    {
+      "role": "assistant",
+      "timestamp": 1769533864.0854464,
+      "content": "Just confirming, are you looking to register a new account on the Vacation Village website? Just to clarify, are you trying to register a new account on the Vacation Village website or are you looking to reset your password?"
+    },
+    {
+      "role": "user",
+      "timestamp": 1769533879.6354098,
+      "content": "What is more convenient? And"
+    },
+    {
+      "role": "user",
+      "timestamp": 1769533880.5835927,
+      "content": "trying to create a new one."
+    },
+    {
+      "role": "user",
+      "timestamp": 1769533883.8319879,
+      "content": "Because"
+    },
+    {
+      "role": "user",
+      "timestamp": 1769533887.9076874,
+      "content": "it says a message like, your ownership type requires special handling."
+    },
+    {
+      "role": "user",
+      "timestamp": 1769533890.7087667,
+      "content": "Please contact this number to complete your registration."
+    },
+    {
+      "role": "assistant",
+      "timestamp": 1769533898.429188,
+      "content": "Alright, I can help you with your registration. Can I get the phone number you have on your contract?"
+    },
+    {
+      "role": "user",
+      "timestamp": 1769533907.2481587,
+      "content": "Okay. Let me take a look. A little quick. Just give me a minute."
+    },
+    {
+      "role": "assistant",
+      "timestamp": 1769533914.8899746,
+      "content": "No problem, take your time. Whenever you're ready, just let me know your"
+    },
+    {
+      "role": "assistant",
+      "timestamp": 1769533914.8899746,
+      "content": "phone number."
+    },
+    {
+      "role": "user",
+      "timestamp": 1769533927.3071344,
+      "content": "Okay. So it's a Brazilian phone number."
+    },
+    {
+      "role": "assistant",
+      "timestamp": 1769533930.548638,
+      "content": "That's fine, can you share the full Brazilian phone number you have on your contract?"
+    },
+    {
+      "role": "user",
+      "timestamp": 1769533938.4405398,
+      "content": "Yes. So it's plus five five then twenty seven then"
+    },
+    {
+      "role": "user",
+      "timestamp": 1769533944.3635395,
+      "content": "nine nine nine,"
+    },
+    {
+      "role": "user",
+      "timestamp": 1769533946.4782896,
+      "content": "fifty two"
+    },
+    {
+      "role": "user",
+      "timestamp": 1769533949.177422,
+      "content": "seventy six"
+    },
+    {
+      "role": "user",
+      "timestamp": 1769533950.12148,
+      "content": "eight four."
+    },
+    {
+      "role": "assistant",
+      "timestamp": 1769533953.363178,
+      "content": "One moment please, let me check that for you."
+    },
+    {
+      "role": "user",
+      "timestamp": 1769533958.5371256,
+      "content": "Okay. Thanks."
+    },
+    {
+      "role": "assistant",
+      "timestamp": 1769533960.6981704,
+      "content": "One moment please, let me check that for you."
+    },
+    {
+      "role": "assistant",
+      "timestamp": 1769533965.4173703,
+      "content": "I could not find your record using that phone number. Would you be able to provide your contract ID instead?"
+    },
+    {
+      "role": "user",
+      "timestamp": 1769533973.998556,
+      "content": "Okay. Give me another minute."
+    },
+    {
+      "role": "assistant",
+      "timestamp": 1769533978.879444,
+      "content": "Sure, take your time. Let me know when you have your contract"
+    },
+    {
+      "role": "assistant",
+      "timestamp": 1769533978.879444,
+      "content": "ID ready."
+    },
+    {
+      "role": "user",
+      "timestamp": 1769534000.7757595,
+      "content": "So just contract ID is the number of the contract."
+    },
+    {
+      "role": "assistant",
+      "timestamp": 1769534006.182296,
+      "content": "Yes, that's right. The contract ID is the number listed on your ownership documents or contract paperwork."
+    },
+    {
+      "role": "assistant",
+      "timestamp": 1769534006.182296,
+      "content": "Could you share that number with me?"
+    },
+    {
+      "role": "user",
+      "timestamp": 1769534015.4112234,
+      "content": "Okay. Mhmm."
+    },
+    {
+      "role": "user",
+      "timestamp": 1769534017.395442,
+      "content": "Yes. It's three one zero eight"
+    },
+    {
+      "role": "user",
+      "timestamp": 1769534023.1851172,
+      "content": "zero five four."
+    },
+    {
+      "role": "assistant",
+      "timestamp": 1769534026.5247107,
+      "content": "Alright, let me pull up your record real quick."
+    },
+    {
+      "role": "assistant",
+      "timestamp": 1769534030.044075,
+      "content": "Alright, I was able to pull up a record using that contract ID. Can"
+    },
+    {
+      "role": "user",
+      "timestamp": 1769534032.1080291,
+      "content": "Sure."
+    },
+    {
+      "role": "assistant",
+      "timestamp": 1769534034.3266857,
+      "content": "Just a sec, let me check your registration options for that contract. Can you tell me your first and last"
+    },
+    {
+      "role": "assistant",
+      "timestamp": 1769534039.2870235,
+      "content": "name as it appears on your contract?"
+    },
+    {
+      "role": "user",
+      "timestamp": 1769534040.83188,
+      "content": "Okay."
+    },
+    {
+      "role": "assistant",
+      "timestamp": 1769534044.5350156,
+      "content": "Go ahead and share your first and last name for verification?"
+    },
+    {
+      "role": "user",
+      "timestamp": 1769534050.9678743,
+      "content": "My name"
+    },
+    {
+      "role": "assistant",
+      "timestamp": 1769534054.932771,
+      "content": "Whenever you're ready, please tell me your first and last name as it appears on your contract?"
+    },
+    {
+      "role": "user",
+      "timestamp": 1769534062.351823,
+      "content": "Okay. So my name is Vinicius Barboza."
+    },
+    {
+      "role": "assistant",
+      "timestamp": 1769534068.7635336,
+      "content": "Let me confirm, can you spell your first and last name for me?"
+    },
+    {
+      "role": "user",
+      "timestamp": 1769534075.0087717,
+      "content": "K. So v I n I c I u s and then my last name, b a r b o s a."
+    },
+    {
+      "role": "assistant",
+      "timestamp": 1769534088.252636,
+      "content": "Thanks for spelling that out. The name I have on file for this contract is different. Can you confirm the exact first and last name as it appears on your contract, spelling it out one more time?"
+    },
+    {
+      "role": "user",
+      "timestamp": 1769534099.6975923,
+      "content": "Okay. So I have three people in the contract."
+    },
+    {
+      "role": "user",
+      "timestamp": 1769534104.664132,
+      "content": "Me and my parents. So which one do you want?"
+    },
+    {
+      "role": "assistant",
+      "timestamp": 1769534106.8607304,
+      "content": "I can't share the names on the contract for privacy reasons. Can you tell me the exact first and last name of any primary owner listed"
+    },
+    {
+      "role": "assistant",
+      "timestamp": 1769534106.8607304,
+      "content": "on your contract, spelling it out?"
+    },
+    {
+      "role": "user",
+      "timestamp": 1769534117.597711,
+      "content": "Okay. So g a b r I e l a The first name, Gabriel, and then the last name, b a r b o s a."
+    },
+    {
+      "role": "user",
+      "timestamp": 1769534132.081905,
+      "content": "Bahaboz."
+    },
+    {
+      "role": "assistant",
+      "timestamp": 1769534134.3893347,
+      "content": "Got it. Can you also tell me the state of residence listed on your contract?"
+    },
+    {
+      "role": "user",
+      "timestamp": 1769534141.9899466,
+      "content": "Oh, yeah. It's speed to sound Brazil."
+    },
+    {
+      "role": "assistant",
+      "timestamp": 1769534146.5942364,
+      "content": "Alright, your information matches our records for this contract. Go ahead and let me know what you need help with today."
+    },
+    {
+      "role": "user",
+      "timestamp": 1769534157.060888,
+      "content": "Sorry. Can you repeat, please?"
+    },
+    {
+      "role": "assistant",
+      "timestamp": 1769534159.5744524,
+      "content": "Sure, I just confirmed your information matches our records for this contract. What do you need help with today?"
+    },
+    {
+      "role": "user",
+      "timestamp": 1769534166.1691616,
+      "content": "Perfect."
+    },
+    {
+      "role": "user",
+      "timestamp": 1769534168.3261745,
+      "content": "So"
+    },
+    {
+      "role": "user",
+      "timestamp": 1769534175.714507,
+      "content": "I have to log in in Vacatia, the new website."
+    },
+    {
+      "role": "assistant",
+      "timestamp": 1769534177.934966,
+      "content": "You mentioned you need to log in to the new Vacatia website. Would you like me to send you a registration link for Clubhouse"
+    },
+    {
+      "role": "assistant",
+      "timestamp": 1769534177.934966,
+      "content": "so you can create a new account?"
+    },
+    {
+      "role": "user",
+      "timestamp": 1769534175.714507,
+      "content": "Yes."
+    },
+    {
+      "role": "user",
+      "timestamp": 1769534188.6749618,
+      "content": "Oh, yeah. It would be perfect."
+    },
+    {
+      "role": "assistant",
+      "timestamp": 1769534190.656374,
+      "content": "The email I have on file is gabicolli@yahoo.com.br and the phone number is five five two seven nine nine nine five two seven six eight four."
+    },
+    {
+      "role": "assistant",
+      "timestamp": 1769534190.656374,
+      "content": "Are these correct?"
+    },
+    {
+      "role": "user",
+      "timestamp": 1769534206.201583,
+      "content": "Right."
+    },
+    {
+      "role": "assistant",
+      "timestamp": 1769534209.53566,
+      "content": "Great, working on that now."
+    },
+    {
+      "role": "user",
+      "timestamp": 1769534216.0322192,
+      "content": "You can do the email."
+    },
+    {
+      "role": "assistant",
+      "timestamp": 1769534218.7803912,
+      "content": "Sending your registration link now."
+    },
+    {
+      "role": "user",
+      "timestamp": 1769534225.4477901,
+      "content": "Okay. Perfect. And then since I have it, I can create a new account on the vacation."
+    },
+    {
+      "role": "assistant",
+      "timestamp": 1769534231.4689171,
+      "content": "Yes, once you receive the registration link in your email, you can use it to create a new account on the Vacation Village Is there anything else I can website. help you with today?"
+    },
+    {
+      "role": "user",
+      "timestamp": 1769534225.4477901,
+      "content": "Okay."
+    },
+    {
+      "role": "user",
+      "timestamp": 1769534244.3419614,
+      "content": "No. That's all. Thank"
+    },
+    {
+      "role": "user",
+      "timestamp": 1769534245.1266348,
+      "content": "so much."
+    },
+    {
+      "role": "assistant",
+      "timestamp": 1769534247.6865158,
+      "content": "Alright, you\u2019re all set. Have a great day and enjoy your stay with Vacation Village!"
+    }
+  ]
+}

@@ -1,4 +1,4 @@
-# Voice Agent Analytics - Project Instructions (v4.3)
+# Voice Agent Analytics - Project Instructions (v5.0)
 
 ## Environment
 
@@ -114,6 +114,19 @@ python3 tools/run_analysis.py -n 500 --run-dir runs/run_xxx
 5. `generate_insights.py` - Section B: LLM insights (requires `--insights`)
 6. `render_report.py` - Markdown executive summary (requires `--insights`)
 7. `review_report.py` - Editorial review (requires `--insights --enable-review`)
+
+### SQL Analytics (v5.0)
+
+```bash
+# Load analyses into DuckDB
+python3 tools/load_duckdb.py runs/run_XXXX/analyses/
+
+# Run dashboard queries (scope x outcome, containment rate, etc.)
+python3 tools/query.py runs/run_XXXX/ --dashboard
+
+# Ad-hoc SQL
+python3 tools/query.py runs/run_XXXX/ -q "SELECT call_scope, call_outcome, COUNT(*) FROM calls GROUP BY 1, 2"
+```
 
 ### Ad-hoc Q&A Tools
 

@@ -1,0 +1,162 @@
+{
+  "agent_id": "IdNSnJmoukxviqoTIWOZ",
+  "duration": 190.944613,
+  "ended_reason": "assistant-ended-call",
+  "messages": [
+    {
+      "role": "assistant",
+      "timestamp": 1769885144.8411906,
+      "content": "Hi, thank you for calling Vacation Village Resorts. Our offices are currently closed. This is Jamie, a virtual agent on a recorded line. How can I help you today?"
+    },
+    {
+      "role": "user",
+      "timestamp": 1769885158.3216338,
+      "content": "I'm trying to get into my account. The account number is wrong. My name is Caitlin Luker. K a t e l y n. L u k e r."
+    },
+    {
+      "role": "assistant",
+      "timestamp": 1769885173.4965224,
+      "content": "Let me check your account details. Can you confirm your date of birth? Alright Caitlin, can you share the phone number you have on your contract?"
+    },
+    {
+      "role": "user",
+      "timestamp": 1769885183.514807,
+      "content": "Eight one three five nine nine seven six six one."
+    },
+    {
+      "role": "assistant",
+      "timestamp": 1769885190.7949219,
+      "content": "Just a sec while I pull up your account."
+    },
+    {
+      "role": "assistant",
+      "timestamp": 1769885194.2358413,
+      "content": "Alright, I was able to pull up a record using your phone number. Can you please confirm the spelling of your first and last name one more time?"
+    },
+    {
+      "role": "user",
+      "timestamp": 1769885205.6538222,
+      "content": "K a t e l y n l u k e r."
+    },
+    {
+      "role": "assistant",
+      "timestamp": 1769885213.9362347,
+      "content": "Thanks for confirming. Can you tell me your state of residence?"
+    },
+    {
+      "role": "user",
+      "timestamp": 1769885219.5784817,
+      "content": "Florida,"
+    },
+    {
+      "role": "assistant",
+      "timestamp": 1769885223.1389918,
+      "content": "Great, I have you verified. Go ahead and let me know what you need help"
+    },
+    {
+      "role": "assistant",
+      "timestamp": 1769885223.1389918,
+      "content": "with today."
+    },
+    {
+      "role": "user",
+      "timestamp": 1769885231.331257,
+      "content": "My account number is invalid."
+    },
+    {
+      "role": "assistant",
+      "timestamp": 1769885235.1324692,
+      "content": "I see your concern about the account number. Can you tell me what happens when you try to log in?"
+    },
+    {
+      "role": "user",
+      "timestamp": 1769885243.6573546,
+      "content": "Tells me this is not a valid ID. This is an invalid account number."
+    },
+    {
+      "role": "assistant",
+      "timestamp": 1769885250.9794927,
+      "content": "Got it, you're getting an invalid account number error when trying to log in. Would you like to receive a new registration link for Clubhouse"
+    },
+    {
+      "role": "assistant",
+      "timestamp": 1769885250.9794927,
+      "content": "to set up your account?"
+    },
+    {
+      "role": "user",
+      "timestamp": 1769885262.1790626,
+      "content": "No. I've we"
+    },
+    {
+      "role": "user",
+      "timestamp": 1769885265.9734688,
+      "content": "just did this. You sent me it already and it did not work."
+    },
+    {
+      "role": "assistant",
+      "timestamp": 1769885269.4939454,
+      "content": "Understood, so the registration link did not work for you. Are you trying to access your ownership information or make a payment?"
+    },
+    {
+      "role": "user",
+      "timestamp": 1769885278.0766618,
+      "content": "Correct."
+    },
+    {
+      "role": "user",
+      "timestamp": 1769885279.0587854,
+      "content": "Make a payment."
+    },
+    {
+      "role": "assistant",
+      "timestamp": 1769885280.543568,
+      "content": "Alright, you\u2019d like to make a payment. Just to confirm, is this for your Vacation Village at Parkway property, contract number"
+    },
+    {
+      "role": "assistant",
+      "timestamp": 1769885280.543568,
+      "content": "three one one zero zero six three?"
+    },
+    {
+      "role": "user",
+      "timestamp": 1769885291.8517554,
+      "content": "Yes."
+    },
+    {
+      "role": "assistant",
+      "timestamp": 1769885293.7337213,
+      "content": "The email I have on file is katieluker1@gmail.com and the phone number is eight one three"
+    },
+    {
+      "role": "assistant",
+      "timestamp": 1769885293.7337213,
+      "content": "-- five nine nine -- seven six six one. Are these correct?"
+    },
+    {
+      "role": "user",
+      "timestamp": 1769885307.2559242,
+      "content": "Yes. That's correct."
+    },
+    {
+      "role": "assistant",
+      "timestamp": 1769885310.1814647,
+      "content": "Alright, working on your payment link now."
+    },
+    {
+      "role": "assistant",
+      "timestamp": 1769885323.339935,
+      "content": "Is there anything else you need help with today?"
+    },
+    {
+      "role": "user",
+      "timestamp": 1769885327.9392195,
+      "content": "No."
+    },
+    {
+      "role": "assistant",
+      "timestamp": 1769885330.060433,
+      "content": "Alright, you\u2019ll receive a payment link shortly by email and text. Have a great day."
+    }
+  ]
+}

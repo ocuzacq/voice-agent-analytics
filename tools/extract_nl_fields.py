@@ -138,7 +138,10 @@ def get_conversation_turns(analysis: dict) -> int | None:
 
 
 def get_outcome(analysis: dict) -> str:
-    """Get outcome/disposition from v4.0 or v3.x format."""
+    """Get outcome/disposition from v5.0, v4.0, or v3.x format."""
+    # v5.0: call_outcome
+    if "call_outcome" in analysis:
+        return analysis["call_outcome"]
     # v4.0 uses disposition
     if "disposition" in analysis:
         return analysis["disposition"]
@@ -327,12 +330,18 @@ def extract_condensed_call(analysis: dict) -> dict:
         "call_id": analysis.get("call_id"),
     }
 
-    # v4.0 uses disposition, v3.x uses outcome + call_disposition
-    disposition = analysis.get("disposition") or analysis.get("call_disposition")
-    if disposition:
-        condensed["disposition"] = disposition
-    elif analysis.get("outcome"):
-        condensed["outcome"] = analysis["outcome"]
+    # v5.0: call_scope + call_outcome | v4.0: disposition | v3.x: outcome/call_disposition
+    if analysis.get("call_scope"):
+        condensed["call_scope"] = analysis["call_scope"]
+    if analysis.get("call_outcome"):
+        condensed["call_outcome"] = analysis["call_outcome"]
+    # Fallback: v4.0/v3.x
+    if "call_scope" not in condensed:
+        disposition = analysis.get("disposition") or analysis.get("call_disposition")
+        if disposition:
+            condensed["disposition"] = disposition
+        elif analysis.get("outcome"):
+            condensed["outcome"] = analysis["outcome"]
 
     # v4.0 uses failure_type, v3.x uses failure_point
     failure_type = analysis.get("failure_type") or analysis.get("failure_point")
@@ -381,6 +390,22 @@ def extract_condensed_call(analysis: dict) -> dict:
     recoverable = analysis.get("failure_recoverable") if "failure_recoverable" in analysis else analysis.get("was_recoverable")
     if recoverable is not None:
         condensed["recoverable"] = recoverable
+
+    # v5.0: Conditional qualifiers
+    if analysis.get("escalation_trigger"):
+        condensed["escalation_trigger"] = analysis["escalation_trigger"]
+    if analysis.get("abandon_stage"):
+        condensed["abandon_stage"] = analysis["abandon_stage"]
+    if analysis.get("resolution_confirmed") is not None:
+        condensed["resolution_confirmed"] = analysis["resolution_confirmed"]
+    # v4.5 backward compat
+    if analysis.get("escalation_initiator"):
+        condensed["escalation_initiator"] = analysis["escalation_initiator"]
+    # Shared fields
+    if analysis.get("actions"):
+        condensed["actions"] = [f"{a['action']}:{a['outcome']}" for a in analysis["actions"]]
+    if analysis.get("transfer_destination"):
+        condensed["transfer_destination"] = analysis["transfer_destination"]
 
     return condensed
 
@@ -608,11 +633,14 @@ def extract_nl_summary(analyses: list[dict]) -> dict:
                         "outcome": outcome
                     })
 
-    # Extract disposition summary for LLM narrative generation (v4.0/v3.9+)
+    # Extract disposition summary for LLM narrative generation (v5.0/v4.0/v3.9+)
     disposition_summary = defaultdict(list)
     for a in analyses:
-        # v4.0 uses disposition, v3.x uses call_disposition
-        disposition = a.get("disposition") or a.get("call_disposition")
+        # v5.0: use scope:outcome key, v4.0: disposition, v3.x: call_disposition
+        if a.get("call_scope") and a.get("call_outcome"):
+            disposition = f"{a['call_scope']}:{a['call_outcome']}"
+        else:
+            disposition = a.get("disposition") or a.get("call_disposition")
         if disposition:
             entry = {
                 "call_id": a.get("call_id"),

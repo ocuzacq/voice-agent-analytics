@@ -1,0 +1,71 @@
+{
+  "call_id": "00b6db65-af59-4332-bdcb-1d62b354b7d3",
+  "schema_version": "v5.0",
+  "turns": 8,
+  "ended_by": "customer",
+  "intent": "Make a payment",
+  "intent_context": null,
+  "secondary_intent": null,
+  "call_scope": "in_scope",
+  "call_outcome": "escalated",
+  "resolution": "transferred to concierge",
+  "steps": [
+    "intent identification",
+    "account lookup attempt",
+    "verification failure",
+    "transfer to concierge"
+  ],
+  "escalation_trigger": "task_failure",
+  "abandon_stage": null,
+  "resolution_confirmed": null,
+  "effectiveness": 3,
+  "quality": 4,
+  "effort": 3,
+  "sentiment_start": "neutral",
+  "sentiment_end": "neutral",
+  "failure_type": "tech_issue",
+  "failure_detail": "Agent failed to verify account after customer provided a long account number string.",
+  "policy_gap": null,
+  "derailed_at": 17,
+  "clarifications": [
+    {
+      "turn": 3,
+      "type": "intent",
+      "cause": "ok",
+      "note": "Asked if maintenance or mortgage"
+    },
+    {
+      "turn": 7,
+      "type": "verify",
+      "cause": "refused",
+      "note": "Requested contract ID after phone unknown"
+    },
+    {
+      "turn": 11,
+      "type": "verify",
+      "cause": "unclear",
+      "note": "Clarified account number or vacation ID"
+    }
+  ],
+  "corrections": [],
+  "loops": [],
+  "summary": "Customer called to make a payment but did not know the phone number on file. After providing an account number, the agent encountered a verification error and transferred the call to concierge.",
+  "verbatim": "I don't know which one is a contract ID. Could you help me with that?",
+  "coaching": "The agent should be programmed to handle long account number strings more effectively or provide specific feedback on why the verification failed before transferring.",
+  "repeat_caller": false,
+  "actions": [
+    {
+      "action": "account_lookup",
+      "outcome": "failed",
+      "detail": "Failed to verify using provided account number"
+    },
+    {
+      "action": "transfer",
+      "outcome": "success",
+      "detail": "Transferred to concierge after verification issue"
+    }
+  ],
+  "transfer_destination": "concierge",
+  "transfer_queue_detected": false,
+  "duration_seconds": 205.6
+}

@@ -8,6 +8,13 @@ Analytical framework to evaluate the Vacatia AI voice agent's performance using 
 - **Section A**: Python-calculated metrics (reproducible, auditable)
 - **Section B**: LLM-generated insights (executive narratives, recommendations)
 
+**v5.0 Enhancements**:
+- **Orthogonal Disposition Model**: `call_scope` x `call_outcome` replaces compound `disposition` enum
+- **Conditional Qualifiers**: `escalation_trigger`, `abandon_stage`, `resolution_confirmed` per outcome type
+- **Containment Rate**: Key metric: `in_scope:completed / in_scope:total`
+- **Mixed Scope**: Calls with both in-scope and out-of-scope requests get their own category
+- **Golden Test Set**: 23 transcripts covering 9 of 12 valid scope x outcome combinations
+
 **v4.3 Enhancements**:
 - **Target-Based Augmentation**: `-n` becomes a TARGET when existing run detected
 - **Automatic Delta Calculation**: System calculates how many transcripts to add
@@ -30,7 +37,7 @@ Analytical framework to evaluate the Vacatia AI voice agent's performance using 
 - **Unified Disposition**: Single `disposition` field replaces `outcome` + `call_disposition`
 - **Cleaner Field Names**: Shorter, more intuitive names (`effectiveness`, `quality`, `effort`, `verbatim`, `coaching`, `steps`)
 - **Flattened Friction**: `turns`, `derailed_at`, `clarifications`, `corrections`, `loops` at top-level (not nested under `friction`)
-- **Schema v4.0**: 22 fields with backwards compatibility for v3.x analyses
+- **Schema v4.4**: 23 fields with backwards compatibility for v3.x analyses
 
 **v3.9.1 Enhancements**:
 - Loop Subject Granularity: New `subject` field in friction loops identifies WHAT is being looped on
@@ -101,7 +108,7 @@ Analytical framework to evaluate the Vacatia AI voice agent's performance using 
 
 ## Overview
 
-- **22-field analysis schema** (v4.0) - intent tracking, sentiment analysis, flattened friction
+- **Orthogonal disposition model** (v5.0) — `call_scope` x `call_outcome` with conditional qualifiers
 - **3 quality scores** - agent effectiveness, conversation quality, customer effort
 - **Policy gap breakdown** - structured categorization of capability limitations
 - **Customer verbatim** - direct quotes capturing frustration/needs
@@ -441,7 +448,10 @@ reports/
 | **v3.9.1** | 20 | Loop subject granularity: subject field for targeted friction analysis | Previous | [`README_v3.9.1.md`](README_v3.9.1.md) |
 | **v4.0** | 22 | Intent + sentiment analysis, schema cleanup, flattened friction | Previous | [`README_v4.0.md`](README_v4.0.md) |
 | **v4.1** | 22 | Run-based isolation, reproducibility, concurrent runs | Previous | [`README_v4.1.md`](README_v4.1.md) |
-| **v4.3** | 22 | Target-based augmentation, insights off by default | **Current** | [`README_v4.3.md`](README_v4.3.md) |
+| **v4.3** | 22 | Target-based augmentation, insights off by default | Previous | [`README_v4.3.md`](README_v4.3.md) |
+| **v4.4** | 23 | Handle time (AHT), duration_seconds field | Previous | [`README_v4.4.md`](README_v4.4.md) |
+| **v4.5** | 30 | Dashboard fields, DuckDB analytics layer | Previous | [`README_v4.5.md`](README_v4.5.md) |
+| **v5.0** | 28 | Orthogonal disposition: call_scope x call_outcome | **Current** | [`README_v5.0.md`](README_v5.0.md) |
 
 ### Versioning Guidelines
 
@@ -452,48 +462,58 @@ reports/
 
 See [`CLAUDE.md`](CLAUDE.md) for full versioning guidelines and project instructions.
 
-## Analysis Schema (v4.0)
+## Analysis Schema (v5.0)
 
-Each transcript analysis produces a JSON with 22 fields (restructured from v3.9.1):
+Each transcript analysis produces a JSON with the orthogonal disposition model:
 
 ```json
 {
   "call_id": "uuid",
-  "schema_version": "v4.0",
+  "schema_version": "v5.0",
+  "duration_seconds": 161.6,
 
   // === METADATA ===
   "turns": 12,
   "ended_by": "agent",
 
-  // === INTENT (NEW in v4.0) ===
+  // === INTENT ===
   "intent": "Make payment",
   "intent_context": "Past due notice received",
   "secondary_intent": null,
 
-  // === DISPOSITION (unified from outcome + call_disposition) ===
-  "disposition": "in_scope_success",
-  "resolution": "payment processed",
-  "steps": ["greeted customer", "verified identity", "processed payment", "confirmed success"],
+  // === DISPOSITION (v5.0 orthogonal model) ===
+  "call_scope": "in_scope",
+  "call_outcome": "completed",
+  "resolution": "payment link sent",
+  "steps": ["greeted customer", "verified identity", "sent payment link", "confirmed receipt"],
 
-  // === QUALITY SCORES (1-5, renamed) ===
+  // === CONDITIONAL QUALIFIERS (one per outcome) ===
+  "resolution_confirmed": true,
+  "escalation_trigger": null,
+  "abandon_stage": null,
+
+  // === QUALITY SCORES (1-5) ===
   "effectiveness": 4,
   "quality": 4,
   "effort": 2,
   "sentiment_start": "neutral",
   "sentiment_end": "satisfied",
 
-  // === FAILURE ANALYSIS (renamed) ===
-  "failure_type": "none",
+  // === FAILURE ANALYSIS ===
+  "failure_type": null,
   "failure_detail": null,
-  "failure_recoverable": null,
-  "failure_critical": false,
   "policy_gap": null,
 
-  // === FRICTION (flattened from friction object) ===
+  // === FRICTION ===
   "derailed_at": null,
   "clarifications": [{"turn": 3, "type": "phone", "cause": "ok", "note": "confirmed number"}],
   "corrections": [],
   "loops": [],
+
+  // === ACTIONS + TRANSFER ===
+  "actions": [{"type": "account_lookup", "outcome": "success"}, {"type": "send_payment_link", "outcome": "success"}],
+  "transfer_destination": null,
+  "transfer_queue_detected": false,
 
   // === INSIGHTS ===
   "summary": "Customer called to make payment. Resolved after brief verification.",
@@ -501,10 +521,24 @@ Each transcript analysis produces a JSON with 22 fields (restructured from v3.9.
   "coaching": null,
 
   // === FLAGS ===
-  "escalation_requested": false,
   "repeat_caller": false
 }
 ```
+
+### v5.0 Disposition Model
+
+| Dimension | Values | Description |
+|-----------|--------|-------------|
+| `call_scope` | `in_scope`, `out_of_scope`, `mixed`, `no_request` | What was the request about? |
+| `call_outcome` | `completed`, `escalated`, `abandoned` | How did the call end? |
+
+### Conditional Qualifiers
+
+| Outcome | Field | Values |
+|---------|-------|--------|
+| `completed` | `resolution_confirmed` | `true` \| `false` |
+| `escalated` | `escalation_trigger` | `customer_requested` \| `scope_limit` \| `task_failure` \| `policy_routing` |
+| `abandoned` | `abandon_stage` | `pre_greeting` \| `pre_intent` \| `mid_task` \| `post_delivery` |
 
 ### New v3 Fields
 
@@ -621,10 +655,10 @@ Strategic analysis generated by LLM:
 
 | Metric | Description |
 |--------|-------------|
-| **Success Rate** | resolved / total |
-| **Containment Rate** | (resolved + abandoned) / total |
+| **Containment Rate** | in_scope:completed / in_scope:total |
 | **Escalation Rate** | escalated / total |
-| **Failure Rate** | non-resolved / total |
+| **Abandon Rate** | abandoned / total |
+| **In-Scope Success** | in_scope:completed / total |
 
 ### Quality Scores (1-5 scale)
 
