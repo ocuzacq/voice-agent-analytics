@@ -417,6 +417,10 @@ reports/
 │   ├── v1/                # Archived: Verbose schema (~50 fields)
 │   ├── v2/                # Previous: Actionable schema (14 fields)
 │   └── v3/                # Previous: Hybrid schema (18 fields)
+├── docs/
+│   ├── releases/          # Version release notes (README_vX.Y.md)
+│   ├── BACKLOG.md
+│   └── ...                # Other project documentation
 ├── runs/                  # v4.1: Isolated run directories
 │   ├── run_{timestamp}/
 │   └── latest -> ...      # Symlink to most recent
@@ -434,28 +438,28 @@ reports/
 | **v1** | ~50 | +Performance, agent quality, customer profile | Archived | `tools/v1/VERSION.md` |
 | **v2** | 14 | Actionable insights, failure analysis, training | Previous | `tools/v2/VERSION.md` |
 | **v3** | 18 | Hybrid metrics + insights, policy gaps, verbatims | Previous | `tools/v3/VERSION.md` |
-| **v3.1** | 18 | Dedicated NL extraction for optimized LLM context | Previous | [`README_v3.1.md`](README_v3.1.md) |
-| **v3.2** | 18 | Configurable parallel processing (default 3 workers) | Previous | [`README_v3.2.md`](README_v3.2.md) |
-| **v3.3** | 18 | Report quality: clustering, explanations, call IDs | Previous | [`README_v3.3.md`](README_v3.3.md) |
-| **v3.4** | 18 | Inline descriptions, key metrics context, sub-breakdowns | Previous | [`README_v3.4.md`](README_v3.4.md) |
-| **v3.5** | 18 | Training insights, emergent patterns, secondary intents | Previous | [`README_v3.5.md`](README_v3.5.md) |
-| **v3.5.5** | 18 | Report review, pipeline suggestions | Previous | [`README_v3.5.5.md`](README_v3.5.5.md) |
-| **v3.6** | 23 | Conversation quality: turns, clarifications, corrections, loops | Previous | [`README_v3.6.md`](README_v3.6.md) |
-| **v3.7** | 23 | Preprocessing + structured event context (cause/severity) | Previous | [`README_v3.7.md`](README_v3.7.md) |
-| **v3.8** | 23 | Agent loops: typed detection replacing repeated_prompts | Previous | [`README_v3.8.md`](README_v3.8.md) |
-| **v3.8.5** | 19 | Streamlined friction: compact object, shorter enums, ~31% size reduction | Previous | [`README_v3.8.5.md`](README_v3.8.5.md) |
-| **v3.9** | 20 | Call disposition classification for funnel analysis | Previous | [`README_v3.9.md`](README_v3.9.md) |
-| **v3.9.1** | 20 | Loop subject granularity: subject field for targeted friction analysis | Previous | [`README_v3.9.1.md`](README_v3.9.1.md) |
-| **v4.0** | 22 | Intent + sentiment analysis, schema cleanup, flattened friction | Previous | [`README_v4.0.md`](README_v4.0.md) |
-| **v4.1** | 22 | Run-based isolation, reproducibility, concurrent runs | Previous | [`README_v4.1.md`](README_v4.1.md) |
-| **v4.3** | 22 | Target-based augmentation, insights off by default | Previous | [`README_v4.3.md`](README_v4.3.md) |
-| **v4.4** | 23 | Handle time (AHT), duration_seconds field | Previous | [`README_v4.4.md`](README_v4.4.md) |
-| **v4.5** | 30 | Dashboard fields, DuckDB analytics layer | Previous | [`README_v4.5.md`](README_v4.5.md) |
-| **v5.0** | 28 | Orthogonal disposition: call_scope x call_outcome | **Current** | [`README_v5.0.md`](README_v5.0.md) |
+| **v3.1** | 18 | Dedicated NL extraction for optimized LLM context | Previous | [`README_v3.1.md`](docs/releases/README_v3.1.md) |
+| **v3.2** | 18 | Configurable parallel processing (default 3 workers) | Previous | [`README_v3.2.md`](docs/releases/README_v3.2.md) |
+| **v3.3** | 18 | Report quality: clustering, explanations, call IDs | Previous | [`README_v3.3.md`](docs/releases/README_v3.3.md) |
+| **v3.4** | 18 | Inline descriptions, key metrics context, sub-breakdowns | Previous | [`README_v3.4.md`](docs/releases/README_v3.4.md) |
+| **v3.5** | 18 | Training insights, emergent patterns, secondary intents | Previous | [`README_v3.5.md`](docs/releases/README_v3.5.md) |
+| **v3.5.5** | 18 | Report review, pipeline suggestions | Previous | [`README_v3.5.5.md`](docs/releases/README_v3.5.5.md) |
+| **v3.6** | 23 | Conversation quality: turns, clarifications, corrections, loops | Previous | [`README_v3.6.md`](docs/releases/README_v3.6.md) |
+| **v3.7** | 23 | Preprocessing + structured event context (cause/severity) | Previous | [`README_v3.7.md`](docs/releases/README_v3.7.md) |
+| **v3.8** | 23 | Agent loops: typed detection replacing repeated_prompts | Previous | [`README_v3.8.md`](docs/releases/README_v3.8.md) |
+| **v3.8.5** | 19 | Streamlined friction: compact object, shorter enums, ~31% size reduction | Previous | [`README_v3.8.5.md`](docs/releases/README_v3.8.5.md) |
+| **v3.9** | 20 | Call disposition classification for funnel analysis | Previous | [`README_v3.9.md`](docs/releases/README_v3.9.md) |
+| **v3.9.1** | 20 | Loop subject granularity: subject field for targeted friction analysis | Previous | [`README_v3.9.1.md`](docs/releases/README_v3.9.1.md) |
+| **v4.0** | 22 | Intent + sentiment analysis, schema cleanup, flattened friction | Previous | [`README_v4.0.md`](docs/releases/README_v4.0.md) |
+| **v4.1** | 22 | Run-based isolation, reproducibility, concurrent runs | Previous | [`README_v4.1.md`](docs/releases/README_v4.1.md) |
+| **v4.3** | 22 | Target-based augmentation, insights off by default | Previous | [`README_v4.3.md`](docs/releases/README_v4.3.md) |
+| **v4.4** | 23 | Handle time (AHT), duration_seconds field | Previous | [`README_v4.4.md`](docs/releases/README_v4.4.md) |
+| **v4.5** | 30 | Dashboard fields, DuckDB analytics layer | Previous | [`README_v4.5.md`](docs/releases/README_v4.5.md) |
+| **v5.0** | 28 | Orthogonal disposition: call_scope x call_outcome | **Current** | [`README_v5.0.md`](docs/releases/README_v5.0.md) |
 
 ### Versioning Guidelines
 
-**Always create a `README_vX.Y.md`** when releasing a new version, documenting:
+**Always create a `docs/releases/README_vX.Y.md`** when releasing a new version, documenting:
 - What changed from the previous version
 - Why the changes were made
 - Migration notes if applicable

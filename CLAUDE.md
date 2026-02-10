@@ -12,7 +12,7 @@ source .env  # Sets GOOGLE_API_KEY
 
 ### Always Create Version-Specific READMEs
 
-**CRITICAL**: When creating a new version (v3.2, v4.0, etc.), always create a dedicated `README_vX.Y.md` file documenting:
+**CRITICAL**: When creating a new version (v3.2, v4.0, etc.), always create a dedicated `docs/releases/README_vX.Y.md` file documenting:
 
 1. **What changed** from the previous version
 2. **Why** the changes were made
@@ -21,10 +21,10 @@ source .env  # Sets GOOGLE_API_KEY
 
 Example:
 ```
-README.md          # Current version (always up-to-date)
-README_v3.1.md     # v3.1 release notes and changes
-README_v3.0.md     # v3.0 release notes
-README_v2.0.md     # v2.0 release notes (if retroactively created)
+README.md                      # Current version (always up-to-date)
+docs/releases/README_v5.0.md   # v5.0 release notes and changes
+docs/releases/README_v4.5.md   # v4.5 release notes
+docs/releases/README_v4.3.md   # v4.3 release notes
 ```
 
 ### Version Numbering
