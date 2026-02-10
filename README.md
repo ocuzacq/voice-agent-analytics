@@ -413,6 +413,11 @@ reports/
 │   ├── render_report.py
 │   ├── review_report.py   # Editorial review
 │   ├── ask.py             # Ad-hoc Q&A without full reports
+│   ├── schema.py          # v6.0 Pydantic models for structured LLM output
+│   ├── poc_structured_full.py  # v6.0 per-intent analysis with Gemini response_schema
+│   ├── batch_golden_v6.py # Batch golden transcripts with v6.0 schema
+│   ├── compare_golden.py  # Compare prompt versions for regressions
+│   ├── stability_test.py  # Prompt stability: N reps per transcript
 │   ├── v0/                # Archived: Simple schema (~15 fields)
 │   ├── v1/                # Archived: Verbose schema (~50 fields)
 │   ├── v2/                # Previous: Actionable schema (14 fields)

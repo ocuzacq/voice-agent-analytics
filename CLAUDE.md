@@ -182,6 +182,27 @@ python3 tools/test_v37_features.py
 python3 tools/test_v36_features.py
 ```
 
+### v6.0 Schema Testing (Structured Output)
+
+Per-intent resolution schema with Gemini structured output (`response_schema`).
+
+```bash
+# Single transcript analysis
+python3 tools/poc_structured_full.py tests/golden/transcripts/<uuid>.json
+
+# Batch all 23 golden transcripts
+python3 tools/batch_golden_v6.py --output-dir tests/golden/analyses_v6_prompt_v4
+
+# Compare two prompt versions (finds regressions)
+python3 tools/compare_golden.py tests/golden/analyses_v6_prompt_v3 tests/golden/analyses_v6_prompt_v4
+
+# Stability test: run volatile transcripts N times to verify consistency
+python3 tools/stability_test.py              # default: 3 volatile transcripts × 5 reps
+python3 tools/stability_test.py -n 5 --transcripts path1.json path2.json
+```
+
+**Prompt tuning workflow**: edit prompt in `poc_structured_full.py` → run `stability_test.py` on affected transcripts → run `batch_golden_v6.py` → run `compare_golden.py` to check for regressions.
+
 ## LLM Provider
 
 **CRITICAL: Always use Gemini 3 models. Never use older models (gemini-2.5-flash, etc.)**
