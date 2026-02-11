@@ -32,12 +32,12 @@ SELECT
   COUNT(*) as total_calls,
   COUNT(*) FILTER (WHERE call_scope IN ('in_scope','mixed')) as in_scope,
   COUNT(*) FILTER (WHERE call_scope IN ('in_scope','mixed') AND call_outcome = 'completed') as contained,
-  ROUND(COUNT(*) FILTER (WHERE call_scope IN ('in_scope','mixed') AND call_outcome = 'completed')::FLOAT
-    / NULLIF(COUNT(*) FILTER (WHERE call_scope IN ('in_scope','mixed')), 0), 3) as containment_rate,
-  PERCENTILE_CONT(0.8) WITHIN GROUP (ORDER BY duration_seconds)
-    FILTER (WHERE call_outcome = 'completed') as p80_completed_sec,
-  ROUND(COUNT(*) FILTER (WHERE resolution_confirmed = true)::FLOAT
-    / NULLIF(COUNT(*) FILTER (WHERE call_outcome = 'completed'), 0), 3) as confirmed_rate
+  ROUND(COUNT(*) FILTER (WHERE call_scope IN ('in_scope','mixed') AND call_outcome = 'completed')::DOUBLE
+    / NULLIF(COUNT(*) FILTER (WHERE call_scope IN ('in_scope','mixed')), 0), 2) as containment_rate,
+  ROUND(PERCENTILE_CONT(0.8) WITHIN GROUP (ORDER BY duration_seconds)
+    FILTER (WHERE call_outcome = 'completed'), 1) as p80_completed_sec,
+  ROUND(COUNT(*) FILTER (WHERE resolution_confirmed = true)::DOUBLE
+    / NULLIF(COUNT(*) FILTER (WHERE call_outcome = 'completed'), 0), 2) as confirmed_rate
 FROM calls;
 """,
 
@@ -77,7 +77,7 @@ WHERE call_scope IN ('in_scope', 'mixed');
 
     "5. Scope x Outcome Cross-Tab": """
 SELECT call_scope, call_outcome, COUNT(*) as n,
-  ROUND(COUNT(*)::FLOAT / SUM(COUNT(*)) OVER(), 3) as rate
+  ROUND(COUNT(*)::DOUBLE / SUM(COUNT(*)) OVER(), 2) as rate
 FROM calls
 GROUP BY call_scope, call_outcome
 ORDER BY n DESC;
@@ -89,16 +89,84 @@ SELECT action,
   COUNT(*) FILTER (WHERE outcome='success') as success,
   COUNT(*) FILTER (WHERE outcome='retry') as retry,
   COUNT(*) FILTER (WHERE outcome='failed') as failed,
-  ROUND(COUNT(*) FILTER (WHERE outcome='success')::FLOAT / COUNT(*), 3) as success_rate
+  ROUND(COUNT(*) FILTER (WHERE outcome='success')::DOUBLE / COUNT(*), 2) as success_rate
 FROM call_actions
 GROUP BY action ORDER BY attempted DESC;
 """,
 
     "7. Transfer Quality": """
 SELECT transfer_destination, COUNT(*) as n,
-  ROUND(COUNT(*)::FLOAT / SUM(COUNT(*)) OVER(), 3) as rate
+  ROUND(COUNT(*)::DOUBLE / SUM(COUNT(*)) OVER(), 2) as rate
 FROM calls WHERE transfer_destination IS NOT NULL
 GROUP BY 1 ORDER BY n DESC;
+""",
+
+    "8. Escalation Trigger Breakdown": """
+SELECT escalation_trigger, COUNT(*) as n,
+  ROUND(COUNT(*)::DOUBLE / SUM(COUNT(*)) OVER(), 2) as rate,
+  ROUND(AVG(duration_seconds), 1) as avg_duration_sec,
+  ROUND(AVG(effectiveness), 1) as avg_effectiveness
+FROM calls
+WHERE call_outcome = 'escalated' AND escalation_trigger IS NOT NULL
+GROUP BY escalation_trigger ORDER BY n DESC;
+""",
+
+    "9. Abandon Stage Analysis": """
+SELECT abandon_stage, COUNT(*) as n,
+  ROUND(COUNT(*)::DOUBLE / SUM(COUNT(*)) OVER(), 2) as rate,
+  ROUND(AVG(duration_seconds), 1) as avg_duration_sec,
+  ROUND(AVG(turns), 1) as avg_turns
+FROM calls
+WHERE call_outcome = 'abandoned' AND abandon_stage IS NOT NULL
+GROUP BY abandon_stage ORDER BY n DESC;
+""",
+
+    "10. Sentiment Journey": """
+WITH journeys AS (
+  SELECT *,
+    CASE
+      WHEN sentiment_end IN ('satisfied') AND sentiment_start IN ('frustrated','angry','neutral') THEN 'improved'
+      WHEN sentiment_end IN ('frustrated','angry') AND sentiment_start IN ('satisfied','neutral') THEN 'degraded'
+      WHEN sentiment_start = sentiment_end THEN 'stable'
+      WHEN sentiment_start = 'angry' AND sentiment_end = 'neutral' THEN 'improved'
+      WHEN sentiment_start = 'frustrated' AND sentiment_end = 'neutral' THEN 'improved'
+      ELSE 'mixed'
+    END as direction
+  FROM calls WHERE sentiment_start IS NOT NULL AND sentiment_end IS NOT NULL
+)
+SELECT sentiment_start || ' -> ' || sentiment_end as journey, direction,
+  COUNT(*) as n,
+  ROUND(COUNT(*)::DOUBLE / (SELECT COUNT(*) FROM journeys), 2) as rate
+FROM journeys GROUP BY journey, direction ORDER BY n DESC;
+""",
+
+    "11. Duration by Scope x Outcome": """
+SELECT call_scope, call_outcome, COUNT(*) as n,
+  ROUND(PERCENTILE_CONT(0.5) WITHIN GROUP (ORDER BY duration_seconds), 1) as p50_sec,
+  ROUND(PERCENTILE_CONT(0.8) WITHIN GROUP (ORDER BY duration_seconds), 1) as p80_sec,
+  ROUND(AVG(duration_seconds), 1) as mean_sec,
+  ROUND(MAX(duration_seconds), 1) as max_sec
+FROM calls WHERE duration_seconds IS NOT NULL
+GROUP BY call_scope, call_outcome ORDER BY call_scope, call_outcome;
+""",
+
+    "12. Friction x Outcome Correlation": """
+SELECT call_outcome, COUNT(*) as n,
+  ROUND(COUNT(*) FILTER (WHERE clarifications_json != '[]')::DOUBLE / COUNT(*), 2) as clarification_rate,
+  ROUND(COUNT(*) FILTER (WHERE corrections_json != '[]')::DOUBLE / COUNT(*), 2) as correction_rate,
+  ROUND(COUNT(*) FILTER (WHERE loops_json != '[]')::DOUBLE / COUNT(*), 2) as loop_rate,
+  ROUND(AVG(effort), 1) as avg_effort
+FROM calls GROUP BY call_outcome ORDER BY call_outcome;
+""",
+
+    "13. Transfer-Then-Abandon (Failed Transfers)": """
+SELECT transfer_reason, transfer_destination,
+  COUNT(*) as n,
+  ROUND(AVG(duration_seconds), 0) as avg_wait_sec
+FROM calls
+WHERE call_outcome IN ('abandoned', 'escalated')
+  AND transfer_destination IS NOT NULL
+GROUP BY 1, 2 ORDER BY n DESC;
 """,
 }
 

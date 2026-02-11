@@ -100,6 +100,7 @@ def create_database(analyses: list[dict], db_path: Path) -> None:
             pre_intent_subtype VARCHAR,
             escalation_initiator VARCHAR,
             -- Shared dashboard fields
+            transfer_reason VARCHAR,
             transfer_destination VARCHAR,
             transfer_queue_detected BOOLEAN,
             -- Arrays as JSON strings for UNNEST
@@ -143,7 +144,7 @@ def create_database(analyses: list[dict], db_path: Path) -> None:
                 ?,
                 ?, ?, ?,
                 ?, ?,
-                ?, ?,
+                ?, ?, ?,
                 ?, ?, ?, ?, ?
             )
         """, [
@@ -187,6 +188,7 @@ def create_database(analyses: list[dict], db_path: Path) -> None:
             a.get("pre_intent_subtype"),
             a.get("escalation_initiator"),
             # Shared dashboard fields
+            a.get("transfer_reason"),
             a.get("transfer_destination"),
             a.get("transfer_queue_detected"),
             # Arrays as JSON
