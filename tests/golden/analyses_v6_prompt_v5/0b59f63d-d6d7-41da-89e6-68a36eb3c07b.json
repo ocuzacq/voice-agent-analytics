@@ -1,0 +1,109 @@
+{
+  "turns": 16,
+  "repeat_caller": true,
+  "derailed_at": 19,
+  "resolution": {
+    "primary": {
+      "request": "Book two weeks at Bonaventure",
+      "context": "Caller is frustrated about losing weeks and website access",
+      "human_requested": "initial",
+      "department_requested": null,
+      "scope": "out_of_scope",
+      "outcome": "transferred",
+      "detail": "The caller wanted to book specific dates and units, which the AI cannot do, leading to a transfer to concierge.",
+      "resolution_confirmed": null,
+      "transfer": {
+        "reason": "out_of_scope",
+        "destination": "concierge",
+        "queue_detected": false
+      },
+      "abandon_stage": null
+    },
+    "secondary": {
+      "request": "Pay for two weeks",
+      "context": "Attempting to secure the reservation",
+      "human_requested": null,
+      "department_requested": null,
+      "scope": "in_scope",
+      "outcome": "abandoned",
+      "detail": "The AI offered to process a mortgage payment, but the caller needed something else related to the booking, resulting in a transfer.",
+      "resolution_confirmed": null,
+      "transfer": null,
+      "abandon_stage": "mid_task"
+    },
+    "steps": [
+      "Caller expresses frustration and requests a human agent.",
+      "AI offers to help or transfer; caller chooses automated system.",
+      "AI performs account lookup and verification.",
+      "Caller requests a reservation for specific dates in 2027.",
+      "AI identifies a contract mismatch and clarifies dates.",
+      "Caller asks to pay and assign a unit.",
+      "AI explains it cannot book or assign units and offers mortgage payment.",
+      "Caller declines mortgage payment and is transferred to concierge."
+    ]
+  },
+  "scores": {
+    "effectiveness": 3,
+    "quality": 4,
+    "effort": 4
+  },
+  "sentiment": {
+    "start": "angry",
+    "end": "frustrated"
+  },
+  "failure": {
+    "type": "wrong_action",
+    "detail": "The agent performed extensive verification and date clarification for a reservation request it ultimately could not fulfill.",
+    "policy_gap": null
+  },
+  "friction": {
+    "clarifications": [
+      {
+        "turn": 19,
+        "type": "intent",
+        "cause": "proactive",
+        "note": "Clarifying property ownership mismatch"
+      },
+      {
+        "turn": 25,
+        "type": "intent",
+        "cause": "unclear",
+        "note": "Resolving non-standard check-in dates"
+      }
+    ],
+    "corrections": [
+      {
+        "turn": 6,
+        "severity": "moderate",
+        "note": "Caller claims AI hung up four times"
+      }
+    ],
+    "loops": []
+  },
+  "actions": [
+    {
+      "type": "account_lookup",
+      "outcome": "success",
+      "detail": "Found record via phone number"
+    },
+    {
+      "type": "verification",
+      "outcome": "success",
+      "detail": "Verified name and state"
+    },
+    {
+      "type": "transfer",
+      "outcome": "success",
+      "detail": "Transferred to concierge for booking"
+    }
+  ],
+  "insights": {
+    "summary": "An angry repeat caller wanted to book two weeks at a specific resort. The AI spent several minutes verifying the account and clarifying dates before admitting it cannot book units and transferring the call.",
+    "verbatim": "I'm gonna lose two weeks, and nobody's helping me. And you've thrown me off your website, you, Jamie, have hung up on me four times now.",
+    "coaching": "When a caller explicitly asks for a human at the start of a complaint call, and the request (reservations) is out of scope, the agent should prioritize the transfer rather than attempting a complex automated flow it cannot complete."
+  },
+  "call_id": "0b59f63d-d6d7-41da-89e6-68a36eb3c07b",
+  "schema_version": "v6.0",
+  "duration_seconds": 448.6,
+  "ended_by": "customer"
+}

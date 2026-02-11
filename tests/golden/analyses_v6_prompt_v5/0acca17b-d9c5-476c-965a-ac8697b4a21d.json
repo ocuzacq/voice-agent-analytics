@@ -1,0 +1,78 @@
+{
+  "turns": 19,
+  "repeat_caller": false,
+  "derailed_at": null,
+  "resolution": {
+    "primary": {
+      "request": "Register for Vacatia Clubhouse portal",
+      "context": "Customer received a letter about the new Clubhouse portal but is struggling with the registration process and ID numbers",
+      "human_requested": null,
+      "department_requested": null,
+      "scope": "in_scope",
+      "outcome": "abandoned",
+      "detail": "The agent was in the process of confirming the email address to send the registration link when the caller disconnected.",
+      "resolution_confirmed": false,
+      "transfer": null,
+      "abandon_stage": "mid_task"
+    },
+    "secondary": null,
+    "steps": [
+      "Caller explains difficulty registering for the new Vacatia Clubhouse portal.",
+      "Agent performs account lookup using phone number.",
+      "Agent verifies caller identity using name and state.",
+      "Agent clarifies the difference between RCI ID and Vacatia ID.",
+      "Agent offers to send a new registration link.",
+      "Caller agrees to receive the link and asks for the delivery method.",
+      "Agent confirms the email address on file, but the call ends before the link is sent."
+    ]
+  },
+  "scores": {
+    "effectiveness": 4,
+    "quality": 4,
+    "effort": 3
+  },
+  "sentiment": {
+    "start": "frustrated",
+    "end": "neutral"
+  },
+  "failure": null,
+  "friction": {
+    "clarifications": [
+      {
+        "turn": 13,
+        "type": "verify",
+        "cause": "unclear",
+        "note": "Agent asks for last name spelling again"
+      }
+    ],
+    "corrections": [
+      {
+        "turn": 16,
+        "severity": "minor",
+        "note": "Customer corrects agent's spelling of last name"
+      }
+    ],
+    "loops": []
+  },
+  "actions": [
+    {
+      "type": "account_lookup",
+      "outcome": "success",
+      "detail": "Pulled record using phone number 6035128812"
+    },
+    {
+      "type": "verification",
+      "outcome": "success",
+      "detail": "Verified name and South Carolina residence"
+    }
+  ],
+  "insights": {
+    "summary": "The customer called for help registering for the Vacatia Clubhouse portal after receiving a letter. The agent successfully verified the account and explained the ID requirements, but the call disconnected just as the agent was about to send the registration link.",
+    "verbatim": "I type in the code that I got from the code, and it says it's not no good. Actually, it logged me in. It says we're already we're already members. I'm just trying to set this thing up. It's ridiculous.",
+    "coaching": "The agent performed well, but could have been faster to send the link once the need was identified, rather than re-verifying the email address which had already been mentioned as the destination for previous failed attempts."
+  },
+  "call_id": "0acca17b-d9c5-476c-965a-ac8697b4a21d",
+  "schema_version": "v6.0",
+  "duration_seconds": 326.5,
+  "ended_by": "customer"
+}

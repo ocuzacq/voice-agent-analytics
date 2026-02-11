@@ -1,0 +1,70 @@
+{
+  "turns": 10,
+  "repeat_caller": false,
+  "derailed_at": null,
+  "resolution": {
+    "primary": {
+      "request": "Check billing and contract info",
+      "context": "Caller had questions regarding a maintenance bill and account details",
+      "human_requested": null,
+      "department_requested": null,
+      "scope": "in_scope",
+      "outcome": "fulfilled",
+      "detail": "The agent verified the caller and provided the address and owner name on file.",
+      "resolution_confirmed": true,
+      "transfer": null,
+      "abandon_stage": null
+    },
+    "secondary": null,
+    "steps": [
+      "Agent identifies maintenance bill intent",
+      "Agent performs account lookup via phone number",
+      "Agent verifies caller identity (name and state)",
+      "Agent provides address on file upon request",
+      "Agent provides owner name and contract details upon request"
+    ]
+  },
+  "scores": {
+    "effectiveness": 5,
+    "quality": 5,
+    "effort": 1
+  },
+  "sentiment": {
+    "start": "neutral",
+    "end": "satisfied"
+  },
+  "failure": null,
+  "friction": {
+    "clarifications": [
+      {
+        "turn": 9,
+        "type": "name",
+        "cause": "proactive",
+        "note": "Agent asked for spelling due to name mismatch"
+      }
+    ],
+    "corrections": [],
+    "loops": []
+  },
+  "actions": [
+    {
+      "type": "account_lookup",
+      "outcome": "success",
+      "detail": "Found record via phone number"
+    },
+    {
+      "type": "verification",
+      "outcome": "success",
+      "detail": "Verified name and state of residence"
+    }
+  ],
+  "insights": {
+    "summary": "The caller wanted to verify billing details and account information. The agent successfully verified the caller and provided the requested address and ownership information.",
+    "verbatim": "Whose address is on file?",
+    "coaching": null
+  },
+  "call_id": "743d7b2a-ebf9-4534-a999-667c8687b0e2",
+  "schema_version": "v6.0",
+  "duration_seconds": 162.3,
+  "ended_by": "agent"
+}

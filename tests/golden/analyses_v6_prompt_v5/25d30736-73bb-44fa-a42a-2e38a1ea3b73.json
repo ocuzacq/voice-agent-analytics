@@ -1,0 +1,89 @@
+{
+  "turns": 7,
+  "repeat_caller": false,
+  "derailed_at": 15,
+  "resolution": {
+    "primary": {
+      "request": "pay maintenance fees",
+      "context": "Customer wanted to pay a balance of $1,484.81 via credit card",
+      "human_requested": null,
+      "department_requested": null,
+      "scope": "in_scope",
+      "outcome": "transferred",
+      "detail": "The AI successfully identified the account and balance but failed to send the payment link due to a technical error, resulting in a transfer to concierge.",
+      "resolution_confirmed": false,
+      "transfer": {
+        "reason": "task_failure",
+        "destination": "concierge",
+        "queue_detected": true
+      },
+      "abandon_stage": null
+    },
+    "secondary": null,
+    "steps": [
+      "Customer requested to pay maintenance fees.",
+      "Agent collected name and state for verification.",
+      "Agent retrieved account balance and contract details.",
+      "Agent confirmed contact information for link delivery.",
+      "Agent encountered a technical error while attempting to send the link.",
+      "Agent transferred the caller to the concierge queue."
+    ]
+  },
+  "scores": {
+    "effectiveness": 4,
+    "quality": 4,
+    "effort": 2
+  },
+  "sentiment": {
+    "start": "neutral",
+    "end": "neutral"
+  },
+  "failure": {
+    "type": "tech_issue",
+    "detail": "The agent encountered an error while attempting to send the payment link after successful verification and account lookup.",
+    "policy_gap": null
+  },
+  "friction": {
+    "clarifications": [
+      {
+        "turn": 5,
+        "type": "name",
+        "cause": "proactive",
+        "note": "Agent asked for spelling of name"
+      }
+    ],
+    "corrections": [],
+    "loops": []
+  },
+  "actions": [
+    {
+      "type": "account_lookup",
+      "outcome": "success",
+      "detail": "Looked up account for Paul Markowitz"
+    },
+    {
+      "type": "verification",
+      "outcome": "success",
+      "detail": "Verified identity using name and state"
+    },
+    {
+      "type": "send_payment_link",
+      "outcome": "failed",
+      "detail": "System error occurred during link generation/send"
+    },
+    {
+      "type": "transfer",
+      "outcome": "success",
+      "detail": "Transferred to concierge after technical failure"
+    }
+  ],
+  "insights": {
+    "summary": "The customer called to pay maintenance fees and provided all necessary verification info. The AI successfully found the $1,484.81 balance but failed to send the payment link due to a technical issue, leading to a transfer.",
+    "verbatim": "I would like to pay my maintenance fees with a credit card.",
+    "coaching": "The agent performed well until the technical failure; ensure API stability for link delivery to prevent high-effort transfers for in-scope tasks."
+  },
+  "call_id": "25d30736-73bb-44fa-a42a-2e38a1ea3b73",
+  "schema_version": "v6.0",
+  "duration_seconds": 749.7,
+  "ended_by": "customer"
+}

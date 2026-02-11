@@ -1,0 +1,72 @@
+{
+  "turns": 9,
+  "repeat_caller": false,
+  "derailed_at": null,
+  "resolution": {
+    "primary": {
+      "request": "Submit rental agreement",
+      "context": "Caller wanted instructions on what to do with their rental agreement",
+      "human_requested": null,
+      "department_requested": null,
+      "scope": "in_scope",
+      "outcome": "abandoned",
+      "detail": "The agent offered to send the link and asked if there was anything else, but never confirmed the link was actually sent.",
+      "resolution_confirmed": false,
+      "transfer": null,
+      "abandon_stage": "mid_task"
+    },
+    "secondary": null,
+    "steps": [
+      "Caller asked about rental agreement instructions.",
+      "Agent performed account lookup and identity verification.",
+      "Agent explained the purpose of the rental agreement.",
+      "Agent offered to send a link via email and phone.",
+      "Caller accepted, but agent moved to closing without confirming the send action."
+    ]
+  },
+  "scores": {
+    "effectiveness": 3,
+    "quality": 4,
+    "effort": 2
+  },
+  "sentiment": {
+    "start": "neutral",
+    "end": "neutral"
+  },
+  "failure": {
+    "type": "wrong_action",
+    "detail": "Agent moved to closing script before confirming the rental link was actually sent to the user.",
+    "policy_gap": null
+  },
+  "friction": {
+    "clarifications": [],
+    "corrections": [],
+    "loops": []
+  },
+  "actions": [
+    {
+      "type": "account_lookup",
+      "outcome": "success",
+      "detail": "Located record via caller ID"
+    },
+    {
+      "type": "verification",
+      "outcome": "success",
+      "detail": "Verified name spelling and state"
+    },
+    {
+      "type": "send_rental_link",
+      "outcome": "failed",
+      "detail": "Offered link but never confirmed execution of send"
+    }
+  ],
+  "insights": {
+    "summary": "The caller wanted to know how to handle a rental agreement. The agent verified the caller and offered to send a link, but ended the call without confirming the link was sent.",
+    "verbatim": "Would you like a link sent to your email and phone so you can complete the agreement online?",
+    "coaching": "The agent must confirm the delivery of the link (e.g., 'I have sent that link now') before asking if there is anything else and ending the call."
+  },
+  "call_id": "97b367dd-18a5-49fb-8867-fd8d8a7edd00",
+  "schema_version": "v6.0",
+  "duration_seconds": 137.9,
+  "ended_by": "agent"
+}

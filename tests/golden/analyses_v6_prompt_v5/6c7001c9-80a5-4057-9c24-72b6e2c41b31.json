@@ -1,0 +1,55 @@
+{
+  "turns": 1,
+  "repeat_caller": false,
+  "derailed_at": 2,
+  "resolution": {
+    "primary": {
+      "request": "no request articulated",
+      "context": "Caller appears to be a recording or another automated system",
+      "human_requested": null,
+      "department_requested": null,
+      "scope": "no_request",
+      "outcome": "abandoned",
+      "detail": "The caller was an automated recording, and the call ended after the AI's greeting.",
+      "resolution_confirmed": null,
+      "transfer": null,
+      "abandon_stage": "pre_intent"
+    },
+    "secondary": null,
+    "steps": [
+      "Agent greeting",
+      "User played an automated recording",
+      "Agent asked for name",
+      "Call ended"
+    ]
+  },
+  "scores": {
+    "effectiveness": 1,
+    "quality": 3,
+    "effort": 5
+  },
+  "sentiment": {
+    "start": "neutral",
+    "end": "neutral"
+  },
+  "failure": {
+    "type": "other",
+    "detail": "The caller was an automated system/recording, not a human customer.",
+    "policy_gap": null
+  },
+  "friction": {
+    "clarifications": [],
+    "corrections": [],
+    "loops": []
+  },
+  "actions": [],
+  "insights": {
+    "summary": "The call consisted of the AI agent greeting an automated recording from the caller's side, resulting in no actual request being made.",
+    "verbatim": "It seems like no one is available to take your call at the moment.",
+    "coaching": "The agent correctly attempted to engage, but the call was a non-human interaction."
+  },
+  "call_id": "6c7001c9-80a5-4057-9c24-72b6e2c41b31",
+  "schema_version": "v6.0",
+  "duration_seconds": 45.9,
+  "ended_by": "customer"
+}

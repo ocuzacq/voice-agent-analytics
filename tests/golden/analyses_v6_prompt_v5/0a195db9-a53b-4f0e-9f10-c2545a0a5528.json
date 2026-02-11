@@ -1,0 +1,68 @@
+{
+  "turns": 4,
+  "repeat_caller": false,
+  "derailed_at": null,
+  "resolution": {
+    "primary": {
+      "request": "Make a maintenance payment",
+      "context": "Caller wanted to pay over the phone rather than via link",
+      "human_requested": "initial",
+      "department_requested": null,
+      "scope": "in_scope",
+      "outcome": "transferred",
+      "detail": "The AI offered a payment link, but the caller requested to pay over the phone, leading to a transfer to the concierge queue.",
+      "resolution_confirmed": null,
+      "transfer": {
+        "reason": "customer_requested",
+        "destination": "concierge",
+        "queue_detected": true
+      },
+      "abandon_stage": null
+    },
+    "secondary": null,
+    "steps": [
+      "Caller requested to make a maintenance payment.",
+      "AI offered to send a payment link via text or email.",
+      "Caller declined the link and requested to pay over the phone.",
+      "AI initiated a transfer to the concierge department.",
+      "Caller remained in the queue for over 25 minutes listening to hold music and recorded messages."
+    ]
+  },
+  "scores": {
+    "effectiveness": 5,
+    "quality": 5,
+    "effort": 4
+  },
+  "sentiment": {
+    "start": "neutral",
+    "end": "neutral"
+  },
+  "failure": null,
+  "friction": {
+    "clarifications": [],
+    "corrections": [
+      {
+        "turn": 4,
+        "severity": "minor",
+        "note": "Caller corrected AI's link offer to request phone payment."
+      }
+    ],
+    "loops": []
+  },
+  "actions": [
+    {
+      "type": "transfer",
+      "outcome": "success",
+      "detail": "Transferred to concierge queue per customer request."
+    }
+  ],
+  "insights": {
+    "summary": "The caller wanted to make a maintenance payment over the phone. The AI correctly identified the intent, offered a link, and when the caller insisted on a phone payment, it transferred them to the concierge queue where they waited for over 25 minutes.",
+    "verbatim": "No. On the phone. I'm gonna call and make it over the phone payment.",
+    "coaching": null
+  },
+  "call_id": "0a195db9-a53b-4f0e-9f10-c2545a0a5528",
+  "schema_version": "v6.0",
+  "duration_seconds": 1710.0,
+  "ended_by": "customer"
+}

@@ -1,0 +1,63 @@
+{
+  "turns": 4,
+  "repeat_caller": false,
+  "derailed_at": null,
+  "resolution": {
+    "primary": {
+      "request": "Speak with billing department",
+      "context": "Caller wanted to discuss billing but requested a human immediately.",
+      "human_requested": "initial",
+      "department_requested": "billing",
+      "scope": "out_of_scope",
+      "outcome": "abandoned",
+      "detail": "The caller was placed in a queue that eventually timed out, and they declined the AI's offer to help after the failed transfer.",
+      "resolution_confirmed": null,
+      "transfer": {
+        "reason": "customer_requested",
+        "destination": "specific_department",
+        "queue_detected": true
+      },
+      "abandon_stage": "mid_task"
+    },
+    "secondary": null,
+    "steps": [
+      "Caller requested a representative immediately.",
+      "AI offered to connect and asked for the department.",
+      "Caller specified 'Billing'.",
+      "AI placed caller in a concierge queue for approximately 20 minutes.",
+      "Queue timed out with a message that no representatives were available.",
+      "AI re-engaged to offer automated billing help; caller declined and hung up."
+    ]
+  },
+  "scores": {
+    "effectiveness": 4,
+    "quality": 3,
+    "effort": 4
+  },
+  "sentiment": {
+    "start": "neutral",
+    "end": "neutral"
+  },
+  "failure": null,
+  "friction": {
+    "clarifications": [],
+    "corrections": [],
+    "loops": []
+  },
+  "actions": [
+    {
+      "type": "transfer",
+      "outcome": "failed",
+      "detail": "Transfer to billing/concierge timed out after 20 minutes."
+    }
+  ],
+  "insights": {
+    "summary": "The caller requested the billing department immediately. After a 20-minute hold in the concierge queue, the AI informed the caller no one was available and offered automated help, which the caller declined.",
+    "verbatim": "Actually, there isn't a representative available to take your call right now. I can help with your billing request, or you can call back during our work hours.",
+    "coaching": "The AI performed correctly by attempting the transfer and offering a fallback when the queue failed; the long wait time is a staffing/queue management issue rather than an AI logic failure."
+  },
+  "call_id": "30d955ef-1b17-43e4-b0b6-df87e7309002",
+  "schema_version": "v6.0",
+  "duration_seconds": 1339.7,
+  "ended_by": "agent"
+}

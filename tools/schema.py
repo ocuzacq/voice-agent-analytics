@@ -39,6 +39,8 @@ SCHEMA_VERSION = "v6.0"
 IntentScope = Literal["in_scope", "out_of_scope", "no_request"]
 IntentOutcome = Literal["fulfilled", "transferred", "abandoned"]
 
+HumanRequestTiming = Literal["initial", "after_service"]
+
 TransferReason = Literal["customer_requested", "out_of_scope", "task_failure"]
 TransferDestination = Literal["concierge", "specific_department", "ivr", "unknown"]
 
@@ -104,9 +106,29 @@ class IntentResolution(BaseModel):
     request: str = Field(description="What the customer wanted (3-8 words, action verb)")
     context: Optional[str] = Field(None, description="Underlying reason or situation")
 
+    human_requested: Optional[HumanRequestTiming] = Field(
+        None,
+        description="null = caller did not ask for a human agent; "
+                    "initial = caller asked for a human/representative/department BEFORE "
+                    "the AI attempted any substantive service (account lookup, link send, "
+                    "info delivery — verification/name collection alone is NOT substantive service); "
+                    "after_service = caller asked for a human AFTER the AI had begun "
+                    "substantive service (indicates preventable escalation)"
+    )
+    department_requested: Optional[str] = Field(
+        None,
+        description="Specific department or team the caller asked for by name "
+                    "(e.g., 'finance', 'billing', 'accounting', 'sales', 'reservations', 'management'); "
+                    "null when caller asked for a generic rep / 'customer service' / 'concierge' "
+                    "or did not request a human at all"
+    )
+
     scope: IntentScope = Field(
-        description="in_scope = AI can handle this; out_of_scope = needs human; "
-                    "no_request = caller never articulated a request (pre-greeting/pre-intent abandon only)"
+        description="in_scope = AI has a capability pathway for the UNDERLYING request "
+                    "(not the transfer action itself); "
+                    "out_of_scope = needs human, OR caller requests a human without stating "
+                    "a need the AI can address; "
+                    "no_request = caller never articulated a request"
     )
     outcome: IntentOutcome = Field(
         description="fulfilled = customer's need was met (action completed, not just prepared); "
@@ -305,6 +327,7 @@ class CallRecord(CallAnalysis):
 
 __all__ = [
     "SCHEMA_VERSION",
+    "HumanRequestTiming",
     "CallAnalysis", "CallRecord",
     "Resolution", "IntentResolution", "TransferDetail",
     "Scores", "Sentiment",

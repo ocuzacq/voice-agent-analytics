@@ -1,0 +1,87 @@
+{
+  "turns": 12,
+  "repeat_caller": false,
+  "derailed_at": null,
+  "resolution": {
+    "primary": {
+      "request": "set up owner account login",
+      "context": "Customer has never logged in before and needs access to the owner portal",
+      "human_requested": null,
+      "department_requested": null,
+      "scope": "in_scope",
+      "outcome": "fulfilled",
+      "detail": "The agent verified the caller, updated the contact information for delivery, and confirmed sending the Clubhouse registration link.",
+      "resolution_confirmed": true,
+      "transfer": null,
+      "abandon_stage": null
+    },
+    "secondary": null,
+    "steps": [
+      "Caller requested help logging into their account.",
+      "Agent performed account lookup via phone number and verified identity (name and state).",
+      "Agent identified the need for a Clubhouse registration link.",
+      "Agent confirmed contact details and corrected the email and phone number based on user input.",
+      "Agent confirmed the link was being sent and the user expressed satisfaction."
+    ]
+  },
+  "scores": {
+    "effectiveness": 5,
+    "quality": 5,
+    "effort": 2
+  },
+  "sentiment": {
+    "start": "neutral",
+    "end": "satisfied"
+  },
+  "failure": null,
+  "friction": {
+    "clarifications": [
+      {
+        "turn": 13,
+        "type": "intent",
+        "cause": "proactive",
+        "note": "Agent proactively suggests Clubhouse link for login"
+      },
+      {
+        "turn": 19,
+        "type": "phone",
+        "cause": "proactive",
+        "note": "Agent re-confirms phone after email correction"
+      }
+    ],
+    "corrections": [
+      {
+        "turn": 16,
+        "severity": "minor",
+        "note": "User corrects email and one digit of phone"
+      }
+    ],
+    "loops": []
+  },
+  "actions": [
+    {
+      "type": "account_lookup",
+      "outcome": "success",
+      "detail": "Found record using phone number 8137894506"
+    },
+    {
+      "type": "verification",
+      "outcome": "success",
+      "detail": "Verified name Roy Norman and state Florida"
+    },
+    {
+      "type": "send_clubhouse_link",
+      "outcome": "success",
+      "detail": "Sent registration link to rdnorman1@gmail.com"
+    }
+  ],
+  "insights": {
+    "summary": "The customer wanted to access their owner account for the first time. The AI successfully verified the user, updated their email address, and sent a Clubhouse registration link.",
+    "verbatim": "No. You've been very helpful.",
+    "coaching": null
+  },
+  "call_id": "0a434683-1ac4-4f26-83ee-c6fce1040ef4",
+  "schema_version": "v6.0",
+  "duration_seconds": 187.9,
+  "ended_by": "agent"
+}

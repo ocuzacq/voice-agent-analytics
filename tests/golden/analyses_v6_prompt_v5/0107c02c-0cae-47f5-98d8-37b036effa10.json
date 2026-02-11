@@ -1,0 +1,84 @@
+{
+  "turns": 9,
+  "repeat_caller": false,
+  "derailed_at": 3,
+  "resolution": {
+    "primary": {
+      "request": "speak to concierge about billing",
+      "context": "Caller initially asked for concierge, then specified billing and maintenance fees before reverting to a human request.",
+      "human_requested": "initial",
+      "department_requested": null,
+      "scope": "in_scope",
+      "outcome": "transferred",
+      "detail": "The caller requested a concierge and billing help; the AI verified the account but ultimately transferred the caller to the concierge queue as requested.",
+      "resolution_confirmed": null,
+      "transfer": {
+        "reason": "customer_requested",
+        "destination": "concierge",
+        "queue_detected": true
+      },
+      "abandon_stage": null
+    },
+    "secondary": null,
+    "steps": [
+      "Caller requests concierge.",
+      "AI asks for clarification; caller specifies billing.",
+      "AI performs account lookup and verification (name and state).",
+      "AI asks for specific billing needs; caller mentions maintenance.",
+      "Caller repeats request for concierge.",
+      "AI transfers caller to the concierge department queue."
+    ]
+  },
+  "scores": {
+    "effectiveness": 4,
+    "quality": 4,
+    "effort": 2
+  },
+  "sentiment": {
+    "start": "neutral",
+    "end": "neutral"
+  },
+  "failure": {
+    "type": "wrong_action",
+    "detail": "The agent performed full identity verification for a caller who explicitly requested a transfer to concierge at the start of the call.",
+    "policy_gap": null
+  },
+  "friction": {
+    "clarifications": [
+      {
+        "turn": 3,
+        "type": "intent",
+        "cause": "proactive",
+        "note": "AI asks for specific concierge needs"
+      }
+    ],
+    "corrections": [],
+    "loops": []
+  },
+  "actions": [
+    {
+      "type": "account_lookup",
+      "outcome": "success",
+      "detail": "Looked up record via caller ID"
+    },
+    {
+      "type": "verification",
+      "outcome": "success",
+      "detail": "Verified name spelling and state"
+    },
+    {
+      "type": "transfer",
+      "outcome": "success",
+      "detail": "Transferred to concierge department queue"
+    }
+  ],
+  "insights": {
+    "summary": "The caller requested a concierge and billing assistance. The AI verified the caller's identity before transferring them to the concierge queue as requested.",
+    "verbatim": "Speak to a concierge.",
+    "coaching": "When a caller explicitly requests a transfer or 'concierge' at the very beginning, the agent should prioritize the transfer or explain why verification is needed before doing so, rather than proceeding with a standard billing flow."
+  },
+  "call_id": "0107c02c-0cae-47f5-98d8-37b036effa10",
+  "schema_version": "v6.0",
+  "duration_seconds": 897.6,
+  "ended_by": "customer"
+}

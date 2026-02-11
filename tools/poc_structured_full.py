@@ -76,7 +76,6 @@ outcome or failure type, NOT the scope.
 - Rental program     — Rent out timeshare week. AI sends rental link
 - Info lookup        — Balance, property details, contract info
 - Verification       — Confirm identity (name, state, contract ID)
-- Transfer routing   — Connect to appropriate department
 
 **out_of_scope** — No AI pathway, requires human agent:
 - Payment processing — Accepting card numbers in-conversation (Live human agents can do that, no this AI agent), processing refunds, payment arrangements
@@ -87,6 +86,31 @@ outcome or failure type, NOT the scope.
 - Complex issues     — Legal, escalated complaints, multi-property
 
 **no_request** — Caller never articulated a request (pre-greeting/pre-intent abandon only)
+
+### human_requested — when caller asks for a human
+
+human_requested captures both WHETHER and WHEN the caller asked for a human:
+- null: Caller never asked for a human agent
+- "initial": Caller asked for a human BEFORE the AI attempted substantive service
+- "after_service": Caller asked AFTER the AI began substantive service (preventable escalation)
+
+Substantive service = account_lookup, sending links, delivering information, processing requests.
+Verification / name collection alone does NOT count as substantive service.
+
+Set department_requested to the specific department/team name when the caller asks
+for one by name (e.g., "finance", "billing", "accounting", "sales", "reservations",
+"management"). Leave null for generic requests ("a representative", "a person",
+"customer service", "concierge").
+
+Scope reflects the UNDERLYING customer need, not the transfer action or department:
+- "Pay my fees" + "speak to a person" from the start → scope=in_scope, human_requested="initial"
+- "Pay my fees" + "speak to finance" from the start → scope=in_scope, human_requested="initial", department_requested="finance"
+- "Pay my fees" → AI loops → "just give me someone" → scope=in_scope, human_requested="after_service"
+- "Billing dispute" + "speak to billing" → scope=out_of_scope, human_requested="initial", department_requested="billing"
+- "Give me a representative" (no stated need) → scope=out_of_scope, human_requested="initial"
+- Caller asks for human but AI fulfills the need → scope=in_scope, outcome=fulfilled, human_requested="initial"
+
+"Customer service" and "concierge" are the generic agent pool, not specific departments.
 
 ### outcome
 - fulfilled includes: info provided, link sent, question answered
@@ -201,6 +225,9 @@ def run_test(transcript_path: Path, model_name: str = "gemini-3-flash-preview") 
         r = analysis.resolution
         print(f"\n--- Resolution Summary ---")
         print(f"  PRIMARY:  [{r.primary.scope}] {r.primary.request}")
+        if r.primary.human_requested:
+            dept = f"  dept={r.primary.department_requested}" if r.primary.department_requested else ""
+            print(f"            human_requested={r.primary.human_requested}{dept}")
         print(f"            outcome={r.primary.outcome}", end="")
         if r.primary.outcome == "fulfilled":
             print(f"  confirmed={r.primary.resolution_confirmed}")
@@ -214,6 +241,9 @@ def run_test(transcript_path: Path, model_name: str = "gemini-3-flash-preview") 
 
         if r.secondary:
             print(f"  SECONDARY: [{r.secondary.scope}] {r.secondary.request}")
+            if r.secondary.human_requested:
+                dept = f"  dept={r.secondary.department_requested}" if r.secondary.department_requested else ""
+                print(f"            human_requested={r.secondary.human_requested}{dept}")
             print(f"            outcome={r.secondary.outcome}", end="")
             if r.secondary.outcome == "fulfilled":
                 print(f"  confirmed={r.secondary.resolution_confirmed}")

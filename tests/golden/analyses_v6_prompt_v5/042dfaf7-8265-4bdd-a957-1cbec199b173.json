@@ -1,0 +1,99 @@
+{
+  "turns": 14,
+  "repeat_caller": false,
+  "derailed_at": 13,
+  "resolution": {
+    "primary": {
+      "request": "sell timeshare ownership entirely",
+      "context": "Caller wants to get rid of their timeshare",
+      "human_requested": "initial",
+      "department_requested": null,
+      "scope": "out_of_scope",
+      "outcome": "abandoned",
+      "detail": "The caller requested a representative for an out-of-scope request; the transfer failed due to queue unavailability and the caller eventually hung up.",
+      "resolution_confirmed": null,
+      "transfer": {
+        "reason": "customer_requested",
+        "destination": "concierge",
+        "queue_detected": true
+      },
+      "abandon_stage": "mid_task"
+    },
+    "secondary": null,
+    "steps": [
+      "Caller immediately requested a representative.",
+      "Agent attempted to collect name and intent before transferring.",
+      "Caller stated they want to sell their ownership entirely.",
+      "Agent entered a loop asking if they want to rent it out instead.",
+      "Agent initiated transfer to concierge queue.",
+      "After a 25-minute hold, the system announced no agents were available.",
+      "Caller refused AI help and disconnected."
+    ]
+  },
+  "scores": {
+    "effectiveness": 2,
+    "quality": 3,
+    "effort": 5
+  },
+  "sentiment": {
+    "start": "neutral",
+    "end": "frustrated"
+  },
+  "failure": {
+    "type": "wrong_action",
+    "detail": "Agent repeatedly asked if the caller wanted to rent their week after the caller explicitly stated they wanted to sell ownership entirely.",
+    "policy_gap": null
+  },
+  "friction": {
+    "clarifications": [
+      {
+        "turn": 11,
+        "type": "intent",
+        "cause": "proactive",
+        "note": "Clarifying between renting and selling"
+      }
+    ],
+    "corrections": [
+      {
+        "turn": 14,
+        "severity": "minor",
+        "note": "Caller corrected agent's suggestion to rent"
+      },
+      {
+        "turn": 18,
+        "severity": "minor",
+        "note": "Caller again denied wanting to rent"
+      }
+    ],
+    "loops": [
+      {
+        "turns": [
+          11,
+          13,
+          15,
+          17,
+          19
+        ],
+        "type": "action_retry",
+        "subject": "renting vs selling",
+        "note": "Agent kept suggesting rental despite caller's refusal"
+      }
+    ]
+  },
+  "actions": [
+    {
+      "type": "transfer",
+      "outcome": "failed",
+      "detail": "Transferred to concierge; queue timed out after 25 minutes"
+    }
+  ],
+  "insights": {
+    "summary": "The caller wanted to sell their timeshare and requested a representative immediately. After a repetitive loop where the AI kept suggesting rental options, the caller was placed in a queue for 25 minutes only to be told no agents were available.",
+    "verbatim": "I got the wrong choice.",
+    "coaching": "The agent should have recognized the 'sell ownership' intent as out-of-scope immediately and proceeded with the requested transfer rather than looping on rental questions the caller had already answered."
+  },
+  "call_id": "042dfaf7-8265-4bdd-a957-1cbec199b173",
+  "schema_version": "v6.0",
+  "duration_seconds": 1708.3,
+  "ended_by": "customer"
+}

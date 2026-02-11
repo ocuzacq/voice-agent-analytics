@@ -43,7 +43,10 @@ def extract_key_fields(analysis: CallAnalysis) -> dict:
     p = analysis.resolution.primary
     s = analysis.resolution.secondary
     return {
+        "scope": p.scope,
         "outcome": p.outcome,
+        "human_requested": p.human_requested,
+        "dept_requested": p.department_requested,
         "abandon_stage": p.abandon_stage,
         "transfer_reason": p.transfer.reason if p.transfer else None,
         "transfer_dest": p.transfer.destination if p.transfer else None,
@@ -92,18 +95,20 @@ def print_results(call_id: str, runs: list[dict]) -> dict:
     print(f"{'=' * 80}")
 
     # Header
-    cols = ["#", "outcome", "abandon_stg", "xfer_reason", "secondary", "failure", "time"]
+    cols = ["#", "scope", "outcome", "human_req", "dept_req", "abandon_stg", "xfer_reason", "secondary", "failure", "time"]
     print(f"  {'  '.join(f'{c:<14}' for c in cols)}")
-    print(f"  {'-' * 100}")
+    print(f"  {'-' * 148}")
 
     for i, r in enumerate(runs):
         if r.get("status", "").startswith("error"):
             print(f"  {i+1:<14}  ERROR: {r['status']}")
             continue
-        print(f"  {i+1:<14}  {r.get('outcome', '?'):<14}  {str(r.get('abandon_stage', '-')):<14}"
-              f"  {str(r.get('transfer_reason', '-')):<14}  "
+        print(f"  {i+1:<14}  {r.get('scope', '?'):<14}  {r.get('outcome', '?'):<14}"
+              f"  {str(r.get('human_requested') or '-'):<14}  {str(r.get('dept_requested') or '-'):<14}"
+              f"  {str(r.get('abandon_stage') or '-'):<14}"
+              f"  {str(r.get('transfer_reason') or '-'):<14}  "
               f"{'yes: ' + (r.get('secondary_request') or '?') if r.get('has_secondary') else 'no':<14}"
-              f"  {str(r.get('failure_type', '-')):<14}  {r.get('elapsed', '?')}s")
+              f"  {str(r.get('failure_type') or '-'):<14}  {r.get('elapsed', '?')}s")
 
     # Compute flip counts
     ok_runs = [r for r in runs if r.get("status", "").startswith("ok")]
@@ -111,7 +116,7 @@ def print_results(call_id: str, runs: list[dict]) -> dict:
         print(f"\n  Too few successful runs ({len(ok_runs)}) to assess stability")
         return {"stable": None, "flips": {}}
 
-    fields_to_check = ["outcome", "abandon_stage", "transfer_reason", "has_secondary", "failure_type"]
+    fields_to_check = ["scope", "outcome", "human_requested", "dept_requested", "abandon_stage", "transfer_reason", "has_secondary", "failure_type"]
     flips = {}
     for field in fields_to_check:
         values = [r.get(field) for r in ok_runs]

@@ -186,15 +186,17 @@ python3 tools/test_v36_features.py
 
 Per-intent resolution schema with Gemini structured output (`response_schema`).
 
+**Current prompt version**: v5 — scope fix + `human_requested` / `department_requested` fields.
+
 ```bash
 # Single transcript analysis
 python3 tools/poc_structured_full.py tests/golden/transcripts/<uuid>.json
 
 # Batch all 23 golden transcripts
-python3 tools/batch_golden_v6.py --output-dir tests/golden/analyses_v6_prompt_v4
+python3 tools/batch_golden_v6.py --output-dir tests/golden/analyses_v6_prompt_v5
 
 # Compare two prompt versions (finds regressions)
-python3 tools/compare_golden.py tests/golden/analyses_v6_prompt_v3 tests/golden/analyses_v6_prompt_v4
+python3 tools/compare_golden.py tests/golden/analyses_v6_prompt_v4 tests/golden/analyses_v6_prompt_v5
 
 # Stability test: run volatile transcripts N times to verify consistency
 python3 tools/stability_test.py              # default: 3 volatile transcripts × 5 reps

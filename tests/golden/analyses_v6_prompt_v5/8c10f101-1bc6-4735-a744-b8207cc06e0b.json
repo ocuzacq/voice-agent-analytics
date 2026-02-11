@@ -1,0 +1,93 @@
+{
+  "turns": 24,
+  "repeat_caller": false,
+  "derailed_at": null,
+  "resolution": {
+    "primary": {
+      "request": "register a new portal account",
+      "context": "Caller received a message saying their ownership type requires special handling for registration",
+      "human_requested": null,
+      "department_requested": null,
+      "scope": "in_scope",
+      "outcome": "fulfilled",
+      "detail": "The agent verified the caller's identity using a contract ID and name, then sent a Clubhouse registration link to the email on file.",
+      "resolution_confirmed": true,
+      "transfer": null,
+      "abandon_stage": null
+    },
+    "secondary": null,
+    "steps": [
+      "Caller requested help with website registration.",
+      "Agent attempted lookup by phone number (failed).",
+      "Agent performed lookup by contract ID (successful).",
+      "Agent verified identity using name and state of residence.",
+      "Agent confirmed contact details on file.",
+      "Agent sent registration link via email."
+    ]
+  },
+  "scores": {
+    "effectiveness": 5,
+    "quality": 5,
+    "effort": 2
+  },
+  "sentiment": {
+    "start": "neutral",
+    "end": "satisfied"
+  },
+  "failure": null,
+  "friction": {
+    "clarifications": [
+      {
+        "turn": 3,
+        "type": "intent",
+        "cause": "proactive",
+        "note": "Clarifying if user needs registration or password reset"
+      },
+      {
+        "turn": 27,
+        "type": "name",
+        "cause": "proactive",
+        "note": "Asking for spelling of name for verification"
+      },
+      {
+        "turn": 29,
+        "type": "verify",
+        "cause": "refused",
+        "note": "First name provided didn't match primary owner"
+      }
+    ],
+    "corrections": [],
+    "loops": []
+  },
+  "actions": [
+    {
+      "type": "account_lookup",
+      "outcome": "failed",
+      "detail": "Lookup by Brazilian phone number failed"
+    },
+    {
+      "type": "account_lookup",
+      "outcome": "success",
+      "detail": "Lookup by contract ID 3108054"
+    },
+    {
+      "type": "verification",
+      "outcome": "success",
+      "detail": "Verified Gabriela Barbosa and state of residence"
+    },
+    {
+      "type": "send_clubhouse_link",
+      "outcome": "success",
+      "detail": "Sent registration link to Yahoo email address"
+    }
+  ],
+  "insights": {
+    "summary": "The caller needed help registering for the new Vacatia website after receiving a 'special handling' error. The agent successfully verified the account using the contract ID and sent a registration link to the email on file.",
+    "verbatim": "Perfect. So I have to log in in Vacatia, the new website.",
+    "coaching": null
+  },
+  "call_id": "8c10f101-1bc6-4735-a744-b8207cc06e0b",
+  "schema_version": "v6.0",
+  "duration_seconds": 409.3,
+  "ended_by": "agent"
+}

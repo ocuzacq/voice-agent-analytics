@@ -1,0 +1,65 @@
+{
+  "turns": 9,
+  "repeat_caller": false,
+  "derailed_at": 11,
+  "resolution": {
+    "primary": {
+      "request": "End timeshare ownership",
+      "context": "Caller wants to surrender or transfer their ownership",
+      "human_requested": "initial",
+      "department_requested": "concierge",
+      "scope": "out_of_scope",
+      "outcome": "abandoned",
+      "detail": "The caller requested a transfer for an out-of-scope request, but the queue was unavailable and the caller eventually disconnected after being told no agents were available.",
+      "resolution_confirmed": null,
+      "transfer": {
+        "reason": "customer_requested",
+        "destination": "concierge",
+        "queue_detected": true
+      },
+      "abandon_stage": "mid_task"
+    },
+    "secondary": null,
+    "steps": [
+      "Caller immediately requested the concierge department.",
+      "Agent collected the caller's name and intent (ending ownership).",
+      "Agent attempted a transfer to concierge.",
+      "Caller waited in a long queue (approx 25 minutes).",
+      "AI re-engaged after the queue failed to provide a representative.",
+      "AI offered limited info but confirmed it cannot process terminations.",
+      "Caller asked for a callback, which the AI could not provide.",
+      "Caller ended the call."
+    ]
+  },
+  "scores": {
+    "effectiveness": 4,
+    "quality": 4,
+    "effort": 5
+  },
+  "sentiment": {
+    "start": "neutral",
+    "end": "neutral"
+  },
+  "failure": null,
+  "friction": {
+    "clarifications": [],
+    "corrections": [],
+    "loops": []
+  },
+  "actions": [
+    {
+      "type": "transfer",
+      "outcome": "failed",
+      "detail": "Transfer to concierge failed after 25 minute wait in queue."
+    }
+  ],
+  "insights": {
+    "summary": "The caller wanted to end their timeshare ownership and requested a human agent immediately. After a 25-minute queue wait, the AI re-engaged because no agents were available, and the caller eventually disconnected.",
+    "verbatim": "I'm calling about our timeshare. We want to no longer have ownership over it.",
+    "coaching": "The agent handled the out-of-scope request and transfer attempt correctly; the failure was due to human agent queue unavailability, which is outside the AI's control."
+  },
+  "call_id": "0a5afc8b-170e-4d53-8cb9-414afa914328",
+  "schema_version": "v6.0",
+  "duration_seconds": 1644.8,
+  "ended_by": "customer"
+}

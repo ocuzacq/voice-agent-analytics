@@ -1,0 +1,85 @@
+{
+  "turns": 8,
+  "repeat_caller": false,
+  "derailed_at": 15,
+  "resolution": {
+    "primary": {
+      "request": "Check status of automatic maintenance fee withdrawal",
+      "context": "Customer expected an autopay withdrawal that has not occurred yet",
+      "human_requested": null,
+      "department_requested": null,
+      "scope": "in_scope",
+      "outcome": "abandoned",
+      "detail": "The agent confirmed the account and property details but entered a repetitive loop confirming the request instead of providing the status, leading the customer to hang up.",
+      "resolution_confirmed": null,
+      "transfer": null,
+      "abandon_stage": "mid_task"
+    },
+    "secondary": null,
+    "steps": [
+      "Agent identified account via caller ID.",
+      "Agent verified name and state.",
+      "Customer explained that an expected autopay withdrawal had not happened.",
+      "Agent collected account number and property name.",
+      "Agent repeated the request back to the customer without providing an answer.",
+      "Customer expressed confusion and disconnected."
+    ]
+  },
+  "scores": {
+    "effectiveness": 2,
+    "quality": 3,
+    "effort": 4
+  },
+  "sentiment": {
+    "start": "neutral",
+    "end": "frustrated"
+  },
+  "failure": {
+    "type": "wrong_action",
+    "detail": "Agent entered a confirmation loop, repeating the customer's request back to them instead of looking up the information or providing a status.",
+    "policy_gap": null
+  },
+  "friction": {
+    "clarifications": [
+      {
+        "turn": 11,
+        "type": "verify",
+        "cause": "proactive",
+        "note": "Agent asked for property name to confirm account"
+      }
+    ],
+    "corrections": [],
+    "loops": [
+      {
+        "turns": [
+          15,
+          17
+        ],
+        "type": "action_retry",
+        "subject": "request confirmation",
+        "note": "Agent repeated the same summary twice without acting"
+      }
+    ]
+  },
+  "actions": [
+    {
+      "type": "account_lookup",
+      "outcome": "success",
+      "detail": "Matched record via phone number"
+    },
+    {
+      "type": "verification",
+      "outcome": "success",
+      "detail": "Verified name and state"
+    }
+  ],
+  "insights": {
+    "summary": "The customer called to check why an automatic maintenance fee payment hadn't been processed. After verifying the account and property, the agent repeatedly summarized the request without providing an answer, causing the customer to hang up in frustration.",
+    "verbatim": "Supposed to be an automatic withdrawal, but it has not come out yet. Is it going to come out?",
+    "coaching": "The agent should have transitioned from gathering information to providing the status of the account or the autopay schedule once the contract was identified, rather than just repeating the user's question."
+  },
+  "call_id": "0a3660cb-5f3a-4055-86c0-ba9e4f014cd9",
+  "schema_version": "v6.0",
+  "duration_seconds": 133.1,
+  "ended_by": "customer"
+}

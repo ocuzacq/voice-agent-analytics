@@ -1,0 +1,76 @@
+{
+  "turns": 15,
+  "repeat_caller": false,
+  "derailed_at": null,
+  "resolution": {
+    "primary": {
+      "request": "Inquire about Virginia resorts and RCI trading",
+      "context": "Caller wants to know if the company has resorts in Massanutten (mispronounced as Mass Nugget) or how to trade via RCI to get there.",
+      "human_requested": "after_service",
+      "department_requested": null,
+      "scope": "in_scope",
+      "outcome": "fulfilled",
+      "detail": "The agent provided information on Virginia resort locations and sent an RCI help link via text for trading inquiries.",
+      "resolution_confirmed": true,
+      "transfer": null,
+      "abandon_stage": null
+    },
+    "secondary": null,
+    "steps": [
+      "Agent performs account lookup and verification.",
+      "Agent clarifies the caller's request regarding 'Mass Nugget' (Massanutten).",
+      "Agent provides names of available Virginia resorts and explains the distance to Massanutten.",
+      "Caller asks about trading via RCI and requests a human representative.",
+      "Agent offers and sends a link to the RCI help page via text.",
+      "Caller confirms receipt and ends the call satisfied."
+    ]
+  },
+  "scores": {
+    "effectiveness": 5,
+    "quality": 5,
+    "effort": 2
+  },
+  "sentiment": {
+    "start": "neutral",
+    "end": "satisfied"
+  },
+  "failure": null,
+  "friction": {
+    "clarifications": [
+      {
+        "turn": 15,
+        "type": "intent",
+        "cause": "unclear",
+        "note": "Clarifying 'Mass Nugget' as Massanutten resort."
+      }
+    ],
+    "corrections": [],
+    "loops": []
+  },
+  "actions": [
+    {
+      "type": "account_lookup",
+      "outcome": "success",
+      "detail": "Looked up account using phone number."
+    },
+    {
+      "type": "verification",
+      "outcome": "success",
+      "detail": "Verified name and state of residence."
+    },
+    {
+      "type": "send_rci_link",
+      "outcome": "success",
+      "detail": "Sent RCI help page link via text."
+    }
+  ],
+  "insights": {
+    "summary": "The caller wanted to stay at Massanutten; the agent correctly identified the location, explained it wasn't a Vacatia property, and provided an RCI link to facilitate a trade.",
+    "verbatim": "How can I maybe trade off with one of RCI or something that's right there?",
+    "coaching": null
+  },
+  "call_id": "0a0aea06-6cbe-4888-9605-cb52dc8fa52e",
+  "schema_version": "v6.0",
+  "duration_seconds": 297.1,
+  "ended_by": "agent"
+}
