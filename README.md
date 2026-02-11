@@ -347,14 +347,36 @@ python3 tools/ask_raw.py "Main patterns?" --run-dir runs/my_run
 - Auto-saves to `asks_raw/<timestamp>/`
 - `--run-dir` / `--run-id` scopes queries to a specific run
 
+### `dashboard_v6.py` — V6 Analytics Dashboard
+
+19-section narrative dashboard for v6.0 analysis JSONs. Reads directly via DuckDB `read_json_auto()` — no ETL step needed.
+
+```bash
+# Run on v6.0 analyses (prompt v5 with human_requested fields)
+python3 tools/dashboard_v6.py tests/golden/analyses_v6_prompt_v5/
+
+# Older data (pre-v5 prompt) — Act 2 auto-skipped
+python3 tools/dashboard_v6.py tests/golden/analyses_v6_review/batch_50/
+```
+
+**4-act structure:**
+| Act | Sections | Focus |
+|-----|----------|-------|
+| 1. The Big Picture | KPIs, funnel, scope x outcome, top requests | What can the AI handle? |
+| 2. Human Requests | human_requested rates, organic containment, departments | Why do callers ask for humans? (v5+ only) |
+| 3. Quality & Failure | failure modes, preventable escalations, scores, sentiment | What goes wrong? |
+| 4. Operational Details | duration, actions, transfers, friction, abandons | Where to invest? |
+
+**Backward compatible**: Detects `human_requested` field presence — Act 2 auto-skips for older prompt versions.
+
 ### When to use which
 
-| | `ask_raw.py` | `ask.py` |
-|-|-------------|----------|
-| **Speed** | Fastest (sample only) | Needs analysis first |
-| **Cost** | 1 LLM call total | N analysis calls + 1 Q&A call |
-| **Data** | Full conversation text | Structured fields (intent, disposition, scores) |
-| **Best for** | Exploration, open-ended questions | Targeted queries on extracted metrics |
+| | `ask_raw.py` | `ask.py` | `dashboard_v6.py` |
+|-|-------------|----------|-------------------|
+| **Speed** | Fastest (sample only) | Needs analysis first | Needs v6.0 analyses |
+| **Cost** | 1 LLM call total | N analysis calls + 1 Q&A call | Zero (reads JSON) |
+| **Data** | Full conversation text | Structured fields (intent, disposition, scores) | v6.0 per-intent analyses |
+| **Best for** | Exploration, open-ended questions | Targeted queries on extracted metrics | Structured performance dashboard |
 
 ## Output Files
 
@@ -418,6 +440,7 @@ reports/
 │   ├── batch_golden_v6.py # Batch golden transcripts with v6.0 schema
 │   ├── compare_golden.py  # Compare prompt versions for regressions
 │   ├── stability_test.py  # Prompt stability: N reps per transcript
+│   ├── dashboard_v6.py    # 19-section narrative dashboard (DuckDB, no ETL)
 │   ├── v0/                # Archived: Simple schema (~15 fields)
 │   ├── v1/                # Archived: Verbose schema (~50 fields)
 │   ├── v2/                # Previous: Actionable schema (14 fields)

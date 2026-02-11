@@ -128,6 +128,24 @@ python3 tools/query.py runs/run_XXXX/ --dashboard
 python3 tools/query.py runs/run_XXXX/ -q "SELECT call_scope, call_outcome, COUNT(*) FROM calls GROUP BY 1, 2"
 ```
 
+### V6 Dashboard (v6.0 schema)
+
+19-section narrative dashboard reading v6.0 analysis JSONs via DuckDB `read_json_auto()`:
+
+```bash
+# Run on any directory of v6.0 analysis JSONs
+python3 tools/dashboard_v6.py tests/golden/analyses_v6_prompt_v5/
+
+# Older data without human_requested — Act 2 auto-skipped
+python3 tools/dashboard_v6.py tests/golden/analyses_v6_review/batch_50/
+```
+
+**4-act structure:**
+1. **The Big Picture** — KPIs, funnel, scope x outcome, top requests
+2. **Human-Request Phenomenon** — human_requested rates, organic containment, departments (v5+ only)
+3. **Quality & Failure** — failure modes, preventable escalations, scores, sentiment
+4. **Operational Details** — duration, actions, transfers, friction, abandons, secondary intents
+
 ### Ad-hoc Q&A Tools
 
 **`ask.py`** — queries LLM analysis outputs (structured fields)
