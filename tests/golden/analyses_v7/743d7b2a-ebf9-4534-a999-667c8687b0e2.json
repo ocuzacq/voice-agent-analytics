@@ -1,0 +1,80 @@
+{
+  "turns": 10,
+  "repeat_caller": false,
+  "derailed_at": null,
+  "resolution": {
+    "primary": {
+      "request_category": "unit_resort_info",
+      "request": "Check billing address and ownership details",
+      "context": "Caller had questions regarding a maintenance bill and wanted to verify account details",
+      "human_requested": null,
+      "department_requested": null,
+      "scope": "in_scope",
+      "outcome": "fulfilled",
+      "detail": "The agent successfully verified the caller and provided the address and owner name on file.",
+      "resolution_confirmed": true,
+      "transfer": null,
+      "abandon_stage": null
+    },
+    "secondary": null,
+    "steps": [
+      "Caller requested help with a maintenance bill.",
+      "Agent performed account lookup via phone number.",
+      "Agent verified identity after a name mismatch (Vincent vs Valerie).",
+      "Agent provided the address on file upon request.",
+      "Agent provided the owner name and contract details upon request.",
+      "Caller confirmed no further assistance was needed."
+    ]
+  },
+  "scores": {
+    "effectiveness": 5,
+    "quality": 5,
+    "effort": 1
+  },
+  "sentiment": {
+    "start": "neutral",
+    "end": "satisfied"
+  },
+  "impediment": null,
+  "agent_issue": null,
+  "friction": {
+    "clarifications": [
+      {
+        "turn": 9,
+        "type": "name",
+        "cause": "misheard",
+        "note": "Agent asked for spelling after name mismatch"
+      }
+    ],
+    "corrections": [
+      {
+        "turn": 10,
+        "severity": "minor",
+        "note": "User provided Valerie after agent flagged Vincent mismatch"
+      }
+    ],
+    "loops": []
+  },
+  "actions": [
+    {
+      "type": "account_lookup",
+      "outcome": "success",
+      "detail": "Looked up account via phone number"
+    },
+    {
+      "type": "verification",
+      "outcome": "success",
+      "detail": "Verified name and state of residence"
+    }
+  ],
+  "insights": {
+    "summary": "The caller wanted to verify account details related to a maintenance bill. The agent successfully looked up the account, verified the caller, and provided the address and ownership information requested.",
+    "verbatim": "Whose address is on file? ... Who owns the unit?",
+    "coaching": null
+  },
+  "call_id": "743d7b2a-ebf9-4534-a999-667c8687b0e2",
+  "schema_version": "v7.0",
+  "duration_seconds": 162.3,
+  "ended_by": "agent",
+  "ended_reason": "assistant-ended-call"
+}

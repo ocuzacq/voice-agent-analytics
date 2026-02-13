@@ -1,0 +1,61 @@
+{
+  "turns": 3,
+  "repeat_caller": false,
+  "derailed_at": null,
+  "resolution": {
+    "primary": {
+      "request": "book a vacation reservation",
+      "context": "The user wants to make a new reservation or book a stay.",
+      "scope": "out_of_scope",
+      "outcome": "abandoned",
+      "detail": "The AI correctly identified the out-of-scope request and attempted a transfer, but no human agents were available in the queue.",
+      "resolution_confirmed": null,
+      "transfer": {
+        "reason": "out_of_scope",
+        "destination": "concierge",
+        "queue_detected": true
+      },
+      "abandon_stage": "mid_task"
+    },
+    "secondary": null,
+    "steps": [
+      "Caller requested to book a vacation.",
+      "Agent asked for caller's name.",
+      "Agent identified the request as out-of-scope and offered a transfer to concierge.",
+      "Caller accepted the transfer.",
+      "Caller waited in the queue for approximately 25 minutes.",
+      "AI re-engaged to inform the caller no representatives were available and ended the call."
+    ]
+  },
+  "scores": {
+    "effectiveness": 5,
+    "quality": 5,
+    "effort": 3
+  },
+  "sentiment": {
+    "start": "neutral",
+    "end": "neutral"
+  },
+  "failure": null,
+  "friction": {
+    "clarifications": [],
+    "corrections": [],
+    "loops": []
+  },
+  "actions": [
+    {
+      "type": "transfer",
+      "outcome": "failed",
+      "detail": "Transfer to concierge failed due to no agents available after long hold."
+    }
+  ],
+  "insights": {
+    "summary": "The customer wanted to book a vacation, which is out-of-scope for the AI. The agent correctly routed the call to the concierge department, but the transfer failed after a 25-minute wait because no human agents were available.",
+    "verbatim": "Reservations. I want to reserve vacation, book a vacation.",
+    "coaching": null
+  },
+  "call_id": "f58299f6-dd76-4570-ad80-6b75b9feffbb",
+  "schema_version": "v6.0",
+  "duration_seconds": 1581.0,
+  "ended_by": "agent"
+}

@@ -1,0 +1,97 @@
+{
+  "turns": 11,
+  "repeat_caller": false,
+  "derailed_at": 23,
+  "resolution": {
+    "primary": {
+      "request": "Transfer to special handling",
+      "context": "Caller needed specific assistance with ownership details",
+      "scope": "out_of_scope",
+      "outcome": "transferred",
+      "detail": "The agent attempted to transfer the caller to a representative twice; the call ended during the second long hold period.",
+      "resolution_confirmed": null,
+      "transfer": {
+        "reason": "out_of_scope",
+        "destination": "concierge",
+        "queue_detected": true
+      },
+      "abandon_stage": null
+    },
+    "secondary": {
+      "request": "Inquire about rental program",
+      "context": "While waiting for a representative, the caller asked about renting out units",
+      "scope": "in_scope",
+      "outcome": "abandoned",
+      "detail": "The agent verified the caller but failed to send the rental link before transferring the caller back to the queue.",
+      "resolution_confirmed": null,
+      "transfer": null,
+      "abandon_stage": "mid_task"
+    },
+    "steps": [
+      "Caller requested special handling for ownership.",
+      "Agent warned of long wait times and attempted transfer.",
+      "Transfer failed (no agents available), agent re-engaged.",
+      "Caller asked about rental costs; agent offered rental agreement link.",
+      "Agent performed account lookup and identity verification.",
+      "Caller then asked about surrendering ownership.",
+      "Agent transferred caller back to concierge queue where the call timed out."
+    ]
+  },
+  "scores": {
+    "effectiveness": 3,
+    "quality": 3,
+    "effort": 4
+  },
+  "sentiment": {
+    "start": "neutral",
+    "end": "neutral"
+  },
+  "failure": {
+    "type": "wrong_action",
+    "detail": "Agent verified the caller for a rental link but never actually sent it, instead transferring the caller immediately after verification.",
+    "policy_gap": null
+  },
+  "friction": {
+    "clarifications": [
+      {
+        "turn": 7,
+        "type": "intent",
+        "cause": "unclear",
+        "note": "Agent re-confirmed transfer vs automated system"
+      }
+    ],
+    "corrections": [],
+    "loops": []
+  },
+  "actions": [
+    {
+      "type": "transfer",
+      "outcome": "failed",
+      "detail": "First transfer attempt to concierge timed out"
+    },
+    {
+      "type": "account_lookup",
+      "outcome": "success",
+      "detail": "Found record via phone number"
+    },
+    {
+      "type": "verification",
+      "outcome": "success",
+      "detail": "Verified name and state"
+    },
+    {
+      "type": "transfer",
+      "outcome": "success",
+      "detail": "Second transfer to concierge queue"
+    }
+  ],
+  "insights": {
+    "summary": "The caller initially wanted a human agent for 'special handling'. After a failed transfer, the caller asked about rentals and surrendering ownership; the agent verified the caller but transferred them back to a queue without fulfilling the rental link request.",
+    "verbatim": "Is there any way I can get out of my ownership to begin with?",
+    "coaching": "The agent should have sent the rental agreement link as promised immediately after verification (Turn 21) before addressing the next question or initiating a transfer."
+  },
+  "call_id": "e7d9b181-a31a-419e-bcc5-9f3ce6767941",
+  "schema_version": "v6.0",
+  "duration_seconds": 2696.5,
+  "ended_by": "unknown"
+}

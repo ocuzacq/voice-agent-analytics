@@ -1,0 +1,72 @@
+{
+  "turns": 3,
+  "repeat_caller": false,
+  "derailed_at": null,
+  "resolution": {
+    "primary": {
+      "request_category": "payment_arrangement",
+      "request": "split payment into more months",
+      "context": "Customer cannot afford the current payment amount and needs a payment plan",
+      "human_requested": "initial",
+      "department_requested": null,
+      "scope": "out_of_scope",
+      "outcome": "abandoned",
+      "detail": "The caller requested a payment arrangement which is out of scope; the AI attempted a transfer, but the queue was unavailable.",
+      "resolution_confirmed": null,
+      "transfer": {
+        "reason": "out_of_scope",
+        "destination": "concierge",
+        "queue_detected": true,
+        "queue_result": "unavailable"
+      },
+      "abandon_stage": "mid_task"
+    },
+    "secondary": null,
+    "steps": [
+      "Caller requested a representative for customer service.",
+      "AI asked for more details to assist.",
+      "Caller explained they need to split a payment over several months.",
+      "AI identified the request as needing a live agent and warned of wait times.",
+      "Caller agreed to wait.",
+      "AI initiated transfer to concierge queue.",
+      "Transfer failed after several minutes of hold music due to no agents being available."
+    ]
+  },
+  "scores": {
+    "effectiveness": 4,
+    "quality": 4,
+    "effort": 3
+  },
+  "sentiment": {
+    "start": "neutral",
+    "end": "neutral"
+  },
+  "impediment": {
+    "type": "transfer_queue",
+    "detail": "The transfer queue was unavailable and the AI re-engaged to tell the caller to call back later.",
+    "policy_gap": null
+  },
+  "agent_issue": null,
+  "friction": {
+    "clarifications": [],
+    "corrections": [],
+    "loops": []
+  },
+  "actions": [
+    {
+      "type": "transfer",
+      "outcome": "failed",
+      "detail": "Attempted transfer to concierge for payment arrangement request."
+    }
+  ],
+  "insights": {
+    "summary": "The customer wanted to set up a payment plan to split their fees over several months. The AI correctly identified this as out of scope and attempted a transfer, but no agents were available in the queue.",
+    "verbatim": "I would like to talk to a person that can help me to split this payment in more months.",
+    "coaching": null
+  },
+  "call_id": "4bacd0aa-1b6c-4311-90f7-1cc153b099ed",
+  "schema_version": "v7.0",
+  "duration_seconds": 395.9,
+  "ended_by": "agent",
+  "ended_reason": "assistant-ended-call"
+}

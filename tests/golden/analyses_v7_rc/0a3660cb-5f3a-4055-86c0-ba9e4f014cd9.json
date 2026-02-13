@@ -1,0 +1,82 @@
+{
+  "turns": 8,
+  "repeat_caller": false,
+  "derailed_at": 15,
+  "resolution": {
+    "primary": {
+      "request_category": "maintenance_payment",
+      "request": "Check status of automatic maintenance fee withdrawal",
+      "context": "Caller expected an automatic payment to be processed but it has not yet occurred",
+      "human_requested": null,
+      "department_requested": null,
+      "scope": "in_scope",
+      "outcome": "abandoned",
+      "detail": "The caller abandoned the call after the agent repeatedly summarized the request without providing an answer or a link.",
+      "resolution_confirmed": null,
+      "transfer": null,
+      "abandon_stage": "mid_task"
+    },
+    "secondary": null,
+    "steps": [
+      "Caller requested to make a maintenance payment.",
+      "Agent performed account lookup via caller ID and verified name and state.",
+      "Caller clarified they were checking on an automatic withdrawal that hadn't happened yet.",
+      "Agent collected account number and resort name.",
+      "Agent entered a loop of summarizing the request back to the caller without taking action.",
+      "Caller became confused and disconnected."
+    ]
+  },
+  "scores": {
+    "effectiveness": 2,
+    "quality": 2,
+    "effort": 4
+  },
+  "sentiment": {
+    "start": "neutral",
+    "end": "frustrated"
+  },
+  "impediment": {
+    "type": "other",
+    "detail": "Agent entered a repetitive summary loop instead of providing information or a payment link.",
+    "policy_gap": null
+  },
+  "agent_issue": {
+    "detail": "Agent repeatedly summarized the caller's request (Turns 15 and 17) instead of answering the question or offering a portal link to check autopay status."
+  },
+  "friction": {
+    "clarifications": [],
+    "corrections": [],
+    "loops": [
+      {
+        "turns": [
+          15,
+          17
+        ],
+        "type": "action_retry",
+        "subject": "request summary",
+        "note": "Agent repeating the problem back to caller"
+      }
+    ]
+  },
+  "actions": [
+    {
+      "type": "account_lookup",
+      "outcome": "success",
+      "detail": "Lookup by phone number successful"
+    },
+    {
+      "type": "verification",
+      "outcome": "success",
+      "detail": "Verified name and state"
+    }
+  ],
+  "insights": {
+    "summary": "The caller wanted to know why an automatic maintenance fee withdrawal hadn't occurred. The agent successfully verified the account but then stalled by repeatedly summarizing the request until the caller hung up.",
+    "verbatim": "Supposed to be an automatic withdrawal, but it has not come out yet. Is it going to come out?",
+    "coaching": "The agent should have provided the status of the payment or sent a portal link for the customer to manage their autopay settings rather than just repeating the customer's concern."
+  },
+  "call_id": "0a3660cb-5f3a-4055-86c0-ba9e4f014cd9",
+  "schema_version": "v7.0",
+  "duration_seconds": 133.1,
+  "ended_by": "customer"
+}

@@ -1,0 +1,48 @@
+{
+  "turns": 0,
+  "repeat_caller": false,
+  "derailed_at": null,
+  "resolution": {
+    "primary": {
+      "request": "No request made",
+      "context": "Caller remained silent after greeting",
+      "scope": "no_request",
+      "outcome": "abandoned",
+      "detail": "The caller did not respond to the agent's greeting or follow-up prompts.",
+      "resolution_confirmed": null,
+      "transfer": null,
+      "abandon_stage": "pre_intent"
+    },
+    "secondary": null,
+    "steps": [
+      "Agent greeted the caller and asked for the reason for the call.",
+      "Agent prompted for a response after silence.",
+      "Call ended due to silence timeout."
+    ]
+  },
+  "scores": {
+    "effectiveness": 1,
+    "quality": 3,
+    "effort": 1
+  },
+  "sentiment": {
+    "start": "neutral",
+    "end": "neutral"
+  },
+  "failure": null,
+  "friction": {
+    "clarifications": [],
+    "corrections": [],
+    "loops": []
+  },
+  "actions": [],
+  "insights": {
+    "summary": "The caller did not provide any input or request, leading to a silence timeout after the agent's greeting and follow-up prompts.",
+    "verbatim": null,
+    "coaching": null
+  },
+  "call_id": "65ceb0ad-0ba5-41e7-8133-b874408c8ef7",
+  "schema_version": "v6.0",
+  "duration_seconds": 79.3,
+  "ended_by": "unknown"
+}

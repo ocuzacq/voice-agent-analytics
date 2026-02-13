@@ -1,0 +1,87 @@
+{
+  "turns": 11,
+  "repeat_caller": false,
+  "derailed_at": 23,
+  "resolution": {
+    "primary": {
+      "request": "pay maintenance fees and taxes",
+      "context": "Returning a call from a specific representative regarding a payment",
+      "scope": "in_scope",
+      "outcome": "transferred",
+      "detail": "The AI attempted to send a payment link but encountered a technical issue and transferred the caller to concierge.",
+      "resolution_confirmed": false,
+      "transfer": {
+        "reason": "task_failure",
+        "destination": "concierge",
+        "queue_detected": true
+      },
+      "abandon_stage": null
+    },
+    "secondary": null,
+    "steps": [
+      "Caller requested concierge immediately.",
+      "Agent attempted to identify the caller and the reason for the call.",
+      "Caller explained they were returning a call about paying maintenance fees.",
+      "Agent performed account lookup and verified last name and state.",
+      "Agent confirmed contact information for the payment link.",
+      "Agent encountered a technical error while sending the link and initiated a transfer."
+    ]
+  },
+  "scores": {
+    "effectiveness": 4,
+    "quality": 4,
+    "effort": 2
+  },
+  "sentiment": {
+    "start": "neutral",
+    "end": "neutral"
+  },
+  "failure": {
+    "type": "tech_issue",
+    "detail": "The agent reported an issue while sending the payment information, necessitating a transfer.",
+    "policy_gap": null
+  },
+  "friction": {
+    "clarifications": [
+      {
+        "turn": 13,
+        "type": "verify",
+        "cause": "unclear",
+        "note": "Repeated request for last name after user said 'What?'"
+      }
+    ],
+    "corrections": [],
+    "loops": []
+  },
+  "actions": [
+    {
+      "type": "account_lookup",
+      "outcome": "success",
+      "detail": "Pulled record via caller ID"
+    },
+    {
+      "type": "verification",
+      "outcome": "success",
+      "detail": "Verified last name Watts and state Virginia"
+    },
+    {
+      "type": "send_payment_link",
+      "outcome": "failed",
+      "detail": "Encountered issue while sending information"
+    },
+    {
+      "type": "transfer",
+      "outcome": "success",
+      "detail": "Transferred to concierge after link failure"
+    }
+  ],
+  "insights": {
+    "summary": "The caller wanted to pay maintenance fees after receiving a call earlier. The AI verified the account but failed to send the payment link due to a technical error, resulting in a transfer to concierge.",
+    "verbatim": "I was returning a call. About paying it at maintenance to tax.",
+    "coaching": "The agent handled the transition from a transfer request to a self-service flow well, but the technical failure at the final step forced the transfer anyway."
+  },
+  "call_id": "2aa5c1c5-8e3e-4019-88ec-1366945f7662",
+  "schema_version": "v6.0",
+  "duration_seconds": 605.3,
+  "ended_by": "customer"
+}

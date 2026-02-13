@@ -1,0 +1,66 @@
+{
+  "turns": 4,
+  "repeat_caller": false,
+  "derailed_at": null,
+  "resolution": {
+    "primary": {
+      "request": "Speak with a representative about billing",
+      "context": "Caller wanted to discuss billing with a human agent",
+      "scope": "out_of_scope",
+      "outcome": "abandoned",
+      "detail": "The caller requested a representative for billing, waited in a 20-minute queue, and then declined the AI's offer to help when no human was available.",
+      "resolution_confirmed": null,
+      "transfer": {
+        "reason": "customer_requested",
+        "destination": "concierge",
+        "queue_detected": true
+      },
+      "abandon_stage": "mid_task"
+    },
+    "secondary": null,
+    "steps": [
+      "Caller requested a representative immediately.",
+      "Agent warned of long hold times and asked for the department.",
+      "Caller specified 'Billing'.",
+      "Agent initiated transfer to concierge queue.",
+      "Caller waited for approximately 20 minutes in the queue.",
+      "AI interrupted the queue to inform the caller no representative was available and offered to help with billing.",
+      "Caller declined the AI's help and the call ended."
+    ]
+  },
+  "scores": {
+    "effectiveness": 3,
+    "quality": 3,
+    "effort": 5
+  },
+  "sentiment": {
+    "start": "neutral",
+    "end": "neutral"
+  },
+  "failure": {
+    "type": "other",
+    "detail": "The caller was left in a 20-minute queue only to be told no representative was available, leading to abandonment.",
+    "policy_gap": null
+  },
+  "friction": {
+    "clarifications": [],
+    "corrections": [],
+    "loops": []
+  },
+  "actions": [
+    {
+      "type": "transfer",
+      "outcome": "failed",
+      "detail": "Attempted transfer to concierge; caller waited 20 mins in queue."
+    }
+  ],
+  "insights": {
+    "summary": "The caller wanted to speak to a billing representative. After waiting in a 20-minute queue, the AI informed them no one was available and the caller disconnected after refusing AI assistance.",
+    "verbatim": "Wait for representative.",
+    "coaching": "The system should ideally check for agent availability before placing a caller in a 20-minute queue if it's known that no one will be able to take the call."
+  },
+  "call_id": "30d955ef-1b17-43e4-b0b6-df87e7309002",
+  "schema_version": "v6.0",
+  "duration_seconds": 1339.7,
+  "ended_by": "agent"
+}

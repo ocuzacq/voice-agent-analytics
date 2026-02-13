@@ -1,0 +1,97 @@
+{
+  "turns": 11,
+  "repeat_caller": false,
+  "derailed_at": 11,
+  "resolution": {
+    "primary": {
+      "request": "pay maintenance fee",
+      "context": "Caller wanted to make a payment for Vacation Village Parkway",
+      "scope": "in_scope",
+      "outcome": "transferred",
+      "detail": "The agent was unable to verify the caller's name against the record found via contract ID, leading to a transfer to concierge.",
+      "resolution_confirmed": false,
+      "transfer": {
+        "reason": "task_failure",
+        "destination": "concierge",
+        "queue_detected": true
+      },
+      "abandon_stage": null
+    },
+    "secondary": null,
+    "steps": [
+      "Caller requested to pay maintenance fees.",
+      "Agent performed account lookup via resort name and phone number, which failed.",
+      "Agent performed lookup via contract ID, which succeeded in finding a record.",
+      "Agent attempted to verify the name on the contract multiple times.",
+      "Caller provided names 'Thomas' and 'Yan', but spelling variations (Domas, Tonas) caused verification failures.",
+      "Agent transferred the caller to the concierge department after multiple failed verification attempts."
+    ]
+  },
+  "scores": {
+    "effectiveness": 3,
+    "quality": 3,
+    "effort": 4
+  },
+  "sentiment": {
+    "start": "neutral",
+    "end": "neutral"
+  },
+  "failure": {
+    "type": "wrong_action",
+    "detail": "The agent persisted in a high-friction name spelling and verification loop despite having already located the record via contract ID.",
+    "policy_gap": null
+  },
+  "friction": {
+    "clarifications": [
+      {
+        "turn": 11,
+        "type": "verify",
+        "cause": "proactive",
+        "note": "Agent asked to spell names for verification"
+      }
+    ],
+    "corrections": [],
+    "loops": [
+      {
+        "turns": [
+          11,
+          21
+        ],
+        "type": "info_retry",
+        "subject": "name verification",
+        "note": "Repeated attempts to spell and verify name"
+      }
+    ]
+  },
+  "actions": [
+    {
+      "type": "account_lookup",
+      "outcome": "failed",
+      "detail": "Lookup by phone number 42072807217 failed"
+    },
+    {
+      "type": "account_lookup",
+      "outcome": "success",
+      "detail": "Lookup by contract ID 207066 succeeded"
+    },
+    {
+      "type": "verification",
+      "outcome": "failed",
+      "detail": "Name verification failed across multiple spelling attempts"
+    },
+    {
+      "type": "transfer",
+      "outcome": "success",
+      "detail": "Transferred to concierge after verification failure"
+    }
+  ],
+  "insights": {
+    "summary": "The caller wanted to pay maintenance fees but was blocked by a name verification failure. Despite finding the account via contract ID, the agent's inability to match the spelled name led to a transfer.",
+    "verbatim": "There was an issue verifying your account, I will now be transferring you to our concierge department",
+    "coaching": "When a record is found via contract ID, the agent should be more flexible with name matching, especially when dealing with multiple owners or slight spelling discrepancies, to avoid unnecessary transfers."
+  },
+  "call_id": "fccfce6b-e6e0-4e52-85c7-cef5d8676f4b",
+  "schema_version": "v6.0",
+  "duration_seconds": 405.5,
+  "ended_by": "customer"
+}

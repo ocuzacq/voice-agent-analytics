@@ -1,0 +1,78 @@
+{
+  "turns": 11,
+  "repeat_caller": true,
+  "derailed_at": null,
+  "resolution": {
+    "primary": {
+      "request_category": "maintenance_payment",
+      "request": "Make a payment on account",
+      "context": "Caller was having trouble logging into the portal with an invalid account number error",
+      "human_requested": null,
+      "department_requested": null,
+      "scope": "in_scope",
+      "outcome": "fulfilled",
+      "detail": "The agent verified the caller and sent a payment link via email and text after the caller confirmed the portal registration link previously sent did not work.",
+      "resolution_confirmed": false,
+      "transfer": null,
+      "abandon_stage": null
+    },
+    "secondary": null,
+    "steps": [
+      "Caller states they cannot get into their account and provides name.",
+      "Agent performs account lookup via phone number and verifies identity.",
+      "Caller explains the account number is showing as invalid on the portal.",
+      "Agent offers a new registration link, but caller states they already tried that and it failed.",
+      "Caller clarifies they want to make a payment.",
+      "Agent confirms property and contact details, then sends a payment link via text and email."
+    ]
+  },
+  "scores": {
+    "effectiveness": 5,
+    "quality": 5,
+    "effort": 2
+  },
+  "sentiment": {
+    "start": "neutral",
+    "end": "neutral"
+  },
+  "impediment": null,
+  "agent_issue": null,
+  "friction": {
+    "clarifications": [],
+    "corrections": [
+      {
+        "turn": 14,
+        "severity": "minor",
+        "note": "Caller clarifies previous registration link already failed"
+      }
+    ],
+    "loops": []
+  },
+  "actions": [
+    {
+      "type": "account_lookup",
+      "outcome": "success",
+      "detail": "Lookup by phone number 8135997661"
+    },
+    {
+      "type": "verification",
+      "outcome": "success",
+      "detail": "Verified name and state"
+    },
+    {
+      "type": "send_payment_link",
+      "outcome": "success",
+      "detail": "Sent link to katieluker1@gmail.com and 8135997661"
+    }
+  ],
+  "insights": {
+    "summary": "The caller wanted to make a payment because they were unable to log into the owner portal. The agent successfully verified the account and sent a payment link via text and email.",
+    "verbatim": "I'm trying to get into my account. The account number is wrong.",
+    "coaching": null
+  },
+  "call_id": "0a2feaf7-b27a-435b-8f6a-f81a4890d1d6",
+  "schema_version": "v7.0",
+  "duration_seconds": 190.9,
+  "ended_by": "agent",
+  "ended_reason": "assistant-ended-call"
+}

@@ -1,0 +1,61 @@
+{
+  "turns": 4,
+  "repeat_caller": false,
+  "derailed_at": null,
+  "resolution": {
+    "primary": {
+      "request": "Speak with billing representative",
+      "context": "Caller has a billing inquiry and wants a human agent.",
+      "scope": "out_of_scope",
+      "outcome": "transferred",
+      "detail": "The agent attempted to transfer the caller to billing, but after a long hold, the system determined no agents were available and offered AI help which the user declined.",
+      "resolution_confirmed": null,
+      "transfer": {
+        "reason": "customer_requested",
+        "destination": "concierge",
+        "queue_detected": true
+      },
+      "abandon_stage": null
+    },
+    "secondary": null,
+    "steps": [
+      "Caller requested a representative immediately.",
+      "Agent warned of long wait times and asked for the department.",
+      "Caller specified 'Billing'.",
+      "Agent initiated transfer and caller remained on hold for approximately 20 minutes.",
+      "Agent returned to line stating no representatives were available and offered AI assistance.",
+      "Caller declined AI assistance and call ended."
+    ]
+  },
+  "scores": {
+    "effectiveness": 5,
+    "quality": 4,
+    "effort": 3
+  },
+  "sentiment": {
+    "start": "neutral",
+    "end": "neutral"
+  },
+  "failure": null,
+  "friction": {
+    "clarifications": [],
+    "corrections": [],
+    "loops": []
+  },
+  "actions": [
+    {
+      "type": "transfer",
+      "outcome": "failed",
+      "detail": "Transfer to billing failed due to no agents available after 20 minute hold."
+    }
+  ],
+  "insights": {
+    "summary": "The caller wanted to speak to the billing department. After a 20-minute hold in the concierge queue, the AI informed the caller no one was available and the caller chose to hang up rather than use the AI for the billing request.",
+    "verbatim": "Actually, there isn't a representative available to take your call right now. I can help with your billing request, or you can call back during our work hours.",
+    "coaching": null
+  },
+  "call_id": "30d955ef-1b17-43e4-b0b6-df87e7309002",
+  "schema_version": "v6.0",
+  "duration_seconds": 1339.7,
+  "ended_by": "agent"
+}

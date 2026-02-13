@@ -1,0 +1,76 @@
+{
+  "turns": 4,
+  "repeat_caller": false,
+  "derailed_at": 4,
+  "resolution": {
+    "primary": {
+      "request_category": "maintenance_payment",
+      "request": "Make a maintenance payment over the phone",
+      "context": "Caller refused the digital link and insisted on speaking to someone to pay",
+      "human_requested": "initial",
+      "department_requested": null,
+      "scope": "in_scope",
+      "outcome": "abandoned",
+      "detail": "The caller requested to pay over the phone and was transferred to a queue where they waited for over 25 minutes before disconnecting.",
+      "resolution_confirmed": null,
+      "transfer": {
+        "reason": "customer_requested",
+        "destination": "concierge",
+        "queue_detected": true,
+        "queue_result": "caller_abandoned"
+      },
+      "abandon_stage": "mid_task"
+    },
+    "secondary": null,
+    "steps": [
+      "Caller requested to make a maintenance payment.",
+      "AI offered to send a payment link via text or email.",
+      "Caller refused the link and requested to pay over the phone.",
+      "AI transferred the caller to the concierge queue.",
+      "Caller waited in the queue for approximately 25 minutes while hold music/messages played.",
+      "Caller appeared to be playing a recording or was in a noisy environment (Turn 6/8) before hanging up."
+    ]
+  },
+  "scores": {
+    "effectiveness": 3,
+    "quality": 3,
+    "effort": 5
+  },
+  "sentiment": {
+    "start": "neutral",
+    "end": "neutral"
+  },
+  "impediment": {
+    "type": "transfer_queue",
+    "detail": "The caller was stuck in a transfer queue for over 25 minutes without reaching an agent.",
+    "policy_gap": null
+  },
+  "agent_issue": null,
+  "friction": {
+    "clarifications": [],
+    "corrections": [
+      {
+        "turn": 4,
+        "severity": "minor",
+        "note": "Caller corrected AI's offer of a link, requesting phone payment."
+      }
+    ],
+    "loops": []
+  },
+  "actions": [
+    {
+      "type": "transfer",
+      "outcome": "success",
+      "detail": "Transferred to concierge queue per customer request."
+    }
+  ],
+  "insights": {
+    "summary": "The caller wanted to make a maintenance payment over the phone. After refusing the AI's offer of a digital link, they were transferred to a queue where they waited for 25 minutes before abandoning.",
+    "verbatim": "No. On the phone. I'm gonna call and make it over the phone payment.",
+    "coaching": null
+  },
+  "call_id": "0a195db9-a53b-4f0e-9f10-c2545a0a5528",
+  "schema_version": "v7.0",
+  "duration_seconds": 1710.0,
+  "ended_by": "customer"
+}

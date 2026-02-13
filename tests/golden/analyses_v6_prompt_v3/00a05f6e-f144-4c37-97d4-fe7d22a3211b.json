@@ -1,0 +1,85 @@
+{
+  "turns": 9,
+  "repeat_caller": false,
+  "derailed_at": null,
+  "resolution": {
+    "primary": {
+      "request": "Pay annual maintenance fee",
+      "context": "Customer wanted to pay their maintenance fee for The Grandview at Las Vegas.",
+      "scope": "in_scope",
+      "outcome": "fulfilled",
+      "detail": "The AI successfully verified the account and sent a payment link via text/email.",
+      "resolution_confirmed": false,
+      "transfer": null,
+      "abandon_stage": null
+    },
+    "secondary": {
+      "request": "Change phone number",
+      "context": "Customer wanted to update contact information on the account.",
+      "scope": "out_of_scope",
+      "outcome": "transferred",
+      "detail": "The AI correctly identified the request as out-of-scope and transferred the caller to the concierge department.",
+      "resolution_confirmed": null,
+      "transfer": {
+        "reason": "out_of_scope",
+        "destination": "concierge",
+        "queue_detected": true
+      },
+      "abandon_stage": null
+    },
+    "steps": [
+      "Agent greeted customer and identified intent to pay fees.",
+      "Agent performed account lookup using phone number and verified state.",
+      "Agent provided balance information and confirmed contact details.",
+      "Agent sent payment link.",
+      "Customer requested to change their phone number.",
+      "Agent transferred the call to concierge for the account update."
+    ]
+  },
+  "scores": {
+    "effectiveness": 5,
+    "quality": 5,
+    "effort": 1
+  },
+  "sentiment": {
+    "start": "neutral",
+    "end": "neutral"
+  },
+  "failure": null,
+  "friction": {
+    "clarifications": [],
+    "corrections": [],
+    "loops": []
+  },
+  "actions": [
+    {
+      "type": "account_lookup",
+      "outcome": "success",
+      "detail": "Found record using phone number 5418064851."
+    },
+    {
+      "type": "verification",
+      "outcome": "success",
+      "detail": "Verified state of residence as Oregon."
+    },
+    {
+      "type": "send_payment_link",
+      "outcome": "success",
+      "detail": "Sent payment link to verified email and phone."
+    },
+    {
+      "type": "transfer",
+      "outcome": "success",
+      "detail": "Transferred to concierge for phone number change."
+    }
+  ],
+  "insights": {
+    "summary": "The AI handled the primary payment request efficiently and correctly transferred the secondary out-of-scope request to a human agent.",
+    "verbatim": "I need to change the phone number.",
+    "coaching": null
+  },
+  "call_id": "00a05f6e-f144-4c37-97d4-fe7d22a3211b",
+  "schema_version": "v6.0",
+  "duration_seconds": 1119.8,
+  "ended_by": "customer"
+}

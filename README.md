@@ -13,7 +13,7 @@ Analytical framework to evaluate the Vacatia AI voice agent's performance using 
 - **Conditional Qualifiers**: `escalation_trigger`, `abandon_stage`, `resolution_confirmed` per outcome type
 - **Containment Rate**: Key metric: `in_scope:completed / in_scope:total`
 - **Mixed Scope**: Calls with both in-scope and out-of-scope requests get their own category
-- **Golden Test Set**: 23 transcripts covering 9 of 12 valid scope x outcome combinations
+- **Golden Test Set**: 36 transcripts with full enum coverage (see `tests/golden/README.md`)
 
 **v4.3 Enhancements**:
 - **Target-Based Augmentation**: `-n` becomes a TARGET when existing run detected
@@ -347,36 +347,79 @@ python3 tools/ask_raw.py "Main patterns?" --run-dir runs/my_run
 - Auto-saves to `asks_raw/<timestamp>/`
 - `--run-dir` / `--run-id` scopes queries to a specific run
 
-### `dashboard_v6.py` — V6 Analytics Dashboard
+### `batch_analyze_v7.py` — V7 Batch Analyzer
 
-19-section narrative dashboard for v6.0 analysis JSONs. Reads directly via DuckDB `read_json_auto()` — no ETL step needed.
+Batch analyzer for v7.0 schema (impediment/agent_issue model). Analyzes transcripts with Gemini structured output, supports resume and parallel workers.
 
 ```bash
-# Run on v6.0 analyses (prompt v5 with human_requested fields)
-python3 tools/dashboard_v6.py tests/golden/analyses_v6_prompt_v5/
+# Analyze a directory of transcripts
+python3 tools/batch_analyze_v7.py --input-dir transcripts/ --output-dir runs/v7_batch/
 
-# Older data (pre-v5 prompt) — Act 2 auto-skipped
-python3 tools/dashboard_v6.py tests/golden/analyses_v6_review/batch_50/
+# Analyze from a file list (one path per line)
+python3 tools/batch_analyze_v7.py --transcript-list /tmp/recent_500.txt --output-dir runs/v7_batch/
+
+# Parallel with 3 workers
+python3 tools/batch_analyze_v7.py --input-dir transcripts/ --output-dir runs/v7_batch/ --workers 3
+```
+
+### `ask_struct_v7.py` — Q&A on v7 Structured Analyses
+
+Queries v7.0 per-intent analysis JSONs with full schema awareness. Auto-generates a schema description from the Pydantic models so the LLM understands every field and enum value.
+
+```bash
+# Basic usage
+python3 tools/ask_struct_v7.py "What are the main customer requests?" \
+  --analyses-dir tests/golden/analyses_v6_review/
+
+# Topic deep-dive with keyword pre-filter
+python3 tools/ask_struct_v7.py "Recap all RCI-related calls" \
+  --analyses-dir tests/golden/analyses_v6_review/ --filter RCI
+
+# Control sample size and show token usage
+python3 tools/ask_struct_v7.py "Why do transfers fail?" \
+  --analyses-dir path/ --limit 50 --stats
+```
+
+**How it works:**
+- Reads v7 analysis JSONs (nested `resolution.primary/secondary`, `impediment`, `agent_issue`, etc.)
+- Handles flat directories and subdirectory layouts (e.g. `scope:outcome/` subdirs)
+- `--filter` keyword pre-filters analyses before sampling (case-insensitive, all text fields)
+- Auto-saves to `asks_v7/<timestamp>/` with question, prompt, answer, and metadata
+- Max output: 65,536 tokens (supports long analytical responses without truncation)
+- No run integration — bare `--analyses-dir` only
+
+### `dashboard_v7.py` — V7 Analytics Dashboard
+
+20-section narrative dashboard for v7.0 analysis JSONs. Reads directly via DuckDB `read_json_auto()` — no ETL step needed.
+
+```bash
+# Run on v7 analyses
+python3 tools/dashboard_v7.py tests/golden/analyses_v7/
+
+# Older v6 data — auto-detects missing fields and skips relevant sections
+python3 tools/dashboard_v7.py tests/golden/analyses_v6_review/batch_50/
 ```
 
 **4-act structure:**
 | Act | Sections | Focus |
 |-----|----------|-------|
 | 1. The Big Picture | KPIs, funnel, scope x outcome, top requests | What can the AI handle? |
-| 2. Human Requests | human_requested rates, organic containment, departments | Why do callers ask for humans? (v5+ only) |
-| 3. Quality & Failure | failure modes, preventable escalations, scores, sentiment | What goes wrong? |
-| 4. Operational Details | duration, actions, transfers, friction, abandons | Where to invest? |
+| 2. Human Requests | human_requested rates, organic containment, departments | Why do callers ask for humans? |
+| 3. Quality & Impediments | impediments, agent issues, preventable escalations, scores, sentiment | What blocks customers? |
+| 4. Operational Details | duration, actions, transfers, queue performance, friction, abandons | Where to invest? |
 
-**Backward compatible**: Detects `human_requested` field presence — Act 2 auto-skips for older prompt versions.
+**Backward compatible**: Auto-detects `human_requested` and `queue_result` fields — skips sections when data is from older schema versions.
 
 ### When to use which
 
-| | `ask_raw.py` | `ask.py` | `dashboard_v6.py` |
-|-|-------------|----------|-------------------|
-| **Speed** | Fastest (sample only) | Needs analysis first | Needs v6.0 analyses |
-| **Cost** | 1 LLM call total | N analysis calls + 1 Q&A call | Zero (reads JSON) |
-| **Data** | Full conversation text | Structured fields (intent, disposition, scores) | v6.0 per-intent analyses |
-| **Best for** | Exploration, open-ended questions | Targeted queries on extracted metrics | Structured performance dashboard |
+| | `ask_raw.py` | `ask.py` | `ask_struct_v7.py` | `dashboard_v7.py` |
+|-|-------------|----------|-------------------|-------------------|
+| **Speed** | Fastest (sample only) | Needs analysis first | Needs v7 analyses | Needs v7 analyses |
+| **Cost** | 1 LLM call total | N analysis calls + 1 Q&A call | 1 LLM call (analyses pre-exist) | Zero (reads JSON) |
+| **Data** | Full conversation text | Flat v4/v5 fields | v7 nested per-intent analyses | v7 per-intent analyses |
+| **Schema** | None (raw text) | Manual field list | Auto-generated from Pydantic | N/A (SQL) |
+| **Filter** | No | No | `--filter` keyword | N/A |
+| **Best for** | Exploration, open-ended questions | Targeted queries on v4/v5 metrics | Deep-dive on v7 analyses, topic filtering | Structured performance dashboard |
 
 ## Output Files
 
@@ -434,13 +477,14 @@ reports/
 │   ├── generate_insights.py
 │   ├── render_report.py
 │   ├── review_report.py   # Editorial review
-│   ├── ask.py             # Ad-hoc Q&A without full reports
-│   ├── schema.py          # v6.0 Pydantic models for structured LLM output
-│   ├── poc_structured_full.py  # v6.0 per-intent analysis with Gemini response_schema
-│   ├── batch_golden_v6.py # Batch golden transcripts with v6.0 schema
+│   ├── ask.py             # Ad-hoc Q&A on v4/v5 analyses
+│   ├── ask_struct_v7.py   # Q&A on v7 structured analyses (schema-aware)
+│   ├── schema.py          # v7.0 Pydantic models for structured LLM output
+│   ├── poc_structured_full.py  # Per-intent analysis with Gemini response_schema
+│   ├── batch_analyze_v7.py # Batch analyzer for v7.0 schema
 │   ├── compare_golden.py  # Compare prompt versions for regressions
 │   ├── stability_test.py  # Prompt stability: N reps per transcript
-│   ├── dashboard_v6.py    # 19-section narrative dashboard (DuckDB, no ETL)
+│   ├── dashboard_v7.py    # 20-section narrative dashboard (DuckDB, no ETL)
 │   ├── v0/                # Archived: Simple schema (~15 fields)
 │   ├── v1/                # Archived: Verbose schema (~50 fields)
 │   ├── v2/                # Previous: Actionable schema (14 fields)

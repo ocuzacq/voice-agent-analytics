@@ -1,0 +1,71 @@
+{
+  "turns": 3,
+  "repeat_caller": false,
+  "derailed_at": 5,
+  "resolution": {
+    "primary": {
+      "request": "Speak with a human agent",
+      "context": "Caller immediately requested a representative upon greeting.",
+      "scope": "out_of_scope",
+      "outcome": "transferred",
+      "detail": "The agent initially attempted to end the call after the user said 'No' to additional help, but correctly transferred to the concierge queue after the user reiterated the request.",
+      "resolution_confirmed": null,
+      "transfer": {
+        "reason": "customer_requested",
+        "destination": "concierge",
+        "queue_detected": true
+      },
+      "abandon_stage": null
+    },
+    "secondary": null,
+    "steps": [
+      "Agent greeted the caller.",
+      "Caller requested to speak to an agent.",
+      "Agent acknowledged the request but then asked if there was anything else.",
+      "Caller said 'No', leading the agent to attempt to end the call.",
+      "Caller repeated the request for an agent.",
+      "Agent successfully initiated the transfer to the concierge queue."
+    ]
+  },
+  "scores": {
+    "effectiveness": 4,
+    "quality": 3,
+    "effort": 2
+  },
+  "sentiment": {
+    "start": "neutral",
+    "end": "neutral"
+  },
+  "failure": {
+    "type": "wrong_action",
+    "detail": "Agent attempted to end the call in Turn 5 despite the user's pending request for a representative.",
+    "policy_gap": null
+  },
+  "friction": {
+    "clarifications": [],
+    "corrections": [
+      {
+        "turn": 6,
+        "severity": "moderate",
+        "note": "User had to repeat request after agent tried to hang up."
+      }
+    ],
+    "loops": []
+  },
+  "actions": [
+    {
+      "type": "transfer",
+      "outcome": "success",
+      "detail": "Transferred caller to concierge department queue."
+    }
+  ],
+  "insights": {
+    "summary": "The caller requested a human agent immediately. After a brief confusion where the AI almost ended the call, the caller was successfully placed in the concierge queue.",
+    "verbatim": "Wanna speak to an agent.",
+    "coaching": "The agent should not have offered to end the call in Turn 5 when a transfer request was already in progress; it should have proceeded directly to the transfer after Turn 2."
+  },
+  "call_id": "f988010a-77c0-464a-98cc-2048e11a614b",
+  "schema_version": "v6.0",
+  "duration_seconds": 1408.8,
+  "ended_by": "agent"
+}

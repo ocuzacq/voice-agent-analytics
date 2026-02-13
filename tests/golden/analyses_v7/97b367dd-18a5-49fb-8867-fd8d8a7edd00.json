@@ -1,0 +1,85 @@
+{
+  "turns": 9,
+  "repeat_caller": false,
+  "derailed_at": null,
+  "resolution": {
+    "primary": {
+      "request_category": "rental_program",
+      "request": "Submit rental agreement instructions",
+      "context": "Caller wanted to know what to do with their rental agreement",
+      "human_requested": null,
+      "department_requested": null,
+      "scope": "in_scope",
+      "outcome": "abandoned",
+      "detail": "The agent offered to send the link and asked 'anything else' but never confirmed the link was actually sent.",
+      "resolution_confirmed": false,
+      "transfer": null,
+      "abandon_stage": "mid_task"
+    },
+    "secondary": null,
+    "steps": [
+      "Caller asked for instructions on rental agreement.",
+      "Agent performed account lookup via caller ID.",
+      "Agent verified caller name and state.",
+      "Agent explained the rental agreement purpose.",
+      "Agent offered to send a link to the agreement.",
+      "Caller accepted, but agent moved to closing without confirming the send action."
+    ]
+  },
+  "scores": {
+    "effectiveness": 3,
+    "quality": 4,
+    "effort": 2
+  },
+  "sentiment": {
+    "start": "neutral",
+    "end": "neutral"
+  },
+  "impediment": {
+    "type": "other",
+    "detail": "Agent failed to trigger or confirm the link delivery before ending the call.",
+    "policy_gap": null
+  },
+  "agent_issue": {
+    "detail": "Agent asked 'is there anything else' and ended the call without confirming the requested link was actually sent."
+  },
+  "friction": {
+    "clarifications": [
+      {
+        "turn": 7,
+        "type": "name",
+        "cause": "proactive",
+        "note": "Agent requested spelling for verification"
+      }
+    ],
+    "corrections": [],
+    "loops": []
+  },
+  "actions": [
+    {
+      "type": "account_lookup",
+      "outcome": "success",
+      "detail": "Found record via phone number"
+    },
+    {
+      "type": "verification",
+      "outcome": "success",
+      "detail": "Verified name and state"
+    },
+    {
+      "type": "send_rental_link",
+      "outcome": "failed",
+      "detail": "Agent prepared link but never confirmed sending"
+    }
+  ],
+  "insights": {
+    "summary": "The caller wanted instructions on submitting a rental agreement. The agent verified the caller and offered a link, but ended the call without confirming the link was sent.",
+    "verbatim": "Would you like a link sent to your email and phone so you can complete the agreement online?",
+    "coaching": "The agent must confirm the delivery of the link (e.g., 'I have sent that link now') before asking if there is anything else and closing the call."
+  },
+  "call_id": "97b367dd-18a5-49fb-8867-fd8d8a7edd00",
+  "schema_version": "v7.0",
+  "duration_seconds": 137.9,
+  "ended_by": "agent",
+  "ended_reason": "assistant-ended-call"
+}

@@ -1,0 +1,67 @@
+{
+  "turns": 2,
+  "repeat_caller": false,
+  "derailed_at": 4,
+  "resolution": {
+    "primary": {
+      "request_category": "reservation",
+      "request": "schedule a timeshare week",
+      "context": "Caller wants to book their usage",
+      "human_requested": null,
+      "department_requested": null,
+      "scope": "out_of_scope",
+      "outcome": "abandoned",
+      "detail": "Caller disconnected after providing a nonsensical response to a name request.",
+      "resolution_confirmed": null,
+      "transfer": null,
+      "abandon_stage": "mid_task"
+    },
+    "secondary": null,
+    "steps": [
+      "Agent greeted caller",
+      "Caller requested to schedule a timeshare week",
+      "Agent asked for caller's name",
+      "Caller provided a nonsensical response about shapes",
+      "Agent attempted to clarify the intent",
+      "Caller disconnected"
+    ]
+  },
+  "scores": {
+    "effectiveness": 3,
+    "quality": 4,
+    "effort": 3
+  },
+  "sentiment": {
+    "start": "neutral",
+    "end": "neutral"
+  },
+  "impediment": {
+    "type": "other",
+    "detail": "Caller provided nonsensical/irrelevant input before disconnecting.",
+    "policy_gap": null
+  },
+  "agent_issue": null,
+  "friction": {
+    "clarifications": [
+      {
+        "turn": 5,
+        "type": "intent",
+        "cause": "unclear",
+        "note": "Agent clarifying intent after nonsensical user input"
+      }
+    ],
+    "corrections": [],
+    "loops": []
+  },
+  "actions": [],
+  "insights": {
+    "summary": "The caller wanted to schedule a timeshare week but provided a nonsensical response when asked for their name and then disconnected.",
+    "verbatim": "Which state? Has three sides? Patricia. Star. A triangle, or square.",
+    "coaching": null
+  },
+  "call_id": "0a095b02-136b-4bcb-adab-98b5705c6089",
+  "schema_version": "v7.0",
+  "duration_seconds": 37.6,
+  "ended_by": "customer",
+  "ended_reason": "customer-ended-call"
+}

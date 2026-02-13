@@ -1,0 +1,60 @@
+{
+  "turns": 2,
+  "repeat_caller": false,
+  "derailed_at": null,
+  "resolution": {
+    "primary": {
+      "request": "Speak with a live representative",
+      "context": "Caller immediately requested human assistance upon greeting.",
+      "scope": "in_scope",
+      "outcome": "transferred",
+      "detail": "The agent correctly identified the request for a human and transferred the caller to the concierge queue.",
+      "resolution_confirmed": null,
+      "transfer": {
+        "reason": "customer_requested",
+        "destination": "concierge",
+        "queue_detected": true
+      },
+      "abandon_stage": null
+    },
+    "secondary": null,
+    "steps": [
+      "Agent greeted the caller.",
+      "Caller requested to talk to someone.",
+      "Agent provided a wait time warning and offered to continue with the AI.",
+      "Caller repeated the request for a human.",
+      "Agent initiated transfer to the concierge department and the caller entered the hold queue."
+    ]
+  },
+  "scores": {
+    "effectiveness": 5,
+    "quality": 5,
+    "effort": 1
+  },
+  "sentiment": {
+    "start": "neutral",
+    "end": "neutral"
+  },
+  "failure": null,
+  "friction": {
+    "clarifications": [],
+    "corrections": [],
+    "loops": []
+  },
+  "actions": [
+    {
+      "type": "transfer",
+      "outcome": "success",
+      "detail": "Transferred caller to concierge department after two requests."
+    }
+  ],
+  "insights": {
+    "summary": "The caller immediately requested a live agent. The AI correctly warned about wait times and then transferred the call to the concierge queue as requested.",
+    "verbatim": "Talk to someone.",
+    "coaching": null
+  },
+  "call_id": "2c11e27a-26a5-41fd-8a00-2557998e94c6",
+  "schema_version": "v6.0",
+  "duration_seconds": 1448.2,
+  "ended_by": "customer"
+}

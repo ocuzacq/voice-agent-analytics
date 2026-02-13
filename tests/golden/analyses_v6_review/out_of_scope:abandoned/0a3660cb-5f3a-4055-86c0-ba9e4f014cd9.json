@@ -1,0 +1,87 @@
+{
+  "turns": 8,
+  "repeat_caller": false,
+  "derailed_at": 16,
+  "resolution": {
+    "primary": {
+      "request": "Check status of automatic maintenance fee withdrawal",
+      "context": "Customer expected an autopay withdrawal that has not yet occurred.",
+      "scope": "out_of_scope",
+      "outcome": "abandoned",
+      "detail": "The customer disconnected after the agent repeatedly summarized the request without providing an answer or a transfer.",
+      "resolution_confirmed": null,
+      "transfer": null,
+      "abandon_stage": "mid_task"
+    },
+    "secondary": null,
+    "steps": [
+      "Agent identified caller via phone number and verified name and state.",
+      "Customer explained that an automatic withdrawal for maintenance fees had not occurred.",
+      "Agent collected account number and resort name.",
+      "Agent summarized the request but failed to provide an answer or offer a transfer to a human for billing inquiry.",
+      "Customer became confused or impatient and disconnected."
+    ]
+  },
+  "scores": {
+    "effectiveness": 2,
+    "quality": 3,
+    "effort": 4
+  },
+  "sentiment": {
+    "start": "neutral",
+    "end": "frustrated"
+  },
+  "failure": {
+    "type": "policy_gap",
+    "detail": "The agent is unable to check autopay status or billing history and failed to proactively transfer the out-of-scope inquiry.",
+    "policy_gap": {
+      "category": "capability_limit",
+      "specific_gap": "Checking status of scheduled automatic payments",
+      "customer_ask": "Is my automatic withdrawal going to come out?",
+      "blocker": "AI can only send payment links or look up basic account info, not verify pending bank transactions or autopay schedules."
+    }
+  },
+  "friction": {
+    "clarifications": [
+      {
+        "turn": 3,
+        "type": "intent",
+        "cause": "proactive",
+        "note": "Agent clarifying mortgage vs maintenance fees."
+      }
+    ],
+    "corrections": [],
+    "loops": [
+      {
+        "turns": [
+          15,
+          17
+        ],
+        "type": "deflection",
+        "subject": "payment status summary",
+        "note": "Agent repeating summary instead of acting."
+      }
+    ]
+  },
+  "actions": [
+    {
+      "type": "account_lookup",
+      "outcome": "success",
+      "detail": "Matched record via phone number."
+    },
+    {
+      "type": "verification",
+      "outcome": "success",
+      "detail": "Verified name and state."
+    }
+  ],
+  "insights": {
+    "summary": "The customer wanted to know why their automatic maintenance fee withdrawal hadn't processed. The agent collected all necessary details but then entered a loop of summarizing the request rather than transferring to a human who could check the billing system.",
+    "verbatim": "Supposed to be an automatic withdrawal, but it has not come out yet. Is it going to come out?",
+    "coaching": "When a customer asks about specific billing status or transaction history (which is out of scope), the agent should immediately offer a transfer to the billing or concierge department rather than continuing to collect data it cannot use."
+  },
+  "call_id": "0a3660cb-5f3a-4055-86c0-ba9e4f014cd9",
+  "schema_version": "v6.0",
+  "duration_seconds": 133.1,
+  "ended_by": "customer"
+}

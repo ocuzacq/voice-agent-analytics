@@ -1,0 +1,79 @@
+{
+  "turns": 8,
+  "repeat_caller": false,
+  "derailed_at": 16,
+  "resolution": {
+    "primary": {
+      "request": "Check status of automatic maintenance fee withdrawal",
+      "context": "Customer expected an autopay withdrawal that has not yet occurred",
+      "scope": "in_scope",
+      "outcome": "abandoned",
+      "detail": "The agent spent the entire call verifying details and repeating the request back to the user without providing an answer or sending a link before the user hung up.",
+      "resolution_confirmed": null,
+      "transfer": null,
+      "abandon_stage": "mid_task"
+    },
+    "secondary": null,
+    "steps": [
+      "Agent identifies caller via phone number lookup",
+      "Agent verifies name and state",
+      "Customer explains autopay concern",
+      "Agent asks for property name and account number",
+      "Agent repeats all verified info back to customer in a long confirmation statement",
+      "Customer becomes confused or impatient and disconnects"
+    ]
+  },
+  "scores": {
+    "effectiveness": 2,
+    "quality": 3,
+    "effort": 4
+  },
+  "sentiment": {
+    "start": "neutral",
+    "end": "frustrated"
+  },
+  "failure": {
+    "type": "wrong_action",
+    "detail": "Agent over-verified and excessively summarized instead of providing the status or sending a portal link to check autopay.",
+    "policy_gap": null
+  },
+  "friction": {
+    "clarifications": [
+      {
+        "turn": 3,
+        "type": "intent",
+        "cause": "proactive",
+        "note": "Clarifying maintenance vs mortgage"
+      },
+      {
+        "turn": 11,
+        "type": "verify",
+        "cause": "proactive",
+        "note": "Asking for property name"
+      }
+    ],
+    "corrections": [],
+    "loops": []
+  },
+  "actions": [
+    {
+      "type": "account_lookup",
+      "outcome": "success",
+      "detail": "Found record via caller ID"
+    },
+    {
+      "type": "verification",
+      "outcome": "success",
+      "detail": "Verified name, state, and contract number"
+    }
+  ],
+  "insights": {
+    "summary": "The customer called to check why an automatic maintenance fee payment hadn't been processed. The agent successfully verified the account but failed to provide any information, instead repeating the customer's data back until the customer hung up.",
+    "verbatim": "Supposed to be an automatic withdrawal, but it has not come out yet. Is it going to come out?",
+    "coaching": "The agent should prioritize answering the customer's question or sending a portal link once verification is complete, rather than reciting a long summary of the contract details which caused the customer to lose patience."
+  },
+  "call_id": "0a3660cb-5f3a-4055-86c0-ba9e4f014cd9",
+  "schema_version": "v6.0",
+  "duration_seconds": 133.1,
+  "ended_by": "customer"
+}

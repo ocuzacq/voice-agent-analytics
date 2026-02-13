@@ -1,0 +1,91 @@
+{
+  "turns": 16,
+  "repeat_caller": true,
+  "derailed_at": null,
+  "resolution": {
+    "primary": {
+      "request": "Book two weeks at Bonaventure",
+      "context": "Customer is frustrated about losing weeks and wants to secure a reservation for January 2027",
+      "scope": "out_of_scope",
+      "outcome": "transferred",
+      "detail": "The AI cannot book or assign units and correctly transferred the caller to the concierge department.",
+      "resolution_confirmed": null,
+      "transfer": {
+        "reason": "out_of_scope",
+        "destination": "concierge",
+        "queue_detected": false
+      },
+      "abandon_stage": null
+    },
+    "secondary": {
+      "request": "Make a payment",
+      "context": "Caller wanted to pay for the specific weeks they were trying to book",
+      "scope": "in_scope",
+      "outcome": "transferred",
+      "detail": "While the AI can send payment links, the payment was tied to a booking request it couldn't fulfill, leading to a transfer.",
+      "resolution_confirmed": null,
+      "transfer": {
+        "reason": "out_of_scope",
+        "destination": "concierge",
+        "queue_detected": false
+      },
+      "abandon_stage": null
+    },
+    "steps": [
+      "Caller identified as James McCartney with a complaint about lost weeks and previous hang-ups.",
+      "AI performed account lookup and verified identity via name and state.",
+      "Caller requested a reservation for January 2027 at Bonaventure.",
+      "AI clarified contract details and corrected the caller's dates to match the calendar.",
+      "Caller requested to pay and secure a specific unit.",
+      "AI explained it cannot book units and transferred the caller to concierge."
+    ]
+  },
+  "scores": {
+    "effectiveness": 4,
+    "quality": 5,
+    "effort": 3
+  },
+  "sentiment": {
+    "start": "angry",
+    "end": "neutral"
+  },
+  "failure": null,
+  "friction": {
+    "clarifications": [
+      {
+        "turn": 25,
+        "type": "intent",
+        "cause": "proactive",
+        "note": "AI corrected dates to match calendar schedule"
+      }
+    ],
+    "corrections": [],
+    "loops": []
+  },
+  "actions": [
+    {
+      "type": "account_lookup",
+      "outcome": "success",
+      "detail": "Located record via caller ID"
+    },
+    {
+      "type": "verification",
+      "outcome": "success",
+      "detail": "Verified name and state"
+    },
+    {
+      "type": "transfer",
+      "outcome": "success",
+      "detail": "Transferred to concierge for booking"
+    }
+  ],
+  "insights": {
+    "summary": "An angry repeat caller wanted to book two weeks in 2027 to avoid losing them. The AI successfully verified the account and clarified the dates but correctly transferred to concierge as it cannot process reservations or unit assignments.",
+    "verbatim": "I'm gonna lose two weeks, and nobody's helping me. And you've thrown me off your website, you, Jamie, have hung up on me four times now.",
+    "coaching": null
+  },
+  "call_id": "0b59f63d-d6d7-41da-89e6-68a36eb3c07b",
+  "schema_version": "v6.0",
+  "duration_seconds": 448.6,
+  "ended_by": "customer"
+}

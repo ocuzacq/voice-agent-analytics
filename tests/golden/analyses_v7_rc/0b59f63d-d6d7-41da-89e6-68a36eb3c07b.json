@@ -1,0 +1,108 @@
+{
+  "turns": 16,
+  "repeat_caller": true,
+  "derailed_at": null,
+  "resolution": {
+    "primary": {
+      "request_category": "reservation",
+      "request": "Book two weeks at Bonaventure resort",
+      "context": "Caller is frustrated about losing weeks and previous call drops",
+      "human_requested": "initial",
+      "department_requested": null,
+      "scope": "out_of_scope",
+      "outcome": "transferred",
+      "detail": "The AI identified the request as a reservation booking which it cannot perform and transferred the caller to concierge.",
+      "resolution_confirmed": null,
+      "transfer": {
+        "reason": "out_of_scope",
+        "destination": "concierge",
+        "queue_detected": false,
+        "queue_result": null
+      },
+      "abandon_stage": null
+    },
+    "secondary": {
+      "request_category": "portal_account",
+      "request": "Help with website access",
+      "context": "Caller mentioned being thrown off the website",
+      "human_requested": "initial",
+      "department_requested": null,
+      "scope": "in_scope",
+      "outcome": "abandoned",
+      "detail": "The caller initially mentioned website issues but focused on the reservation request; the call was transferred for the reservation before the portal issue was addressed.",
+      "resolution_confirmed": null,
+      "transfer": null,
+      "abandon_stage": "mid_task"
+    },
+    "steps": [
+      "Caller expressed frustration and requested a human agent due to previous call drops.",
+      "AI offered a 20-minute wait for a human or the automated system; caller chose automated.",
+      "AI performed account lookup and verification.",
+      "Caller requested a reservation for two weeks in January 2027.",
+      "AI clarified dates and contract details.",
+      "Caller requested to pay and book the unit.",
+      "AI explained it cannot book units and transferred the caller to concierge."
+    ]
+  },
+  "scores": {
+    "effectiveness": 4,
+    "quality": 4,
+    "effort": 4
+  },
+  "sentiment": {
+    "start": "angry",
+    "end": "neutral"
+  },
+  "impediment": null,
+  "agent_issue": null,
+  "friction": {
+    "clarifications": [
+      {
+        "turn": 19,
+        "type": "intent",
+        "cause": "misheard",
+        "note": "AI did not find Bonaventure contract"
+      },
+      {
+        "turn": 25,
+        "type": "repeat",
+        "cause": "unclear",
+        "note": "AI clarifying non-standard check-in dates"
+      }
+    ],
+    "corrections": [
+      {
+        "turn": 26,
+        "severity": "minor",
+        "note": "User corrected check-in date to Sunday"
+      }
+    ],
+    "loops": []
+  },
+  "actions": [
+    {
+      "type": "account_lookup",
+      "outcome": "success",
+      "detail": "Lookup by phone number successful"
+    },
+    {
+      "type": "verification",
+      "outcome": "success",
+      "detail": "Verified name and state"
+    },
+    {
+      "type": "transfer",
+      "outcome": "success",
+      "detail": "Transferred to concierge for booking"
+    }
+  ],
+  "insights": {
+    "summary": "The caller was highly frustrated due to previous call drops and wanted to book a reservation for 2027. The AI successfully verified the account and clarified the dates but correctly transferred the call as it cannot process bookings.",
+    "verbatim": "I'm gonna lose two weeks, and nobody's helping me. And you've thrown me off your website, you, Jamie, have hung up on me four times now.",
+    "coaching": null
+  },
+  "call_id": "0b59f63d-d6d7-41da-89e6-68a36eb3c07b",
+  "schema_version": "v7.0",
+  "duration_seconds": 448.6,
+  "ended_by": "customer"
+}

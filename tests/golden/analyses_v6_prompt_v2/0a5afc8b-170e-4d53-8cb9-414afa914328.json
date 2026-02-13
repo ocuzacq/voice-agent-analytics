@@ -1,0 +1,68 @@
+{
+  "turns": 9,
+  "repeat_caller": false,
+  "derailed_at": null,
+  "resolution": {
+    "primary": {
+      "request": "End timeshare ownership",
+      "context": "Caller wants to surrender or transfer their timeshare",
+      "scope": "out_of_scope",
+      "outcome": "abandoned",
+      "detail": "The caller requested to end ownership, which is out of scope; after a long hold for a transfer, the caller was told no agents were available and eventually disconnected.",
+      "resolution_confirmed": null,
+      "transfer": null,
+      "abandon_stage": "mid_task"
+    },
+    "secondary": null,
+    "steps": [
+      "Caller requested concierge department immediately.",
+      "Agent attempted to transfer but warned of long wait times.",
+      "Caller identified herself and stated she wants to end ownership.",
+      "Caller was placed on hold for approximately 25 minutes.",
+      "Agent returned to line stating no representatives were available.",
+      "Agent offered general contract info, but caller declined and asked for a callback.",
+      "Agent stated they cannot arrange callbacks and advised calling back later.",
+      "Caller ended the call."
+    ]
+  },
+  "scores": {
+    "effectiveness": 3,
+    "quality": 3,
+    "effort": 5
+  },
+  "sentiment": {
+    "start": "neutral",
+    "end": "neutral"
+  },
+  "failure": {
+    "type": "policy_gap",
+    "detail": "The AI agent lacks the ability to schedule callbacks or handle ownership surrenders, and the human queue was unavailable after a 25-minute wait.",
+    "policy_gap": {
+      "category": "capability_limit",
+      "specific_gap": "Unable to schedule outbound callbacks",
+      "customer_ask": "Can someone call me back?",
+      "blocker": "AI only handles inbound requests and link delivery; no callback scheduling tool exists."
+    }
+  },
+  "friction": {
+    "clarifications": [],
+    "corrections": [],
+    "loops": []
+  },
+  "actions": [
+    {
+      "type": "transfer",
+      "outcome": "failed",
+      "detail": "Attempted transfer to concierge; failed due to no agents available after long hold."
+    }
+  ],
+  "insights": {
+    "summary": "The caller wanted to end their timeshare ownership. After waiting on hold for over 25 minutes for a human agent, the AI returned to inform them no one was available and could not schedule a callback.",
+    "verbatim": "I'm calling about our timeshare. We want to no longer have ownership over it.",
+    "coaching": "The agent correctly identified the request as out of scope, but the 25-minute hold time followed by a 'no agents available' message creates a very poor customer experience."
+  },
+  "call_id": "0a5afc8b-170e-4d53-8cb9-414afa914328",
+  "schema_version": "v6.0",
+  "duration_seconds": 1644.8,
+  "ended_by": "customer"
+}

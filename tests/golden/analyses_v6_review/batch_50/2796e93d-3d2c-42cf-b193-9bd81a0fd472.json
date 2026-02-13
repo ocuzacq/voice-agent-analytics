@@ -1,0 +1,84 @@
+{
+  "turns": 18,
+  "repeat_caller": false,
+  "derailed_at": null,
+  "resolution": {
+    "primary": {
+      "request": "verify maintenance fee payment application",
+      "context": "Caller made a payment over the phone and wanted to ensure it was applied to their balance and check on a credit.",
+      "scope": "in_scope",
+      "outcome": "transferred",
+      "detail": "The AI verified the caller and provided balance info, but the caller insisted on speaking to a live agent to discuss specific payment history and credits.",
+      "resolution_confirmed": null,
+      "transfer": {
+        "reason": "customer_requested",
+        "destination": "concierge",
+        "queue_detected": true
+      },
+      "abandon_stage": null
+    },
+    "secondary": null,
+    "steps": [
+      "Caller requested a representative regarding maintenance fees.",
+      "AI warned of long wait times and offered automated help; caller chose to wait.",
+      "After a long hold with no agents available, AI re-engaged to offer assistance.",
+      "AI performed account lookup via phone number and verified identity.",
+      "AI provided the current balance and contract details.",
+      "Caller mentioned a specific credit and requested a live agent again.",
+      "AI transferred the caller back to the concierge queue."
+    ]
+  },
+  "scores": {
+    "effectiveness": 5,
+    "quality": 5,
+    "effort": 3
+  },
+  "sentiment": {
+    "start": "neutral",
+    "end": "neutral"
+  },
+  "failure": null,
+  "friction": {
+    "clarifications": [
+      {
+        "turn": 13,
+        "type": "intent",
+        "cause": "proactive",
+        "note": "AI confirming if payment was online or phone"
+      }
+    ],
+    "corrections": [],
+    "loops": []
+  },
+  "actions": [
+    {
+      "type": "transfer",
+      "outcome": "failed",
+      "detail": "Initial transfer attempt resulted in no agents available."
+    },
+    {
+      "type": "account_lookup",
+      "outcome": "success",
+      "detail": "Found record using phone number 7026096266."
+    },
+    {
+      "type": "verification",
+      "outcome": "success",
+      "detail": "Verified name and state."
+    },
+    {
+      "type": "transfer",
+      "outcome": "success",
+      "detail": "Final transfer to concierge queue at caller request."
+    }
+  ],
+  "insights": {
+    "summary": "The caller wanted to verify if a phone payment was applied to her maintenance fees. After an initial failed transfer due to high volume, the AI successfully verified the account and provided balance info, but the caller ultimately preferred a live agent for detailed credit questions.",
+    "verbatim": "I've already looked on my okay. I've that's why I wanted to speak to a a live agent.",
+    "coaching": null
+  },
+  "call_id": "2796e93d-3d2c-42cf-b193-9bd81a0fd472",
+  "schema_version": "v6.0",
+  "duration_seconds": 2516.2,
+  "ended_by": "customer"
+}

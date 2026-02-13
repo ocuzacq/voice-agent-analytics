@@ -1,0 +1,322 @@
+{
+  "agent_id": "IdNSnJmoukxviqoTIWOZ",
+  "duration": 683.732974,
+  "ended_reason": "assistant-ended-call",
+  "messages": [
+    {
+      "role": "assistant",
+      "timestamp": 1770754558.0649953,
+      "content": "Hi, thank you for calling Vacation Village Resorts. This is Jamie on a recorded line. How can I help you today?"
+    },
+    {
+      "role": "user",
+      "timestamp": 1770754568.698066,
+      "content": "Speak to a representative."
+    },
+    {
+      "role": "assistant",
+      "timestamp": 1770754572.0612605,
+      "content": "Alright, I can connect you to a representative, but just so you know, we are experiencing longer-than-usual wait times -- up to twenty minutes. The automated system"
+    },
+    {
+      "role": "assistant",
+      "timestamp": 1770754572.0612605,
+      "content": "is actually the fastest way to get help and solves about ninety percent of all calls. Would you still like to wait for a representative, or would you prefer to continue with the automated system?"
+    },
+    {
+      "role": "user",
+      "timestamp": 1770754592.8510778,
+      "content": "We can try automated."
+    },
+    {
+      "role": "assistant",
+      "timestamp": 1770754598.6522913,
+      "content": "Great, I appreciate your flexibility. Can you tell me the reason for your call so I can see how I can help?"
+    },
+    {
+      "role": "user",
+      "timestamp": 1770754608.1615477,
+      "content": "Trying to pay my bill via phone."
+    },
+    {
+      "role": "assistant",
+      "timestamp": 1770754613.2828472,
+      "content": "I can send you a link to pay your mortgage bill online."
+    },
+    {
+      "role": "assistant",
+      "timestamp": 1770754613.2828472,
+      "content": "Does that sound good to you?"
+    },
+    {
+      "role": "user",
+      "timestamp": 1770754620.1502206,
+      "content": "No."
+    },
+    {
+      "role": "assistant",
+      "timestamp": 1770754622.6314394,
+      "content": "No problem,"
+    },
+    {
+      "role": "assistant",
+      "timestamp": 1770754622.6314394,
+      "content": "just to clarify, are you looking to pay your yearly maintenance bill instead of your mortgage?"
+    },
+    {
+      "role": "user",
+      "timestamp": 1770754629.5673664,
+      "content": "Yes."
+    },
+    {
+      "role": "assistant",
+      "timestamp": 1770754632.8086736,
+      "content": "I can send you a link to pay your yearly maintenance bill online. Does that sound good to you?"
+    },
+    {
+      "role": "user",
+      "timestamp": 1770754640.544586,
+      "content": "No."
+    },
+    {
+      "role": "assistant",
+      "timestamp": 1770754642.1017935,
+      "content": "Alright, can you share a bit more about how you'd like to pay your maintenance bill? Are you looking"
+    },
+    {
+      "role": "assistant",
+      "timestamp": 1770754642.1017935,
+      "content": "for a phone payment option, or something else?"
+    },
+    {
+      "role": "user",
+      "timestamp": 1770754651.5328703,
+      "content": "Phone payment option."
+    },
+    {
+      "role": "assistant",
+      "timestamp": 1770754653.8939874,
+      "content": "I understand you're hoping to pay your maintenance bill over the phone. Unfortunately, I can only send you a link to pay online, not process payments"
+    },
+    {
+      "role": "assistant",
+      "timestamp": 1770754653.8939874,
+      "content": "directly by phone. Would you like me to send you the payment link, or do you want to speak to a representative?"
+    },
+    {
+      "role": "user",
+      "timestamp": 1770754669.1756072,
+      "content": "You can help me with my account numbers. That I need to enter on the phone."
+    },
+    {
+      "role": "assistant",
+      "timestamp": 1770754674.7774773,
+      "content": "I can definitely help you with your account numbers so you can enter them for your phone payment. Which resort is your"
+    },
+    {
+      "role": "assistant",
+      "timestamp": 1770754674.7774773,
+      "content": "ownership with?"
+    },
+    {
+      "role": "user",
+      "timestamp": 1770754683.5038855,
+      "content": "Grand View,"
+    },
+    {
+      "role": "user",
+      "timestamp": 1770754685.8496363,
+      "content": "Las Vegas."
+    },
+    {
+      "role": "assistant",
+      "timestamp": 1770754687.8569999,
+      "content": "Alright, your ownership is at Grandview Las Vegas. Would you like me to pull up your contract"
+    },
+    {
+      "role": "assistant",
+      "timestamp": 1770754687.8569999,
+      "content": "information to provide your account numbers?"
+    },
+    {
+      "role": "user",
+      "timestamp": 1770754696.8996966,
+      "content": "Yes."
+    },
+    {
+      "role": "assistant",
+      "timestamp": 1770754702.2601953,
+      "content": "It looks like the phone number you're calling from did not return any valid contracts. Do you have a different phone number or a contract ID"
+    },
+    {
+      "role": "assistant",
+      "timestamp": 1770754702.2601953,
+      "content": "for your Grandview Las Vegas ownership?"
+    },
+    {
+      "role": "user",
+      "timestamp": 1770754714.9276633,
+      "content": "Contract ID, five zero one two five five."
+    },
+    {
+      "role": "assistant",
+      "timestamp": 1770754723.9351745,
+      "content": "Your contract number for Grandview at Las Vegas is five"
+    },
+    {
+      "role": "assistant",
+      "timestamp": 1770754723.9351745,
+      "content": "zero one two five five. If you need to enter an account number for your phone payment, you can use this contract number. Is there anything else you need for your phone payment?"
+    },
+    {
+      "role": "user",
+      "timestamp": 1770754739.6358016,
+      "content": "My owner ID."
+    },
+    {
+      "role": "assistant",
+      "timestamp": 1770754743.7969441,
+      "content": "Your Resort"
+    },
+    {
+      "role": "assistant",
+      "timestamp": 1770754743.7969441,
+      "content": "Management ID for Grandview at Las Vegas is nine six four zero zero. This is often used as your owner ID for phone payments. Would you like any other details from your contract?"
+    },
+    {
+      "role": "user",
+      "timestamp": 1770754761.2904904,
+      "content": "When I punch those two numbers, in, the system does not recognize me."
+    },
+    {
+      "role": "assistant",
+      "timestamp": 1770754769.4970322,
+      "content": "That's frustrating, and I'm sorry you're having trouble with the phone system. The contract number is five zero one two five five, and the Resort Management ID is nine six four zero zero, which are the correct numbers on file for your Grandview at Las Vegas ownership. Are you entering both numbers together, or one at a time?"
+    },
+    {
+      "role": "user",
+      "timestamp": 1770754787.0272248,
+      "content": "One at a time."
+    },
+    {
+      "role": "assistant",
+      "timestamp": 1770754789.1696627,
+      "content": "You're entering the contract number and Resort Management ID one at a time, which is the standard"
+    },
+    {
+      "role": "assistant",
+      "timestamp": 1770754789.1696627,
+      "content": "process. Sometimes, the system may ask for your contract number first, followed by your Resort Management ID. If the system still doesn't recognize you, it could be due to a mismatch or a technical issue. Would you like to double-check any other details, such as your name or address, to make sure everything matches what's on file?"
+    },
+    {
+      "role": "user",
+      "timestamp": 1770754812.2188067,
+      "content": "Can you add this number"
+    },
+    {
+      "role": "user",
+      "timestamp": 1770754814.7197926,
+      "content": "this phone number to my account?"
+    },
+    {
+      "role": "assistant",
+      "timestamp": 1770754816.6380424,
+      "content": "I can't update your account information"
+    },
+    {
+      "role": "assistant",
+      "timestamp": 1770754816.6380424,
+      "content": "or add phone numbers, but I can share the numbers we have on file for your contract if you'd like to check them."
+    },
+    {
+      "role": "user",
+      "timestamp": 1770754827.662175,
+      "content": "No. That's I only have these two phone numbers."
+    },
+    {
+      "role": "user",
+      "timestamp": 1770754832.0498965,
+      "content": "I'll speak to a representative."
+    },
+    {
+      "role": "assistant",
+      "timestamp": 1770754838.3572428,
+      "content": "Please hold while I connect you"
+    },
+    {
+      "role": "assistant",
+      "timestamp": 1770755081.642975,
+      "content": "Thank you for calling the concierge department for the Vacation Village family of resorts, where owner satisfaction is our top priority. We apologize for the brief wait, and we appreciate your patience. Our hours of operation are 8:30 AM to 6:00 PM Eastern Standard Time. We understand that sometimes nothing beats speaking to a real person. Our team is working diligently to ensure your call is answered as soon as possible. In the meantime, why not explore our website and discover all that Vacation Village Resorts has to offer? Our website is a valuable resource filled with product information, frequently asked questions, important contact information for mortgage services and maintenance fee payments, and much more. Save time and find the answers you need at vacationvillageresorts.com. For real-time assistance, we encourage you to try out our Text Us Now feature. Simply visit our website and look for the Text Us button at the bottom right corner of the screen. With just a few taps, you can connect with one of our dedicated agents who will be happy to assist you promptly. At Vacation Village Resorts, we believe in providing exceptional customer service at every touchpoint. If you prefer to remain on the line, rest assured that your call is essential to us, and we'll be with you shortly."
+    },
+    {
+      "role": "assistant",
+      "timestamp": null,
+      "content": "Thank you for calling the concierge department for the Vacation Village family of resorts, where owner satisfaction is our top priority. We apologize for the brief wait, and we appreciate your patience. Our hours of operation are 8:30 AM to 6:00 PM Eastern Standard Time. We understand that sometimes nothing beats speaking to a real person. Our team is working diligently to ensure your call is answered as soon as possible. In the meantime, why not explore our website and discover all that Vacation Village Resorts has to offer? Our website is a valuable resource filled with product information, frequently asked questions, important contact information for mortgage services and maintenance fee payments, and much more. Save time and find the answers you need at vacationvillageresorts.com. For real-time assistance, we encourage you to try out our Text Us Now feature. Simply visit our website and look for the Text Us button at the bottom right corner of the screen. With just a few taps, you can connect with one of our dedicated agents who will be happy to assist you promptly. At Vacation Village Resorts, we believe in providing exceptional customer service at every touchpoint. If you prefer to remain on the line, rest assured that your call is essential to us, and we'll be with you shortly."
+    },
+    {
+      "role": "assistant",
+      "timestamp": 1770755162.7129266,
+      "content": "All representatives are currently busy and not available to take your call right now. If you'd like, I can continue assisting you with your request,"
+    },
+    {
+      "role": "assistant",
+      "timestamp": 1770755162.7129266,
+      "content": "or you can call back later when a representative is available. What would you prefer?"
+    },
+    {
+      "role": "user",
+      "timestamp": 1770755176.7891304,
+      "content": "Continue to wait."
+    },
+    {
+      "role": "assistant",
+      "timestamp": 1770755179.2955596,
+      "content": "I understand you'd like to wait, but at the moment, no representatives are available to take your call. If you"
+    },
+    {
+      "role": "assistant",
+      "timestamp": 1770755179.2955596,
+      "content": "need immediate help, I can assist you with your request, or you can call back during business hours when someone is available. What would you like to do?"
+    },
+    {
+      "role": "user",
+      "timestamp": 1770755197.130521,
+      "content": "I need to pay my maintenance. Fee, and I don't have an Internet connection."
+    },
+    {
+      "role": "assistant",
+      "timestamp": 1770755202.991853,
+      "content": "You want to pay your maintenance fee but do not have internet access. Since phone payments require entering your contract and owner ID,"
+    },
+    {
+      "role": "assistant",
+      "timestamp": 1770755202.991853,
+      "content": "and the system is not recognizing your numbers, and no representatives are available, I can help you double-check your account details or suggest calling back during business hours when a representative can assist you directly. Would you like to review your account details again, or would you prefer to call back later?"
+    },
+    {
+      "role": "user",
+      "timestamp": 1770755197.130521,
+      "content": "Correct."
+    },
+    {
+      "role": "assistant",
+      "timestamp": 1770755227.2348783,
+      "content": "You'd like to pay your maintenance fee but do not"
+    },
+    {
+      "role": "user",
+      "timestamp": 1770755230.1201372,
+      "content": "I'll call back later."
+    },
+    {
+      "role": "assistant",
+      "timestamp": 1770755231.9261777,
+      "content": "I'm sorry no representatives are available right now. Please call back during business hours and someone will be able to assist you directly."
+    },
+    {
+      "role": "assistant",
+      "timestamp": 1770755231.9261777,
+      "content": "Have a great day."
+    }
+  ]
+}

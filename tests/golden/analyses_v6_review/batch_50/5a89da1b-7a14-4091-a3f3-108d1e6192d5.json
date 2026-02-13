@@ -1,0 +1,86 @@
+{
+  "turns": 14,
+  "repeat_caller": false,
+  "derailed_at": null,
+  "resolution": {
+    "primary": {
+      "request": "Access Vacatia Clubhouse portal",
+      "context": "Caller is having trouble with a registration code and not receiving verification texts.",
+      "scope": "in_scope",
+      "outcome": "fulfilled",
+      "detail": "The agent verified the caller and sent a new Clubhouse registration link via text and email to updated contact information provided by the user.",
+      "resolution_confirmed": false,
+      "transfer": null,
+      "abandon_stage": null
+    },
+    "secondary": null,
+    "steps": [
+      "Agent identifies caller via phone lookup.",
+      "Agent performs full name and state verification.",
+      "Caller explains technical issues with existing Clubhouse code and SMS verification.",
+      "Agent offers to send a new registration link.",
+      "Caller provides a different phone number and email address for delivery.",
+      "Agent confirms the link is being sent and ends the call."
+    ]
+  },
+  "scores": {
+    "effectiveness": 5,
+    "quality": 4,
+    "effort": 2
+  },
+  "sentiment": {
+    "start": "neutral",
+    "end": "satisfied"
+  },
+  "failure": null,
+  "friction": {
+    "clarifications": [
+      {
+        "turn": 9,
+        "type": "name",
+        "cause": "proactive",
+        "note": "Agent asks for spelling of name for accuracy."
+      },
+      {
+        "turn": 17,
+        "type": "verify",
+        "cause": "tech",
+        "note": "Cross-talk during state verification request."
+      }
+    ],
+    "corrections": [
+      {
+        "turn": 24,
+        "severity": "minor",
+        "note": "User provides a different phone number than the one on file."
+      }
+    ],
+    "loops": []
+  },
+  "actions": [
+    {
+      "type": "account_lookup",
+      "outcome": "success",
+      "detail": "Record found via caller ID."
+    },
+    {
+      "type": "verification",
+      "outcome": "success",
+      "detail": "Verified Sonja Williams in Arkansas."
+    },
+    {
+      "type": "send_clubhouse_link",
+      "outcome": "success",
+      "detail": "Sent link to new phone and email provided."
+    }
+  ],
+  "insights": {
+    "summary": "The caller was unable to register for the Clubhouse portal due to SMS delivery issues; the agent successfully verified her and sent a new link to a different number/email.",
+    "verbatim": "I put the code in and everything, but nothing is working. When I tried to get it to do the verify your phone number... I never did get a text.",
+    "coaching": null
+  },
+  "call_id": "5a89da1b-7a14-4091-a3f3-108d1e6192d5",
+  "schema_version": "v6.0",
+  "duration_seconds": 241.4,
+  "ended_by": "agent"
+}

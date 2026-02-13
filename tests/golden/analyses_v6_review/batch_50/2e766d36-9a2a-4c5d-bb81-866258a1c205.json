@@ -1,0 +1,70 @@
+{
+  "turns": 7,
+  "repeat_caller": false,
+  "derailed_at": null,
+  "resolution": {
+    "primary": {
+      "request": "Pay maintenance fee balance",
+      "context": "Caller wants to pay an outstanding balance of $660.72",
+      "scope": "in_scope",
+      "outcome": "abandoned",
+      "detail": "The agent prepared the payment link but ended the call without confirming it was actually sent.",
+      "resolution_confirmed": false,
+      "transfer": null,
+      "abandon_stage": "mid_task"
+    },
+    "secondary": null,
+    "steps": [
+      "Caller requested to pay balance.",
+      "Agent performed identity verification (name and state).",
+      "Agent looked up account details and confirmed property, contract, and balance.",
+      "Agent confirmed contact information for delivery.",
+      "Agent stated they were getting the link ready but ended the call before confirming the send action."
+    ]
+  },
+  "scores": {
+    "effectiveness": 3,
+    "quality": 3,
+    "effort": 2
+  },
+  "sentiment": {
+    "start": "neutral",
+    "end": "neutral"
+  },
+  "failure": {
+    "type": "wrong_action",
+    "detail": "The agent ended the call after saying it would prepare the link, without confirming the link was sent.",
+    "policy_gap": null
+  },
+  "friction": {
+    "clarifications": [],
+    "corrections": [],
+    "loops": []
+  },
+  "actions": [
+    {
+      "type": "verification",
+      "outcome": "success",
+      "detail": "Verified name Jamie Morla and state Virginia."
+    },
+    {
+      "type": "account_lookup",
+      "outcome": "success",
+      "detail": "Found contract 5000637 with $660.72 balance."
+    },
+    {
+      "type": "send_payment_link",
+      "outcome": "failed",
+      "detail": "Agent prepared link but call ended before send confirmation."
+    }
+  ],
+  "insights": {
+    "summary": "The caller wanted to pay their balance. The agent successfully verified the account and confirmed details but disconnected before confirming the payment link was sent.",
+    "verbatim": "Let me get that payment link ready for you. Is there anything else I can help you with today?",
+    "coaching": "The agent must confirm the link has been sent (e.g., 'I have sent that link to your email') before closing the call to ensure fulfillment."
+  },
+  "call_id": "2e766d36-9a2a-4c5d-bb81-866258a1c205",
+  "schema_version": "v6.0",
+  "duration_seconds": 124.5,
+  "ended_by": "agent"
+}

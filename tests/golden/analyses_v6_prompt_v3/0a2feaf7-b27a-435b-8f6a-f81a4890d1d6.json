@@ -1,0 +1,89 @@
+{
+  "turns": 11,
+  "repeat_caller": true,
+  "derailed_at": null,
+  "resolution": {
+    "primary": {
+      "request": "make a maintenance fee payment",
+      "context": "Caller is unable to log into the portal due to an invalid account number error",
+      "scope": "in_scope",
+      "outcome": "fulfilled",
+      "detail": "The agent verified the caller and sent a payment link via email and text after the caller reported portal login issues.",
+      "resolution_confirmed": false,
+      "transfer": null,
+      "abandon_stage": null
+    },
+    "secondary": {
+      "request": "troubleshoot portal login error",
+      "context": "System reports account number is invalid",
+      "scope": "in_scope",
+      "outcome": "fulfilled",
+      "detail": "Agent offered a new registration link, which the user declined because a previous one failed, leading to the payment link workaround.",
+      "resolution_confirmed": false,
+      "transfer": null,
+      "abandon_stage": null
+    },
+    "steps": [
+      "Caller identified themselves and reported an invalid account number error.",
+      "Agent performed account lookup and identity verification (name, phone, state).",
+      "Agent offered a Clubhouse registration link, which the caller refused as they had already tried it.",
+      "Agent pivoted to the specific goal of making a payment.",
+      "Agent confirmed property details, contract number, and contact information.",
+      "Agent sent a payment link via text and email."
+    ]
+  },
+  "scores": {
+    "effectiveness": 5,
+    "quality": 5,
+    "effort": 2
+  },
+  "sentiment": {
+    "start": "frustrated",
+    "end": "satisfied"
+  },
+  "failure": null,
+  "friction": {
+    "clarifications": [
+      {
+        "turn": 3,
+        "type": "phone",
+        "cause": "proactive",
+        "note": "Agent requests phone for account lookup"
+      },
+      {
+        "turn": 5,
+        "type": "name",
+        "cause": "proactive",
+        "note": "Agent confirms name spelling for verification"
+      }
+    ],
+    "corrections": [],
+    "loops": []
+  },
+  "actions": [
+    {
+      "type": "account_lookup",
+      "outcome": "success",
+      "detail": "Located account via phone number 8135997661"
+    },
+    {
+      "type": "verification",
+      "outcome": "success",
+      "detail": "Verified name, phone, and state of residence"
+    },
+    {
+      "type": "send_payment_link",
+      "outcome": "success",
+      "detail": "Sent link to katieluker1@gmail.com and 8135997661"
+    }
+  ],
+  "insights": {
+    "summary": "The caller was frustrated by portal login errors and a previously failed registration link. The agent successfully verified the account and provided a direct payment link to fulfill the caller's ultimate goal.",
+    "verbatim": "I've we just did this. You sent me it already and it did not work.",
+    "coaching": null
+  },
+  "call_id": "0a2feaf7-b27a-435b-8f6a-f81a4890d1d6",
+  "schema_version": "v6.0",
+  "duration_seconds": 190.9,
+  "ended_by": "agent"
+}

@@ -1,0 +1,66 @@
+{
+  "turns": 5,
+  "repeat_caller": false,
+  "derailed_at": null,
+  "resolution": {
+    "primary": {
+      "request": "Check laundry facilities at The Berkley",
+      "context": "Caller wanted to know if a one-bedroom villa in Las Vegas has in-unit or on-site laundry.",
+      "scope": "out_of_scope",
+      "outcome": "transferred",
+      "detail": "The agent correctly identified a specific property inquiry and transferred the caller to the concierge department.",
+      "resolution_confirmed": null,
+      "transfer": {
+        "reason": "out_of_scope",
+        "destination": "concierge",
+        "queue_detected": true
+      },
+      "abandon_stage": null
+    },
+    "secondary": null,
+    "steps": [
+      "Agent greeted caller and identified name.",
+      "Caller asked about laundry facilities at The Berkley in Las Vegas.",
+      "Agent clarified if the request was for in-unit or on-property facilities.",
+      "Agent transferred the caller to the concierge department for specific property information."
+    ]
+  },
+  "scores": {
+    "effectiveness": 5,
+    "quality": 5,
+    "effort": 1
+  },
+  "sentiment": {
+    "start": "neutral",
+    "end": "neutral"
+  },
+  "failure": null,
+  "friction": {
+    "clarifications": [
+      {
+        "turn": 9,
+        "type": "intent",
+        "cause": "proactive",
+        "note": "Clarifying in-unit vs on-property laundry."
+      }
+    ],
+    "corrections": [],
+    "loops": []
+  },
+  "actions": [
+    {
+      "type": "transfer",
+      "outcome": "success",
+      "detail": "Transferred to concierge for property-specific amenity info."
+    }
+  ],
+  "insights": {
+    "summary": "The caller inquired about laundry facilities at a specific resort; the AI clarified the request and transferred to concierge.",
+    "verbatim": "The Berkeley in Las Vegas. If we have a one room does it have laundry facility?",
+    "coaching": null
+  },
+  "call_id": "646efe6d-52b2-4e32-8641-924bee30d75f",
+  "schema_version": "v6.0",
+  "duration_seconds": 431.1,
+  "ended_by": "agent"
+}

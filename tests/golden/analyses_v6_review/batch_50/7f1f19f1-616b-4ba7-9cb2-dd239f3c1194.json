@@ -1,0 +1,72 @@
+{
+  "turns": 5,
+  "repeat_caller": false,
+  "derailed_at": null,
+  "resolution": {
+    "primary": {
+      "request": "make a payment",
+      "context": "Caller wanted to reach the billing department to make a payment.",
+      "scope": "in_scope",
+      "outcome": "transferred",
+      "detail": "The caller requested a human agent after refusing to provide account details for verification.",
+      "resolution_confirmed": null,
+      "transfer": {
+        "reason": "customer_requested",
+        "destination": "concierge",
+        "queue_detected": true
+      },
+      "abandon_stage": null
+    },
+    "secondary": null,
+    "steps": [
+      "Agent greeted caller and asked for intent.",
+      "Caller requested billing department.",
+      "Agent asked for name and specific billing need.",
+      "Caller specified payment.",
+      "Agent attempted account lookup via phone number and contract ID.",
+      "Caller refused to provide details and requested customer service.",
+      "Agent transferred caller to the concierge queue."
+    ]
+  },
+  "scores": {
+    "effectiveness": 5,
+    "quality": 5,
+    "effort": 2
+  },
+  "sentiment": {
+    "start": "neutral",
+    "end": "neutral"
+  },
+  "failure": null,
+  "friction": {
+    "clarifications": [],
+    "corrections": [],
+    "loops": []
+  },
+  "actions": [
+    {
+      "type": "account_lookup",
+      "outcome": "retry",
+      "detail": "Attempted lookup via phone number; caller refused."
+    },
+    {
+      "type": "account_lookup",
+      "outcome": "failed",
+      "detail": "Attempted lookup via contract ID; caller requested agent."
+    },
+    {
+      "type": "transfer",
+      "outcome": "success",
+      "detail": "Transferred to concierge per customer request."
+    }
+  ],
+  "insights": {
+    "summary": "The caller wanted to make a payment but preferred speaking to a human agent rather than providing account details to the AI. The agent correctly identified the request for a representative and transferred the call.",
+    "verbatim": "Customer service, please.",
+    "coaching": null
+  },
+  "call_id": "7f1f19f1-616b-4ba7-9cb2-dd239f3c1194",
+  "schema_version": "v6.0",
+  "duration_seconds": 1128.1,
+  "ended_by": "customer"
+}

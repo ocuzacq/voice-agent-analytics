@@ -1,0 +1,61 @@
+{
+  "turns": 4,
+  "repeat_caller": false,
+  "derailed_at": null,
+  "resolution": {
+    "primary": {
+      "request": "make a maintenance payment",
+      "context": "The customer wanted to pay their maintenance fees over the phone rather than via a digital link.",
+      "scope": "out_of_scope",
+      "outcome": "transferred",
+      "detail": "The AI correctly identified that the customer wanted to pay over the phone and transferred them to the concierge department.",
+      "resolution_confirmed": null,
+      "transfer": {
+        "reason": "out_of_scope",
+        "destination": "concierge",
+        "queue_detected": true
+      },
+      "abandon_stage": null
+    },
+    "secondary": null,
+    "steps": [
+      "Agent greeted the customer.",
+      "Customer requested to make a maintenance payment.",
+      "Agent offered a payment link via email or text.",
+      "Customer declined the link and requested to pay over the phone.",
+      "Agent initiated a transfer to the concierge department.",
+      "Customer remained in the hold queue for over 25 minutes before disconnecting."
+    ]
+  },
+  "scores": {
+    "effectiveness": 5,
+    "quality": 5,
+    "effort": 4
+  },
+  "sentiment": {
+    "start": "neutral",
+    "end": "frustrated"
+  },
+  "failure": null,
+  "friction": {
+    "clarifications": [],
+    "corrections": [],
+    "loops": []
+  },
+  "actions": [
+    {
+      "type": "transfer",
+      "outcome": "success",
+      "detail": "Transferred to concierge for phone payment"
+    }
+  ],
+  "insights": {
+    "summary": "The customer wanted to make a maintenance payment over the phone. The AI correctly identified the need for a human agent and transferred the call, but the customer abandoned after a 25-minute wait in the queue.",
+    "verbatim": "No. On the phone. I'm gonna call and make it over the phone payment.",
+    "coaching": null
+  },
+  "call_id": "0a195db9-a53b-4f0e-9f10-c2545a0a5528",
+  "schema_version": "v6.0",
+  "duration_seconds": 1710.0,
+  "ended_by": "customer"
+}

@@ -1,0 +1,67 @@
+{
+  "turns": 2,
+  "repeat_caller": false,
+  "derailed_at": 4,
+  "resolution": {
+    "primary": {
+      "request": "schedule a timeshare week",
+      "context": "Caller wants to book or schedule their ownership week",
+      "scope": "out_of_scope",
+      "outcome": "abandoned",
+      "detail": "The caller provided a nonsensical response during name verification and then disconnected.",
+      "resolution_confirmed": null,
+      "transfer": null,
+      "abandon_stage": "mid_task"
+    },
+    "secondary": null,
+    "steps": [
+      "Agent greeted caller.",
+      "Caller requested to schedule a timeshare week.",
+      "Agent attempted to collect caller name.",
+      "Caller provided a nonsensical response about shapes.",
+      "Agent attempted to clarify the intent before caller disconnected."
+    ]
+  },
+  "scores": {
+    "effectiveness": 3,
+    "quality": 4,
+    "effort": 3
+  },
+  "sentiment": {
+    "start": "neutral",
+    "end": "neutral"
+  },
+  "failure": {
+    "type": "customer_confusion",
+    "detail": "The caller responded with a riddle or nonsensical statement about shapes when asked for their name.",
+    "policy_gap": null
+  },
+  "friction": {
+    "clarifications": [
+      {
+        "turn": 5,
+        "type": "intent",
+        "cause": "unclear",
+        "note": "Agent re-clarifying intent after nonsensical user input"
+      }
+    ],
+    "corrections": [],
+    "loops": []
+  },
+  "actions": [
+    {
+      "type": "other",
+      "outcome": "retry",
+      "detail": "Attempted to collect name but received nonsensical input"
+    }
+  ],
+  "insights": {
+    "summary": "The caller wanted to schedule a timeshare week but provided a nonsensical response about triangles and squares when asked for their name, then disconnected.",
+    "verbatim": "Which state? Has three sides? Patricia. Star. A triangle, or square.",
+    "coaching": "The agent correctly attempted to clarify the intent after the nonsensical input; no agent error detected."
+  },
+  "call_id": "0a095b02-136b-4bcb-adab-98b5705c6089",
+  "schema_version": "v6.0",
+  "duration_seconds": 37.6,
+  "ended_by": "customer"
+}

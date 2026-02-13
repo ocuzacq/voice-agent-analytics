@@ -1,0 +1,57 @@
+{
+  "turns": 9,
+  "repeat_caller": false,
+  "derailed_at": null,
+  "resolution": {
+    "primary": {
+      "request": "End timeshare ownership",
+      "context": "The caller wants to terminate their ownership of the timeshare.",
+      "scope": "out_of_scope",
+      "outcome": "abandoned",
+      "detail": "The AI correctly identified the request as out-of-scope and attempted a transfer, but no human agents were available, leading the caller to hang up after a long wait.",
+      "resolution_confirmed": null,
+      "transfer": null,
+      "abandon_stage": "post_delivery"
+    },
+    "secondary": null,
+    "steps": [
+      "Caller requested concierge to discuss ending ownership.",
+      "AI attempted to transfer but encountered a long queue.",
+      "AI re-engaged after 25 minutes to offer general info since no agents were available.",
+      "Caller declined AI assistance and asked for a callback.",
+      "AI informed caller it cannot arrange callbacks and suggested calling back later.",
+      "Caller ended the call."
+    ]
+  },
+  "scores": {
+    "effectiveness": 4,
+    "quality": 4,
+    "effort": 4
+  },
+  "sentiment": {
+    "start": "neutral",
+    "end": "frustrated"
+  },
+  "failure": null,
+  "friction": {
+    "clarifications": [],
+    "corrections": [],
+    "loops": []
+  },
+  "actions": [
+    {
+      "type": "transfer",
+      "outcome": "failed",
+      "detail": "Attempted transfer to concierge; no agents available after long wait."
+    }
+  ],
+  "insights": {
+    "summary": "The caller wanted to end their timeshare ownership, which is an out-of-scope task. The AI attempted a transfer, but due to high call volume and no available agents, the caller eventually disconnected after being told a callback was not possible.",
+    "verbatim": "I'm calling about our timeshare. We want to no longer have ownership over it.",
+    "coaching": "The agent performed well by identifying the out-of-scope request and attempting a transfer; however, the 25-minute hold time before re-engaging is a system-level friction point."
+  },
+  "call_id": "0a5afc8b-170e-4d53-8cb9-414afa914328",
+  "schema_version": "v6.0",
+  "duration_seconds": 1644.8,
+  "ended_by": "customer"
+}

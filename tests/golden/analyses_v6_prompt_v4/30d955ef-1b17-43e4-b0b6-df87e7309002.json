@@ -1,0 +1,61 @@
+{
+  "turns": 4,
+  "repeat_caller": false,
+  "derailed_at": null,
+  "resolution": {
+    "primary": {
+      "request": "Speak with a representative about billing",
+      "context": "Caller immediately requested a human agent for a billing issue",
+      "scope": "out_of_scope",
+      "outcome": "abandoned",
+      "detail": "The caller was placed in a queue that eventually timed out with no agents available; the caller then declined AI assistance.",
+      "resolution_confirmed": null,
+      "transfer": {
+        "reason": "customer_requested",
+        "destination": "concierge",
+        "queue_detected": true
+      },
+      "abandon_stage": "mid_task"
+    },
+    "secondary": null,
+    "steps": [
+      "Caller requested a representative immediately.",
+      "Agent warned of long hold times and offered automated help.",
+      "Caller insisted on waiting and specified the billing department.",
+      "Agent initiated transfer to concierge queue.",
+      "After a long hold period, the AI re-engaged stating no agents were available.",
+      "Caller declined the AI's offer to help with billing and the call ended."
+    ]
+  },
+  "scores": {
+    "effectiveness": 5,
+    "quality": 5,
+    "effort": 4
+  },
+  "sentiment": {
+    "start": "neutral",
+    "end": "neutral"
+  },
+  "failure": null,
+  "friction": {
+    "clarifications": [],
+    "corrections": [],
+    "loops": []
+  },
+  "actions": [
+    {
+      "type": "transfer",
+      "outcome": "failed",
+      "detail": "Transfer to concierge queue timed out due to no agents available."
+    }
+  ],
+  "insights": {
+    "summary": "The caller requested a representative for billing and was placed in a queue for over 20 minutes. When the AI re-engaged to report no agents were available, the caller declined automated help and ended the call.",
+    "verbatim": "Wait for representative.",
+    "coaching": "The agent performed correctly by honoring the transfer request and re-engaging when the queue failed. No AI coaching is required as the failure was due to human agent unavailability."
+  },
+  "call_id": "30d955ef-1b17-43e4-b0b6-df87e7309002",
+  "schema_version": "v6.0",
+  "duration_seconds": 1339.7,
+  "ended_by": "agent"
+}

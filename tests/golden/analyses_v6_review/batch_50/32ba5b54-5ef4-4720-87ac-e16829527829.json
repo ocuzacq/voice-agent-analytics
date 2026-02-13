@@ -1,0 +1,73 @@
+{
+  "turns": 4,
+  "repeat_caller": false,
+  "derailed_at": null,
+  "resolution": {
+    "primary": {
+      "request": "pay maintenance or mortgage bill",
+      "context": "Customer wanted to make a payment but could not be verified by the AI.",
+      "scope": "in_scope",
+      "outcome": "transferred",
+      "detail": "The AI could not locate the account via phone number and the user declined to provide a contract ID, leading to a concierge transfer.",
+      "resolution_confirmed": null,
+      "transfer": {
+        "reason": "task_failure",
+        "destination": "concierge",
+        "queue_detected": true
+      },
+      "abandon_stage": null
+    },
+    "secondary": null,
+    "steps": [
+      "Customer requested to pay a bill.",
+      "Agent asked to clarify if it was for maintenance or mortgage.",
+      "Agent attempted account lookup via phone number.",
+      "Lookup failed; agent asked for contract ID.",
+      "Customer refused to provide contract ID.",
+      "Agent transferred the call to the concierge department."
+    ]
+  },
+  "scores": {
+    "effectiveness": 4,
+    "quality": 5,
+    "effort": 3
+  },
+  "sentiment": {
+    "start": "neutral",
+    "end": "neutral"
+  },
+  "failure": null,
+  "friction": {
+    "clarifications": [
+      {
+        "turn": 7,
+        "type": "verify",
+        "cause": "tech",
+        "note": "Phone number lookup returned no results."
+      }
+    ],
+    "corrections": [],
+    "loops": []
+  },
+  "actions": [
+    {
+      "type": "account_lookup",
+      "outcome": "failed",
+      "detail": "Phone number 2099150912 not found in records."
+    },
+    {
+      "type": "transfer",
+      "outcome": "success",
+      "detail": "Transferred to concierge after verification failure."
+    }
+  ],
+  "insights": {
+    "summary": "The customer called to pay a bill but the AI could not find their account using the provided phone number. When the customer declined to provide a contract ID, the AI correctly transferred them to the concierge queue.",
+    "verbatim": "I could not find your record using your phone number. Would you be able to provide your contract ID instead?",
+    "coaching": null
+  },
+  "call_id": "32ba5b54-5ef4-4720-87ac-e16829527829",
+  "schema_version": "v6.0",
+  "duration_seconds": 891.1,
+  "ended_by": "customer"
+}

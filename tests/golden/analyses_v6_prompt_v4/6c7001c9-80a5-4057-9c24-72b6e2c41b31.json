@@ -1,0 +1,53 @@
+{
+  "turns": 1,
+  "repeat_caller": false,
+  "derailed_at": 2,
+  "resolution": {
+    "primary": {
+      "request": "no request articulated",
+      "context": "Caller played a recorded message or spoke a phrase mimicking a queue message",
+      "scope": "no_request",
+      "outcome": "abandoned",
+      "detail": "The caller played a recording or spoke a phrase about no one being available and then disconnected.",
+      "resolution_confirmed": null,
+      "transfer": null,
+      "abandon_stage": "pre_intent"
+    },
+    "secondary": null,
+    "steps": [
+      "Agent greeted caller",
+      "Caller played a recorded message or spoke a phrase about unavailability",
+      "Agent attempted to re-engage and ask for name",
+      "Caller disconnected"
+    ]
+  },
+  "scores": {
+    "effectiveness": 1,
+    "quality": 3,
+    "effort": 1
+  },
+  "sentiment": {
+    "start": "neutral",
+    "end": "neutral"
+  },
+  "failure": {
+    "type": "customer_confusion",
+    "detail": "The caller provided a nonsensical response mimicking a system message and then hung up.",
+    "policy_gap": null
+  },
+  "friction": {
+    "clarifications": [],
+    "corrections": [],
+    "loops": []
+  },
+  "actions": [],
+  "insights": {
+    "summary": "The caller provided a response that sounded like a recorded system message about unavailability and then abandoned the call before stating an intent.",
+    "verbatim": "It seems like no one is available to take your call at the moment.",
+    "coaching": null
+  },
+  "call_id": "6c7001c9-80a5-4057-9c24-72b6e2c41b31",
+  "schema_version": "v6.0",
+  "duration_seconds": 45.9,
+  "ended_by": "customer"
+}

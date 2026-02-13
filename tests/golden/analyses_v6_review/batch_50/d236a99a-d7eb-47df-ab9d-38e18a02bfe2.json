@@ -1,0 +1,89 @@
+{
+  "turns": 12,
+  "repeat_caller": false,
+  "derailed_at": 13,
+  "resolution": {
+    "primary": {
+      "request": "make a maintenance fee payment",
+      "context": "Caller wanted to pay a specific amount on her maintenance fee balance.",
+      "scope": "in_scope",
+      "outcome": "abandoned",
+      "detail": "The agent was preparing the payment link but the caller requested a human agent and then disconnected after a long queue wait with no available representatives.",
+      "resolution_confirmed": null,
+      "transfer": {
+        "reason": "customer_requested",
+        "destination": "concierge",
+        "queue_detected": true
+      },
+      "abandon_stage": "mid_task"
+    },
+    "secondary": null,
+    "steps": [
+      "Agent performed account lookup via caller ID and verified the caller's state.",
+      "Agent identified the maintenance fee balance and contract details.",
+      "Caller attempted to specify a partial payment ('parcel', 'certain amount').",
+      "Agent confirmed contact details for the payment link.",
+      "Caller requested a live representative before the link was sent.",
+      "Agent transferred to the concierge queue.",
+      "Caller waited in the queue for over 25 minutes until the system announced no representatives were available."
+    ]
+  },
+  "scores": {
+    "effectiveness": 3,
+    "quality": 4,
+    "effort": 4
+  },
+  "sentiment": {
+    "start": "neutral",
+    "end": "frustrated"
+  },
+  "failure": {
+    "type": "wrong_action",
+    "detail": "Agent failed to acknowledge the caller's request for a partial payment ('certain amount') and simply repeated the full balance prompt.",
+    "policy_gap": null
+  },
+  "friction": {
+    "clarifications": [
+      {
+        "turn": 13,
+        "type": "intent",
+        "cause": "misheard",
+        "note": "Agent confused by 'parcel' (likely 'partial')."
+      }
+    ],
+    "corrections": [
+      {
+        "turn": 18,
+        "severity": "minor",
+        "note": "Caller corrected outdated email and phone number."
+      }
+    ],
+    "loops": []
+  },
+  "actions": [
+    {
+      "type": "account_lookup",
+      "outcome": "success",
+      "detail": "Found record via caller ID."
+    },
+    {
+      "type": "verification",
+      "outcome": "success",
+      "detail": "Verified state of residence as Texas."
+    },
+    {
+      "type": "transfer",
+      "outcome": "failed",
+      "detail": "Transferred to concierge; no agents available after long wait."
+    }
+  ],
+  "insights": {
+    "summary": "The caller wanted to make a partial payment on her maintenance fees. While the AI successfully verified her and updated her contact info, it failed to address the 'certain amount' request and the caller eventually requested a transfer, which ended in a queue timeout.",
+    "verbatim": "Certain amount. ... Need customer service.",
+    "coaching": "The agent should have acknowledged the request for a 'certain amount' by explaining that the payment link allows the user to enter their desired amount, rather than just repeating the full balance prompt."
+  },
+  "call_id": "d236a99a-d7eb-47df-ab9d-38e18a02bfe2",
+  "schema_version": "v6.0",
+  "duration_seconds": 1711.2,
+  "ended_by": "agent"
+}

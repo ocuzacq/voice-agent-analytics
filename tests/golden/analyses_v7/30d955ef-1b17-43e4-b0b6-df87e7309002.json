@@ -1,0 +1,72 @@
+{
+  "turns": 4,
+  "repeat_caller": false,
+  "derailed_at": null,
+  "resolution": {
+    "primary": {
+      "request_category": "billing_dispute",
+      "request": "Speak with billing department",
+      "context": "Caller wanted to talk to a person about billing",
+      "human_requested": "initial",
+      "department_requested": "billing",
+      "scope": "out_of_scope",
+      "outcome": "abandoned",
+      "detail": "Caller requested billing department and was placed in a queue that eventually timed out with no agents available.",
+      "resolution_confirmed": null,
+      "transfer": {
+        "reason": "customer_requested",
+        "destination": "concierge",
+        "queue_detected": true,
+        "queue_result": "unavailable"
+      },
+      "abandon_stage": "mid_task"
+    },
+    "secondary": null,
+    "steps": [
+      "Caller requested a representative immediately.",
+      "AI offered to transfer but warned of long wait times.",
+      "Caller specified the billing department.",
+      "AI transferred caller to the concierge queue.",
+      "Caller waited in the queue for approximately 20 minutes.",
+      "AI re-engaged after queue timeout stating no agents were available.",
+      "Caller declined AI assistance and ended the call."
+    ]
+  },
+  "scores": {
+    "effectiveness": 2,
+    "quality": 3,
+    "effort": 5
+  },
+  "sentiment": {
+    "start": "neutral",
+    "end": "neutral"
+  },
+  "impediment": {
+    "type": "transfer_queue",
+    "detail": "Caller waited in the transfer queue for 20 minutes only for the system to announce no agents were available.",
+    "policy_gap": null
+  },
+  "agent_issue": null,
+  "friction": {
+    "clarifications": [],
+    "corrections": [],
+    "loops": []
+  },
+  "actions": [
+    {
+      "type": "transfer",
+      "outcome": "failed",
+      "detail": "Transfer to concierge queue timed out after 20 minutes."
+    }
+  ],
+  "insights": {
+    "summary": "The caller requested the billing department immediately and was placed in a queue for 20 minutes. The transfer failed due to agent unavailability, and the caller declined the AI's offer to help after the timeout.",
+    "verbatim": "Wait for representative... Billing.",
+    "coaching": "The agent correctly identified the request as out-of-scope and attempted a transfer, but the operational failure of the queue (20-minute wait followed by unavailability) led to the abandonment."
+  },
+  "call_id": "30d955ef-1b17-43e4-b0b6-df87e7309002",
+  "schema_version": "v7.0",
+  "duration_seconds": 1339.7,
+  "ended_by": "agent",
+  "ended_reason": "assistant-ended-call"
+}

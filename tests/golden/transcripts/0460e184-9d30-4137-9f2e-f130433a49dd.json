@@ -1,0 +1,102 @@
+{
+  "agent_id": "IdNSnJmoukxviqoTIWOZ",
+  "duration": 127.073801,
+  "ended_reason": "assistant-ended-call",
+  "messages": [
+    {
+      "role": "assistant",
+      "timestamp": 1770661072.0561378,
+      "content": "Hi, thank you for calling Vacation Village Resorts. This is Jamie on a recorded line. How can I help you today?"
+    },
+    {
+      "role": "user",
+      "timestamp": 1770661082.581422,
+      "content": "Checking on some tech and emails about Bonaventure."
+    },
+    {
+      "role": "assistant",
+      "timestamp": 1770661091.3001075,
+      "content": "Just to clarify, are you looking for help with your Bonaventure account, or do you need a specific link"
+    },
+    {
+      "role": "assistant",
+      "timestamp": 1770661091.3001075,
+      "content": "sent to your email?"
+    },
+    {
+      "role": "user",
+      "timestamp": 1770661103.106308,
+      "content": "Bonaventure account."
+    },
+    {
+      "role": "user",
+      "timestamp": 1770661105.1609387,
+      "content": "Deedback."
+    },
+    {
+      "role": "assistant",
+      "timestamp": 1770661108.0815396,
+      "content": "So, you're asking about a deedback for your Bonaventure account. I want to make sure I'm understanding correctly --"
+    },
+    {
+      "role": "assistant",
+      "timestamp": 1770661108.0815396,
+      "content": "are you looking for information about transferring ownership or deed-related actions? If so, that's something I can't assist with directly, but I can help with other account-related questions. Can you tell me more about what you need?"
+    },
+    {
+      "role": "user",
+      "timestamp": 1770661105.1609387,
+      "content": "Yes."
+    },
+    {
+      "role": "user",
+      "timestamp": 1770661129.050859,
+      "content": "I received"
+    },
+    {
+      "role": "user",
+      "timestamp": 1770661131.9873948,
+      "content": "offers about a d back and wanted to see if it was legitimate."
+    },
+    {
+      "role": "assistant",
+      "timestamp": 1770661136.908677,
+      "content": "Thanks explaining. I can't verify or process deedback offers, but I can help with questions about your Bonaventure contract details if you'd like. Would you like me to pull up your contract"
+    },
+    {
+      "role": "assistant",
+      "timestamp": 1770661136.908677,
+      "content": "information to review your account?"
+    },
+    {
+      "role": "user",
+      "timestamp": 1770661151.019061,
+      "content": "Sure."
+    },
+    {
+      "role": "assistant",
+      "timestamp": 1770661155.561325,
+      "content": "Alright, pulled up your contract details. Your contract number is five"
+    },
+    {
+      "role": "assistant",
+      "timestamp": 1770661155.561325,
+      "content": "one eight one nine one, and your resort is Vacation Village at Bonaventure. The contract status is listed as Good Business, and your maintenance balance is one thousand three hundred sixty point eight one dollars, with billing status as Current. -- -- I can\u2019t verify or process deedback offers, but if you received an offer, it\u2019s important to confirm it directly with Vacation Village Resorts. Official communications will come from the company\u2019s main contact channels, and you can always check legitimacy by reaching out through the Contact page at vacationvillageresorts dot com. -- -- Is there anything else about your Bonaventure account you\u2019d like to review?"
+    },
+    {
+      "role": "user",
+      "timestamp": 1770661189.4636772,
+      "content": "No."
+    },
+    {
+      "role": "assistant",
+      "timestamp": 1770661192.024854,
+      "content": "Alright, if you have any questions in"
+    },
+    {
+      "role": "assistant",
+      "timestamp": 1770661192.024854,
+      "content": "the future, feel free to call us back. Have a wonderful day!"
+    }
+  ]
+}

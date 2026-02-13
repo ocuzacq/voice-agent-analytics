@@ -1,0 +1,74 @@
+{
+  "turns": 11,
+  "repeat_caller": true,
+  "derailed_at": null,
+  "resolution": {
+    "primary": {
+      "request": "Make a payment on account",
+      "context": "Caller is experiencing login issues with an invalid account number error and previously sent links failed.",
+      "scope": "in_scope",
+      "outcome": "fulfilled",
+      "detail": "The agent verified the caller and sent a payment link via email and text after the caller declined a portal registration link.",
+      "resolution_confirmed": false,
+      "transfer": null,
+      "abandon_stage": null
+    },
+    "secondary": null,
+    "steps": [
+      "Caller identified herself and reported an invalid account number issue.",
+      "Agent performed account lookup via phone number and verified identity (name and state).",
+      "Agent offered a Clubhouse registration link, which the caller rejected because a previous one failed.",
+      "Agent clarified the intent was to make a payment.",
+      "Agent confirmed property and contract details.",
+      "Agent confirmed contact information and sent the payment link."
+    ]
+  },
+  "scores": {
+    "effectiveness": 5,
+    "quality": 5,
+    "effort": 2
+  },
+  "sentiment": {
+    "start": "neutral",
+    "end": "satisfied"
+  },
+  "failure": null,
+  "friction": {
+    "clarifications": [
+      {
+        "turn": 5,
+        "type": "name",
+        "cause": "proactive",
+        "note": "Agent asked to confirm name spelling for verification."
+      }
+    ],
+    "corrections": [],
+    "loops": []
+  },
+  "actions": [
+    {
+      "type": "account_lookup",
+      "outcome": "success",
+      "detail": "Located account using phone number 8135997661."
+    },
+    {
+      "type": "verification",
+      "outcome": "success",
+      "detail": "Verified name and Florida residency."
+    },
+    {
+      "type": "send_payment_link",
+      "outcome": "success",
+      "detail": "Sent link to katieluker1@gmail.com and 8135997661."
+    }
+  ],
+  "insights": {
+    "summary": "The caller wanted to make a payment after encountering errors with her account number and a previous registration link. The agent successfully verified her and sent a new payment link via text and email.",
+    "verbatim": "I'm trying to get into my account. The account number is wrong... You sent me [a link] already and it did not work.",
+    "coaching": null
+  },
+  "call_id": "0a2feaf7-b27a-435b-8f6a-f81a4890d1d6",
+  "schema_version": "v6.0",
+  "duration_seconds": 190.9,
+  "ended_by": "agent"
+}

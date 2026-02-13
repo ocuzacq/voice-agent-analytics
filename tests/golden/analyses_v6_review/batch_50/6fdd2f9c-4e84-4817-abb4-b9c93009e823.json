@@ -1,0 +1,72 @@
+{
+  "turns": 4,
+  "repeat_caller": false,
+  "derailed_at": 4,
+  "resolution": {
+    "primary": {
+      "request": "pay maintenance fee",
+      "context": "The caller initially wanted to pay their maintenance fee but became distracted by background audio (likely a TV or radio).",
+      "scope": "in_scope",
+      "outcome": "transferred",
+      "detail": "The AI identified the payment request but the caller requested a human agent after a period of background noise interference.",
+      "resolution_confirmed": false,
+      "transfer": {
+        "reason": "customer_requested",
+        "destination": "concierge",
+        "queue_detected": true
+      },
+      "abandon_stage": null
+    },
+    "secondary": null,
+    "steps": [
+      "Agent greeted caller and identified maintenance fee payment intent.",
+      "Agent offered to send a payment link.",
+      "Caller's audio was dominated by background noise (TV commercials) for an extended period.",
+      "Agent failed to understand the noise and the caller then requested customer service.",
+      "Agent transferred the caller to the concierge queue where the caller remained until the transcript ended."
+    ]
+  },
+  "scores": {
+    "effectiveness": 4,
+    "quality": 4,
+    "effort": 3
+  },
+  "sentiment": {
+    "start": "neutral",
+    "end": "neutral"
+  },
+  "failure": null,
+  "friction": {
+    "clarifications": [
+      {
+        "turn": 5,
+        "type": "intent",
+        "cause": "tech",
+        "note": "Agent could not parse background TV audio."
+      }
+    ],
+    "corrections": [],
+    "loops": []
+  },
+  "actions": [
+    {
+      "type": "account_lookup",
+      "outcome": "success",
+      "detail": "Automatic lookup likely occurred to identify payment context."
+    },
+    {
+      "type": "transfer",
+      "outcome": "success",
+      "detail": "Transferred to concierge department per customer request."
+    }
+  ],
+  "insights": {
+    "summary": "The caller initially wanted to pay a maintenance fee but was distracted by loud background audio (TV). After the AI failed to understand the noise, the caller requested a human and was successfully transferred to the concierge queue.",
+    "verbatim": "I wanna play pay my maintenance fee through Vacation Villages.",
+    "coaching": "The agent performed correctly; the primary friction was caused by the caller's environment (loud TV) rather than a system failure."
+  },
+  "call_id": "6fdd2f9c-4e84-4817-abb4-b9c93009e823",
+  "schema_version": "v6.0",
+  "duration_seconds": 1294.1,
+  "ended_by": "customer"
+}

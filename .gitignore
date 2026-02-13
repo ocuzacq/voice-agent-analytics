@@ -4,6 +4,7 @@ sampled/
 reports/
 asks/
 asks_raw/
+asks_v7/
 cowork/
 preprocessed/
 runs/
@@ -42,6 +43,15 @@ ENV/
 # OS
 .DS_Store
 Thumbs.db
+
+# Scratch / reference files
+*.pdf
+analytics_recommendation.md
+IMPROVEMENT_INTENT_TAGS.md
+docs/plan-duckdb-transcript-enrichment.md
+older/
+tmp_prompt.txt
+tests/golden/analytics.duckdb
 
 # Claude Code
 .claude/

@@ -1,0 +1,88 @@
+{
+  "turns": 11,
+  "repeat_caller": false,
+  "derailed_at": 22,
+  "resolution": {
+    "primary": {
+      "request_category": "tax_documents",
+      "request": "Get a 2025 receipt for tax reasons",
+      "context": "Customer needs payment history for tax purposes",
+      "human_requested": "initial",
+      "department_requested": null,
+      "scope": "in_scope",
+      "outcome": "abandoned",
+      "detail": "Agent sent the maintenance account history link to the verified email, but the caller disconnected while checking their inbox, expressing frustration.",
+      "resolution_confirmed": false,
+      "transfer": {
+        "reason": "customer_requested",
+        "destination": "concierge",
+        "queue_detected": true,
+        "queue_result": "caller_abandoned"
+      },
+      "abandon_stage": "post_delivery"
+    },
+    "secondary": null,
+    "steps": [
+      "Caller initially requested a representative.",
+      "AI attempted transfer, but queue was unavailable after a long wait.",
+      "Caller then requested a 2025 receipt for tax purposes.",
+      "AI performed account lookup via phone number and verified the email on file.",
+      "AI sent the maintenance account history link to the customer's email.",
+      "Caller abandoned the call while checking their inbox."
+    ]
+  },
+  "scores": {
+    "effectiveness": 4,
+    "quality": 4,
+    "effort": 4
+  },
+  "sentiment": {
+    "start": "neutral",
+    "end": "angry"
+  },
+  "impediment": {
+    "type": "transfer_queue",
+    "detail": "The initial transfer request failed due to no agents being available after a 5-minute wait, forcing the caller back to the AI.",
+    "policy_gap": null
+  },
+  "agent_issue": null,
+  "friction": {
+    "clarifications": [
+      {
+        "turn": 13,
+        "type": "phone",
+        "cause": "tech",
+        "note": "CallerID lookup failed to return valid contracts"
+      }
+    ],
+    "corrections": [],
+    "loops": []
+  },
+  "actions": [
+    {
+      "type": "transfer",
+      "outcome": "failed",
+      "detail": "Transfer to concierge failed due to agent unavailability"
+    },
+    {
+      "type": "account_lookup",
+      "outcome": "retry",
+      "detail": "Initial callerID lookup failed; manual phone entry succeeded"
+    },
+    {
+      "type": "send_portal_link",
+      "outcome": "success",
+      "detail": "Sent maintenance account history link to verified email"
+    }
+  ],
+  "insights": {
+    "summary": "The caller initially wanted a human but was forced back to the AI after a 5-minute queue wait. The AI successfully identified the account and sent a payment history link for tax purposes, but the caller hung up in frustration while checking their email.",
+    "verbatim": "Are you it's the same fucking thing. It's the same. Why do you keep",
+    "coaching": null
+  },
+  "call_id": "286652e9-40ab-49ce-a1b9-466c43c814fa",
+  "schema_version": "v7.0",
+  "duration_seconds": 523.6,
+  "ended_by": "customer",
+  "ended_reason": "customer-ended-call"
+}

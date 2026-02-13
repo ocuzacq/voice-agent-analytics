@@ -1,0 +1,54 @@
+{
+  "turns": 2,
+  "repeat_caller": false,
+  "derailed_at": null,
+  "resolution": {
+    "primary": {
+      "request": "Verify booking for vacation",
+      "context": "Caller wants to confirm a reservation",
+      "scope": "out_of_scope",
+      "outcome": "fulfilled",
+      "detail": "Agent informed the caller that booking verification requires business hours and provided the correct callback time.",
+      "resolution_confirmed": true,
+      "transfer": null,
+      "abandon_stage": null
+    },
+    "secondary": null,
+    "steps": [
+      "Caller requested booking verification.",
+      "Agent explained the service is unavailable after hours.",
+      "Agent provided business hours and ended the call."
+    ]
+  },
+  "scores": {
+    "effectiveness": 5,
+    "quality": 5,
+    "effort": 1
+  },
+  "sentiment": {
+    "start": "neutral",
+    "end": "neutral"
+  },
+  "failure": null,
+  "friction": {
+    "clarifications": [],
+    "corrections": [],
+    "loops": []
+  },
+  "actions": [
+    {
+      "type": "other",
+      "outcome": "success",
+      "detail": "Provided business hours for out-of-scope reservation request."
+    }
+  ],
+  "insights": {
+    "summary": "The caller wanted to verify a booking, but the agent correctly identified this as a task requiring business hours and provided the callback window.",
+    "verbatim": "Verify my booking for vacation.",
+    "coaching": null
+  },
+  "call_id": "23cf97e7-4011-44a2-864b-29f5905828f8",
+  "schema_version": "v6.0",
+  "duration_seconds": 54.7,
+  "ended_by": "agent"
+}

@@ -1,0 +1,82 @@
+{
+  "turns": 15,
+  "repeat_caller": false,
+  "derailed_at": null,
+  "resolution": {
+    "primary": {
+      "request": "Inquire about resorts in Virginia",
+      "context": "Caller wanted to know if the company had properties at Massanutten (mispronounced as Mass Nugget).",
+      "scope": "in_scope",
+      "outcome": "fulfilled",
+      "detail": "The agent clarified that they do not have a resort at Massanutten but provided information on their Williamsburg locations and travel distance.",
+      "resolution_confirmed": true,
+      "transfer": null,
+      "abandon_stage": null
+    },
+    "secondary": {
+      "request": "Trade timeshare week via RCI",
+      "context": "Caller wanted to know how to use RCI to stay at the Massanutten location.",
+      "scope": "in_scope",
+      "outcome": "fulfilled",
+      "detail": "The agent explained the RCI exchange process and sent a link to the RCI help page via text.",
+      "resolution_confirmed": true,
+      "transfer": null,
+      "abandon_stage": null
+    },
+    "steps": [
+      "Agent performed account lookup and identity verification.",
+      "Agent clarified the caller's request regarding 'Mass Nugget' as Massanutten.",
+      "Agent provided details on available Virginia resorts and their distance from Massanutten.",
+      "Agent explained RCI exchange options and offered a link.",
+      "Agent sent the RCI link via text and confirmed delivery."
+    ]
+  },
+  "scores": {
+    "effectiveness": 5,
+    "quality": 5,
+    "effort": 1
+  },
+  "sentiment": {
+    "start": "neutral",
+    "end": "satisfied"
+  },
+  "failure": null,
+  "friction": {
+    "clarifications": [
+      {
+        "turn": 15,
+        "type": "intent",
+        "cause": "unclear",
+        "note": "Clarified 'Mass Nugget' as Massanutten resort."
+      }
+    ],
+    "corrections": [],
+    "loops": []
+  },
+  "actions": [
+    {
+      "type": "account_lookup",
+      "outcome": "success",
+      "detail": "Looked up account using phone number."
+    },
+    {
+      "type": "verification",
+      "outcome": "success",
+      "detail": "Verified name and state of residence."
+    },
+    {
+      "type": "send_rci_link",
+      "outcome": "success",
+      "detail": "Sent RCI help page link via text."
+    }
+  ],
+  "insights": {
+    "summary": "The caller inquired about resorts in Virginia (specifically Massanutten) and how to trade their week. The agent correctly identified the location, provided distance information, and sent an RCI link to assist with the exchange request.",
+    "verbatim": "How can I maybe trade off with one of RCI or something that's right there?",
+    "coaching": null
+  },
+  "call_id": "0a0aea06-6cbe-4888-9605-cb52dc8fa52e",
+  "schema_version": "v6.0",
+  "duration_seconds": 297.1,
+  "ended_by": "agent"
+}

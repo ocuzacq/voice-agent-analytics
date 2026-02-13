@@ -1,0 +1,78 @@
+{
+  "turns": 19,
+  "repeat_caller": false,
+  "derailed_at": null,
+  "resolution": {
+    "primary": {
+      "request": "Register for Vacatia Clubhouse account",
+      "context": "Customer received a letter about the new portal but is struggling with the ID and registration process.",
+      "scope": "in_scope",
+      "outcome": "fulfilled",
+      "detail": "Agent explained the difference between RCI and Vacatia IDs and sent a registration link to the customer's email.",
+      "resolution_confirmed": false,
+      "transfer": null,
+      "abandon_stage": null
+    },
+    "secondary": null,
+    "steps": [
+      "Customer explained difficulty logging into the new Vacatia Clubhouse portal.",
+      "Agent performed account lookup and verification using phone, name, and state.",
+      "Agent clarified that RCI ID is not the same as the Vacatia ID needed for registration.",
+      "Agent confirmed the customer's email address and sent a registration link."
+    ]
+  },
+  "scores": {
+    "effectiveness": 5,
+    "quality": 4,
+    "effort": 3
+  },
+  "sentiment": {
+    "start": "frustrated",
+    "end": "neutral"
+  },
+  "failure": null,
+  "friction": {
+    "clarifications": [
+      {
+        "turn": 13,
+        "type": "repeat",
+        "cause": "misheard",
+        "note": "Agent asked to spell last name again"
+      }
+    ],
+    "corrections": [
+      {
+        "turn": 16,
+        "severity": "minor",
+        "note": "Customer corrected spelling of last name"
+      }
+    ],
+    "loops": []
+  },
+  "actions": [
+    {
+      "type": "account_lookup",
+      "outcome": "success",
+      "detail": "Located record using phone number"
+    },
+    {
+      "type": "verification",
+      "outcome": "success",
+      "detail": "Verified name and state of residence"
+    },
+    {
+      "type": "send_clubhouse_link",
+      "outcome": "success",
+      "detail": "Sent registration link to verified email"
+    }
+  ],
+  "insights": {
+    "summary": "The customer was confused by the registration requirements for the new Clubhouse portal, specifically the ID type. The agent successfully verified the account, explained the ID difference, and sent a registration link.",
+    "verbatim": "I type in my ID number. It says it's not a correct ID number... It's ridiculous.",
+    "coaching": null
+  },
+  "call_id": "0acca17b-d9c5-476c-965a-ac8697b4a21d",
+  "schema_version": "v6.0",
+  "duration_seconds": 326.5,
+  "ended_by": "customer"
+}

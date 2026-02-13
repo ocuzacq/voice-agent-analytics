@@ -1,0 +1,109 @@
+{
+  "turns": 14,
+  "repeat_caller": false,
+  "derailed_at": 13,
+  "resolution": {
+    "primary": {
+      "request": "sell timeshare ownership entirely",
+      "context": "Customer wants to dispose of their property",
+      "scope": "out_of_scope",
+      "outcome": "transferred",
+      "detail": "The agent attempted to transfer the caller for an out-of-scope request, but the caller was returned to the AI after a long queue wait.",
+      "resolution_confirmed": null,
+      "transfer": {
+        "reason": "out_of_scope",
+        "destination": "concierge",
+        "queue_detected": true
+      },
+      "abandon_stage": null
+    },
+    "secondary": null,
+    "steps": [
+      "Caller immediately requested a representative.",
+      "Agent attempted to identify the caller and their intent before transferring.",
+      "Caller specified they wanted to sell their ownership entirely.",
+      "Agent entered a clarification loop, repeatedly asking about renting instead of selling.",
+      "Agent initiated a transfer to the concierge department.",
+      "Caller waited in a queue for over 25 minutes before being returned to the AI agent.",
+      "AI agent informed the caller no representatives were available and offered help again.",
+      "Caller disconnected after expressing frustration that the AI could not help."
+    ]
+  },
+  "scores": {
+    "effectiveness": 2,
+    "quality": 2,
+    "effort": 5
+  },
+  "sentiment": {
+    "start": "neutral",
+    "end": "frustrated"
+  },
+  "failure": {
+    "type": "wrong_action",
+    "detail": "Agent entered a repetitive clarification loop about renting vs selling after the user had already clarified their intent.",
+    "policy_gap": null
+  },
+  "friction": {
+    "clarifications": [
+      {
+        "turn": 11,
+        "type": "intent",
+        "cause": "proactive",
+        "note": "Agent asks to clarify rent vs sell"
+      },
+      {
+        "turn": 13,
+        "type": "intent",
+        "cause": "misheard",
+        "note": "Agent asks about renting after user said sell"
+      }
+    ],
+    "corrections": [
+      {
+        "turn": 12,
+        "severity": "minor",
+        "note": "User clarifies they want to sell ownership entirely"
+      },
+      {
+        "turn": 16,
+        "severity": "moderate",
+        "note": "User repeats they want to sell outright"
+      }
+    ],
+    "loops": [
+      {
+        "turns": [
+          11,
+          13,
+          15,
+          17,
+          19
+        ],
+        "type": "intent_retry",
+        "subject": "selling vs renting",
+        "note": "Agent repeatedly asks about renting despite sell intent"
+      }
+    ]
+  },
+  "actions": [
+    {
+      "type": "transfer",
+      "outcome": "success",
+      "detail": "Initial transfer to concierge queue"
+    },
+    {
+      "type": "transfer",
+      "outcome": "failed",
+      "detail": "Queue timeout returned caller to AI agent"
+    }
+  ],
+  "insights": {
+    "summary": "The caller wanted to sell their timeshare ownership. The AI agent struggled to accept this intent, repeatedly asking if they wanted to rent instead, before eventually transferring the caller to a queue where they waited for 25 minutes only to be returned to the AI and eventually hang up.",
+    "verbatim": "Instead of ownership entirely... You just saw it out right.",
+    "coaching": "The agent should have immediately recognized 'sell ownership entirely' as out-of-scope and transferred without the repetitive and confusing clarification loop regarding the rental program."
+  },
+  "call_id": "042dfaf7-8265-4bdd-a957-1cbec199b173",
+  "schema_version": "v6.0",
+  "duration_seconds": 1708.3,
+  "ended_by": "customer"
+}

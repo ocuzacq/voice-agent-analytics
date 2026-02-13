@@ -1,0 +1,95 @@
+{
+  "turns": 7,
+  "repeat_caller": false,
+  "derailed_at": 7,
+  "resolution": {
+    "primary": {
+      "request": "Get information about ownership",
+      "context": "Caller wants details regarding their Vacation Village ownership but is providing vague responses.",
+      "scope": "in_scope",
+      "outcome": "abandoned",
+      "detail": "The agent attempted to narrow down the request, but the caller's vague responses led to a transfer offer which the caller abandoned.",
+      "resolution_confirmed": null,
+      "transfer": {
+        "reason": "task_failure",
+        "destination": "concierge",
+        "queue_detected": false
+      },
+      "abandon_stage": "mid_task"
+    },
+    "secondary": null,
+    "steps": [
+      "Agent greets caller and asks for name.",
+      "Caller provides name and mentions Vacation Village.",
+      "Agent attempts to clarify the specific ownership request (usage vs billing).",
+      "Caller provides vague 'yes' and 'yeah' responses.",
+      "Agent offers transfer to a representative due to lack of specific intent.",
+      "Caller disconnects during the transfer offer."
+    ]
+  },
+  "scores": {
+    "effectiveness": 3,
+    "quality": 4,
+    "effort": 4
+  },
+  "sentiment": {
+    "start": "neutral",
+    "end": "neutral"
+  },
+  "failure": {
+    "type": "customer_confusion",
+    "detail": "The caller provided one-word or non-committal answers to clarifying questions, preventing the AI from identifying a specific task.",
+    "policy_gap": null
+  },
+  "friction": {
+    "clarifications": [
+      {
+        "turn": 7,
+        "type": "intent",
+        "cause": "unclear",
+        "note": "Agent asks if ownership or something else."
+      },
+      {
+        "turn": 9,
+        "type": "intent",
+        "cause": "unclear",
+        "note": "Agent asks for usage vs billing details."
+      },
+      {
+        "turn": 11,
+        "type": "intent",
+        "cause": "unclear",
+        "note": "Agent repeats request for specific ownership info."
+      }
+    ],
+    "corrections": [],
+    "loops": [
+      {
+        "turns": [
+          7,
+          9,
+          11
+        ],
+        "type": "intent_retry",
+        "subject": "ownership details",
+        "note": "Repeated attempts to narrow down ownership request."
+      }
+    ]
+  },
+  "actions": [
+    {
+      "type": "transfer",
+      "outcome": "retry",
+      "detail": "Agent offered transfer after multiple vague responses."
+    }
+  ],
+  "insights": {
+    "summary": "The caller wanted information about their ownership but provided vague, affirmative-only responses to the agent's clarifying questions. The agent eventually offered a transfer to a human, but the caller disconnected.",
+    "verbatim": "I wanna know, um, about my... Vacation Village.",
+    "coaching": "The agent handled the vague inputs well by offering specific categories (usage vs billing), but could have attempted an account lookup earlier to see if that prompted more specific questions from the user."
+  },
+  "call_id": "0d43f04f-7171-4253-b7b0-2cd60f7c62e8",
+  "schema_version": "v6.0",
+  "duration_seconds": 94.9,
+  "ended_by": "customer"
+}

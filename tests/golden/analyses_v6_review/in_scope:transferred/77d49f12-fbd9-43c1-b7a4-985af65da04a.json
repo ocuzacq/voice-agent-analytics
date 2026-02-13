@@ -1,0 +1,59 @@
+{
+  "turns": 2,
+  "repeat_caller": false,
+  "derailed_at": null,
+  "resolution": {
+    "primary": {
+      "request": "Speak to a real person",
+      "context": "Caller immediately requested a human agent upon hearing the AI greeting.",
+      "scope": "in_scope",
+      "outcome": "transferred",
+      "detail": "The agent correctly identified the request for a human and initiated the transfer process.",
+      "resolution_confirmed": null,
+      "transfer": {
+        "reason": "customer_requested",
+        "destination": "concierge",
+        "queue_detected": false
+      },
+      "abandon_stage": null
+    },
+    "secondary": null,
+    "steps": [
+      "Agent greeted the caller.",
+      "Caller requested a live representative.",
+      "Agent confirmed the transfer and asked if anything else was needed.",
+      "Caller declined further help and agent initiated the hold for transfer."
+    ]
+  },
+  "scores": {
+    "effectiveness": 5,
+    "quality": 5,
+    "effort": 1
+  },
+  "sentiment": {
+    "start": "neutral",
+    "end": "neutral"
+  },
+  "failure": null,
+  "friction": {
+    "clarifications": [],
+    "corrections": [],
+    "loops": []
+  },
+  "actions": [
+    {
+      "type": "transfer",
+      "outcome": "success",
+      "detail": "Transfer to live representative initiated per customer request."
+    }
+  ],
+  "insights": {
+    "summary": "The customer immediately requested a live representative upon hearing the AI greeting. The agent efficiently processed the request and transferred the call.",
+    "verbatim": "Let me speak to a real person, Jamie.",
+    "coaching": null
+  },
+  "call_id": "77d49f12-fbd9-43c1-b7a4-985af65da04a",
+  "schema_version": "v6.0",
+  "duration_seconds": 283.4,
+  "ended_by": "customer"
+}

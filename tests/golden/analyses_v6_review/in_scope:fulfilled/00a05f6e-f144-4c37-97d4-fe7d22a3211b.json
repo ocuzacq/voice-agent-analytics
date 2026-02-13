@@ -1,0 +1,85 @@
+{
+  "turns": 9,
+  "repeat_caller": false,
+  "derailed_at": null,
+  "resolution": {
+    "primary": {
+      "request": "Pay annual maintenance fee",
+      "context": "Customer wanted to pay their annual fee for The Grandview at Las Vegas",
+      "scope": "in_scope",
+      "outcome": "fulfilled",
+      "detail": "The agent successfully verified the account and sent a payment link to the customer's email and phone.",
+      "resolution_confirmed": false,
+      "transfer": null,
+      "abandon_stage": null
+    },
+    "secondary": {
+      "request": "Update account phone number",
+      "context": "Customer realized they needed to change their contact information after the payment task",
+      "scope": "out_of_scope",
+      "outcome": "transferred",
+      "detail": "The agent correctly identified that updating contact info requires a human agent and transferred the call.",
+      "resolution_confirmed": null,
+      "transfer": {
+        "reason": "out_of_scope",
+        "destination": "concierge",
+        "queue_detected": true
+      },
+      "abandon_stage": null
+    },
+    "steps": [
+      "Agent greeted customer and identified intent to pay annual fee.",
+      "Agent performed account lookup and verification using name, phone, and state.",
+      "Agent provided balance and contract details for the property.",
+      "Agent sent a payment link to the verified contact info.",
+      "Customer requested to change their phone number.",
+      "Agent transferred the call to the concierge department."
+    ]
+  },
+  "scores": {
+    "effectiveness": 5,
+    "quality": 5,
+    "effort": 1
+  },
+  "sentiment": {
+    "start": "neutral",
+    "end": "neutral"
+  },
+  "failure": null,
+  "friction": {
+    "clarifications": [],
+    "corrections": [],
+    "loops": []
+  },
+  "actions": [
+    {
+      "type": "account_lookup",
+      "outcome": "success",
+      "detail": "Found record using phone number 5418064851"
+    },
+    {
+      "type": "verification",
+      "outcome": "success",
+      "detail": "Verified state of residence as Oregon"
+    },
+    {
+      "type": "send_payment_link",
+      "outcome": "success",
+      "detail": "Sent link to htsshell@gmail.com and 5413874444"
+    },
+    {
+      "type": "transfer",
+      "outcome": "success",
+      "detail": "Transferred to concierge for phone number update"
+    }
+  ],
+  "insights": {
+    "summary": "The agent efficiently handled a maintenance fee payment by sending a link and then correctly transferred the caller to concierge for a phone number update.",
+    "verbatim": "I need to change the phone number.",
+    "coaching": null
+  },
+  "call_id": "00a05f6e-f144-4c37-97d4-fe7d22a3211b",
+  "schema_version": "v6.0",
+  "duration_seconds": 1119.8,
+  "ended_by": "customer"
+}

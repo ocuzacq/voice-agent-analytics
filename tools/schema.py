@@ -1,5 +1,5 @@
 """
-Voice Agent Call Analysis Schema — v6.0
+Voice Agent Call Analysis Schema — v7.0
 
 Canonical Pydantic models for structured LLM output via Gemini response_schema.
 
@@ -11,6 +11,9 @@ Design principles:
   - "transferred" not "escalated": neutral — correct routing, not failure
   - Optional = nullable: None means "not applicable", not "missing"
   - Enums via Literal: API-enforced, no free-text leakage
+  - Impediment + AgentIssue: orthogonal models replacing single Failure field
+    - Impediment = WHAT observably blocked the customer (system/action level)
+    - AgentIssue = WHAT the agent visibly did wrong (decision level)
 
 Architecture:
   CallAnalysis  — what the LLM produces (used as Gemini response_schema)
@@ -29,7 +32,7 @@ from typing import Literal, Optional
 from pydantic import BaseModel, Field
 
 
-SCHEMA_VERSION = "v6.0"
+SCHEMA_VERSION = "v7.0"
 
 
 # ---------------------------------------------------------------------------
@@ -39,6 +42,40 @@ SCHEMA_VERSION = "v6.0"
 IntentScope = Literal["in_scope", "out_of_scope", "no_request"]
 IntentOutcome = Literal["fulfilled", "transferred", "abandoned"]
 
+RequestCategory = Literal[
+    # --- Transactions ---
+    "maintenance_payment",     # pay maintenance fees, check balance/history, billing inquiry
+    "mortgage_payment",        # mortgage-specific payment or balance inquiry
+    "payment_arrangement",     # payment plan, installments, hardship program
+
+    # --- Account & portal ---
+    "portal_account",          # login, register, password reset, clubhouse account, owner account setup
+    "account_details_update",  # change phone/email/address/name on account (out-of-scope for AI)
+
+    # --- Programs ---
+    "rental_program",          # rent out week, rental income, submit rental agreement, rental status
+    "exchange_program",        # RCI deposit, exchange week, points, membership renewal
+    "reservation",             # book, modify, or cancel a stay
+
+    # --- Ownership ---
+    "ownership_exit",          # surrender, sell, deed back, cancel contract, buyback program
+
+    # --- Information ---
+    "unit_resort_info",        # unit details, week dates, bonus week availability, resort info, usage year
+    "contract_points_info",    # contract lookup, owner/management IDs, points balance, membership status
+
+    # --- Complaints ---
+    "tax_documents",           # 1099/1098 forms, property tax, tax-related inquiries
+    "billing_dispute",         # dispute charges, wrong bill, late fee removal, billing errors
+
+    # --- Routing ---
+    "human_transfer",          # generic request for representative with no stated need
+
+    # --- Catch-all ---
+    "other",                   # rare/novel request not matching any above
+    "none",                    # no request articulated (maps to no_request scope)
+]
+
 HumanRequestTiming = Literal["initial", "after_service"]
 
 TransferReason = Literal["customer_requested", "out_of_scope", "task_failure"]
@@ -46,10 +83,16 @@ TransferDestination = Literal["concierge", "specific_department", "ivr", "unknow
 
 AbandonStage = Literal["pre_greeting", "pre_intent", "mid_task", "post_delivery"]
 
-FailureType = Literal[
-    "nlu_miss", "wrong_action", "policy_gap",
-    "customer_confusion", "tech_issue", "other",
+ImpedimentType = Literal[
+    "account_lookup",    # account search returned no match, or lookup could not proceed
+    "verification",      # identity verification blocked progress (name mismatch, missing info)
+    "link_delivery",     # text/email link failed to deliver or reach the customer
+    "transfer_queue",    # no agents available in transfer queue — staffing/operational issue
+    "policy_limit",      # AI lacks the capability to fulfill this request
+    "other",             # rare catch-all for impediments not matching above types
 ]
+
+QueueResult = Literal["connected", "unavailable", "caller_abandoned"]
 
 # Sentiment values are intentionally asymmetric:
 #   start: "positive" = customer enters in good mood (before any service)
@@ -95,6 +138,13 @@ class TransferDetail(BaseModel):
     queue_detected: bool = Field(
         default=False, description="Post-transfer queue content visible in transcript"
     )
+    queue_result: Optional[QueueResult] = Field(
+        None,
+        description="What happened in the queue. Null when queue_detected=false. "
+                    "connected = caller reached a human agent; "
+                    "unavailable = system announced no agents or long wait with no resolution; "
+                    "caller_abandoned = caller hung up during queue wait before any resolution"
+    )
 
 
 class IntentResolution(BaseModel):
@@ -103,6 +153,26 @@ class IntentResolution(BaseModel):
     Each intent independently tracks scope (could the AI handle it?),
     outcome (what happened?), and conditional details (transfer/abandon/confirm).
     """
+    request_category: RequestCategory = Field(
+        description="Semantic category of the customer's request. "
+                    "maintenance_payment = pay maintenance fees, check/view balance or history, billing inquiry "
+                    "(most generic 'make a payment' calls are maintenance fees in this domain); "
+                    "mortgage_payment = mortgage-specific payment or balance; "
+                    "payment_arrangement = payment plan, installments, hardship program; "
+                    "portal_account = login, register, password reset, clubhouse/owner account setup; "
+                    "account_details_update = change phone, email, address, or name on account; "
+                    "rental_program = rent out week, rental income, submit rental agreement, rental check status; "
+                    "exchange_program = RCI deposit, exchange week, points, membership renewal; "
+                    "reservation = book, modify, or cancel a stay; "
+                    "ownership_exit = surrender, sell, deed back, cancel contract, buyback program; "
+                    "unit_resort_info = unit details, week dates, bonus week availability, resort info, usage year; "
+                    "contract_points_info = contract lookup, owner/management IDs, points balance, membership status; "
+                    "tax_documents = 1099/1098 forms, property tax, tax-related inquiries; "
+                    "billing_dispute = dispute charges, wrong bill, late fee removal, billing errors; "
+                    "human_transfer = caller wants a representative without stating a need the AI can address; "
+                    "other = rare request not matching any above category; "
+                    "none = caller never articulated a request (maps to no_request scope)"
+    )
     request: str = Field(description="What the customer wanted (3-8 words, action verb)")
     context: Optional[str] = Field(None, description="Underlying reason or situation")
 
@@ -172,7 +242,7 @@ class Resolution(BaseModel):
 
 
 # ---------------------------------------------------------------------------
-# Quality, sentiment, failure, friction sub-models
+# Quality, sentiment, impediment, friction sub-models
 # ---------------------------------------------------------------------------
 
 class Scores(BaseModel):
@@ -193,27 +263,81 @@ class Sentiment(BaseModel):
 
 
 class PolicyGap(BaseModel):
-    """Structured detail when failure type is 'policy_gap'."""
+    """Structured detail when impediment type is 'policy_limit'."""
     category: PolicyGapCategory
     specific_gap: str = Field(description="What specifically couldn't be done")
     customer_ask: str = Field(description="What the customer wanted")
     blocker: str = Field(description="Why it couldn't be fulfilled")
 
 
-class Failure(BaseModel):
-    """What went wrong on this call.
+class Impediment(BaseModel):
+    """The primary thing that blocked the customer from getting what they wanted.
 
-    Present only when the call had a meaningful failure.
-    Null for clean fulfilled calls and for correct out-of-scope transfers.
+    Identifies WHICH step/action was the main blocker from the customer's perspective,
+    based on observable evidence in the transcript. Does not interpret root cause —
+    just captures what observably failed or blocked progress.
 
-    Key distinction:
-      tech_issue = a system component broke (API error, send failure, crash)
-      wrong_action = agent took an inappropriate action for the context
+    Present when something observably prevented the customer from reaching their goal.
+    Null for:
+      - Clean fulfilled calls with no blocking issues
+      - Correct out-of-scope transfers where the customer was properly routed
+      - Calls where the customer abandoned before articulating a request (no_request)
+
+    Orthogonal to agent_issue: a call can have an impediment (system blocked the customer)
+    without an agent issue (AI behaved correctly), or both, or neither.
+
+    When multiple steps failed in sequence (e.g., lookup failed → transfer → queue timeout),
+    choose the PRIMARY blocker — the one that was the crux of the customer's unmet need.
+    Downstream consequences are secondary; pick the root observable blocker.
     """
-    type: FailureType
-    detail: str = Field(description="One sentence: what went wrong")
+    type: ImpedimentType = Field(
+        description="Which action/step was the primary blocker. "
+                    "account_lookup = account search returned no match or could not proceed; "
+                    "verification = identity check blocked progress; "
+                    "link_delivery = text/email link failed to reach customer; "
+                    "transfer_queue = no agents available in queue (staffing issue, not AI failure); "
+                    "policy_limit = AI lacks capability to fulfill (requires policy_gap sub-model); "
+                    "other = rare, only when none of the above fit"
+    )
+    detail: str = Field(
+        description="One sentence describing what observably happened. "
+                    "Focus on what the transcript shows, not on interpreting root cause. "
+                    "Example: 'Account lookup by contract ID returned no match' — "
+                    "NOT 'System API error caused lookup failure'"
+    )
     policy_gap: Optional[PolicyGap] = Field(
-        None, description="Required when type='policy_gap'"
+        None,
+        description="Structured detail required when type='policy_limit'. "
+                    "Captures the specific capability gap, what the customer wanted, "
+                    "and what blocked fulfillment."
+    )
+
+
+class AgentIssue(BaseModel):
+    """An observable decision error by the AI agent, visible in the transcript.
+
+    Present only when the agent made a behavioral choice that a human reviewer would
+    flag as wrong. These are DECISION errors, not system failures:
+      - Ignoring information the caller explicitly stated
+      - Unnecessary repetition loops (asking the same question 3+ times)
+      - Contradicting itself (offering help then saying it's out of scope)
+      - Premature dismissal (ending the call without offering alternatives)
+      - Persisting on a wrong approach despite caller pushback
+      - Sending to an address the caller said is inaccessible
+
+    NOT an agent issue:
+      - A failed action (account_lookup returned no match) — that's an impediment
+      - Queue unavailability — that's operational, not an agent decision
+      - Customer confusion or vague responses — captured by friction fields
+
+    Orthogonal to impediment: agent_issue can fire alone (fulfilled but painful journey),
+    alongside impediment (agent made it worse AND a system step failed), or not at all.
+    """
+    detail: str = Field(
+        description="One sentence: what the agent did wrong. "
+                    "Must describe a decision observable in the transcript, not an inference. "
+                    "Example: 'Agent re-sent payment link to email caller said is inaccessible' — "
+                    "NOT 'Agent may have had incorrect email in the system'"
     )
 
 
@@ -295,8 +419,17 @@ class CallAnalysis(BaseModel):
     scores: Scores
     sentiment: Sentiment
 
-    failure: Optional[Failure] = Field(
-        None, description="What went wrong; null for clean successful calls and correct transfers"
+    impediment: Optional[Impediment] = Field(
+        None,
+        description="The primary thing that blocked the customer from getting what they wanted. "
+                    "Null for clean fulfilled calls, correct out-of-scope transfers, and "
+                    "calls abandoned before a request was articulated."
+    )
+    agent_issue: Optional[AgentIssue] = Field(
+        None,
+        description="Observable decision error by the AI agent. "
+                    "Null when agent behavior was appropriate. "
+                    "Can coexist with impediment (agent made mistakes AND a step failed)."
     )
     friction: Friction = Field(default_factory=Friction)
 
@@ -319,6 +452,7 @@ class CallRecord(CallAnalysis):
     schema_version: str = Field(default=SCHEMA_VERSION)
     duration_seconds: Optional[float] = Field(None, description="Call duration from transcript metadata")
     ended_by: EndedBy = Field(description="Who/what ended the call")
+    ended_reason: Optional[str] = Field(None, description="Raw ended_reason from telephony platform (verbatim)")
 
 
 # ---------------------------------------------------------------------------
@@ -327,10 +461,10 @@ class CallRecord(CallAnalysis):
 
 __all__ = [
     "SCHEMA_VERSION",
-    "HumanRequestTiming",
+    "RequestCategory", "HumanRequestTiming",
     "CallAnalysis", "CallRecord",
     "Resolution", "IntentResolution", "TransferDetail",
     "Scores", "Sentiment",
-    "Failure", "PolicyGap", "Friction", "Clarification", "Correction", "Loop",
+    "Impediment", "AgentIssue", "PolicyGap", "Friction", "Clarification", "Correction", "Loop",
     "Action", "Insights",
 ]

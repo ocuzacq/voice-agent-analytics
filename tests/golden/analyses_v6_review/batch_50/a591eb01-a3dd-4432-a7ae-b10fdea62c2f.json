@@ -1,0 +1,90 @@
+{
+  "turns": 15,
+  "repeat_caller": false,
+  "derailed_at": 18,
+  "resolution": {
+    "primary": {
+      "request": "find vacation ID for unit week",
+      "context": "The user is trying to create a login account and the system is asking for a vacation ID or unit week.",
+      "scope": "in_scope",
+      "outcome": "abandoned",
+      "detail": "The agent provided unit and week details but the user requested a transfer, which failed due to no agents being available after a 25-minute hold.",
+      "resolution_confirmed": null,
+      "transfer": {
+        "reason": "customer_requested",
+        "destination": "concierge",
+        "queue_detected": true
+      },
+      "abandon_stage": "mid_task"
+    },
+    "secondary": null,
+    "steps": [
+      "Caller requested help creating a login account.",
+      "Agent performed account lookup and verified identity.",
+      "Caller requested a 'vacation ID' to complete their registration.",
+      "Agent provided unit number and week number but could not identify a 'vacation ID'.",
+      "Caller requested to speak to a representative.",
+      "Agent transferred to concierge queue; caller waited for approximately 25 minutes.",
+      "Queue returned the caller to the AI agent stating no representatives were available.",
+      "Caller disconnected shortly after."
+    ]
+  },
+  "scores": {
+    "effectiveness": 3,
+    "quality": 4,
+    "effort": 5
+  },
+  "sentiment": {
+    "start": "neutral",
+    "end": "frustrated"
+  },
+  "failure": {
+    "type": "other",
+    "detail": "The transfer failed after a long hold time because no representatives were available, leading to abandonment.",
+    "policy_gap": null
+  },
+  "friction": {
+    "clarifications": [
+      {
+        "turn": 5,
+        "type": "intent",
+        "cause": "unclear",
+        "note": "Initial request was garbled/unclear."
+      },
+      {
+        "turn": 19,
+        "type": "intent",
+        "cause": "proactive",
+        "note": "Agent clarifying 'vacation ID' terminology."
+      }
+    ],
+    "corrections": [],
+    "loops": []
+  },
+  "actions": [
+    {
+      "type": "account_lookup",
+      "outcome": "success",
+      "detail": "Found record via phone number."
+    },
+    {
+      "type": "verification",
+      "outcome": "success",
+      "detail": "Verified name and state."
+    },
+    {
+      "type": "transfer",
+      "outcome": "failed",
+      "detail": "Transferred to concierge but no agents available after hold."
+    }
+  ],
+  "insights": {
+    "summary": "The caller wanted a 'vacation ID' to register their online account. The agent provided unit and week info but the caller insisted on speaking to a human, eventually abandoning after a 25-minute hold when no agents were available.",
+    "verbatim": "The system is asking for vacation ID or week unit.",
+    "coaching": "The agent handled the 'vacation ID' terminology well by offering the contract and unit numbers, but the failure was systemic due to queue unavailability."
+  },
+  "call_id": "a591eb01-a3dd-4432-a7ae-b10fdea62c2f",
+  "schema_version": "v6.0",
+  "duration_seconds": 1784.7,
+  "ended_by": "customer"
+}

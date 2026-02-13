@@ -1,0 +1,84 @@
+{
+  "turns": 8,
+  "repeat_caller": false,
+  "derailed_at": null,
+  "resolution": {
+    "primary": {
+      "request_category": "maintenance_payment",
+      "request": "Pay maintenance fees",
+      "context": "Caller wants to pay their maintenance fees via a link",
+      "human_requested": null,
+      "department_requested": null,
+      "scope": "in_scope",
+      "outcome": "fulfilled",
+      "detail": "Agent verified the caller and sent a payment link via email and text.",
+      "resolution_confirmed": false,
+      "transfer": null,
+      "abandon_stage": null
+    },
+    "secondary": null,
+    "steps": [
+      "Caller requested to pay maintenance fees.",
+      "Agent performed account lookup via caller ID.",
+      "Agent verified identity after a name spelling correction.",
+      "Agent confirmed contact information on file.",
+      "Agent confirmed sending the payment link via text and email."
+    ]
+  },
+  "scores": {
+    "effectiveness": 5,
+    "quality": 5,
+    "effort": 2
+  },
+  "sentiment": {
+    "start": "neutral",
+    "end": "satisfied"
+  },
+  "impediment": null,
+  "agent_issue": null,
+  "friction": {
+    "clarifications": [
+      {
+        "turn": 7,
+        "type": "name",
+        "cause": "misheard",
+        "note": "Agent asked for spelling after initial mismatch"
+      }
+    ],
+    "corrections": [
+      {
+        "turn": 8,
+        "severity": "minor",
+        "note": "User provided different name spelling (Emil Cirone)"
+      }
+    ],
+    "loops": []
+  },
+  "actions": [
+    {
+      "type": "account_lookup",
+      "outcome": "success",
+      "detail": "Lookup successful via caller ID"
+    },
+    {
+      "type": "verification",
+      "outcome": "success",
+      "detail": "Verified name and state"
+    },
+    {
+      "type": "send_payment_link",
+      "outcome": "success",
+      "detail": "Sent link to confirmed email and phone"
+    }
+  ],
+  "insights": {
+    "summary": "The caller successfully requested and received a maintenance fee payment link after a brief name verification step.",
+    "verbatim": "Pay maintenance fees.",
+    "coaching": null
+  },
+  "call_id": "d187d1d7-130f-4436-974d-80d00a57e368",
+  "schema_version": "v7.0",
+  "duration_seconds": 119.4,
+  "ended_by": "agent",
+  "ended_reason": "assistant-ended-call"
+}

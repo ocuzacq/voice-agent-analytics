@@ -1,0 +1,99 @@
+{
+  "turns": 15,
+  "repeat_caller": false,
+  "derailed_at": 7,
+  "resolution": {
+    "primary": {
+      "request": "speak to a supervisor about billing",
+      "context": "Caller received a billing statement with an unfamiliar name (Sonia Diaz) and is legally blind.",
+      "scope": "out_of_scope",
+      "outcome": "abandoned",
+      "detail": "The agent attempted to transfer the caller to concierge, but after a 20-minute hold, the system reported no agents were available and the call ended.",
+      "resolution_confirmed": null,
+      "transfer": {
+        "reason": "customer_requested",
+        "destination": "concierge",
+        "queue_detected": true
+      },
+      "abandon_stage": "mid_task"
+    },
+    "secondary": null,
+    "steps": [
+      "Caller requested a supervisor for a billing issue.",
+      "Agent offered a transfer with a 20-minute wait warning; caller accepted.",
+      "After 20 minutes of hold music, the AI re-engaged stating no one was available.",
+      "Caller attempted to provide account details to the AI instead.",
+      "AI failed to verify the account because the name on the statement (Sonia Diaz) did not match the caller (Richard).",
+      "AI attempted a second transfer, which also resulted in a 'no agents available' message."
+    ]
+  },
+  "scores": {
+    "effectiveness": 3,
+    "quality": 3,
+    "effort": 5
+  },
+  "sentiment": {
+    "start": "neutral",
+    "end": "frustrated"
+  },
+  "failure": {
+    "type": "wrong_action",
+    "detail": "Agent persisted in a rigid verification flow for a caller who explicitly stated they were calling about an unfamiliar name on a bill, rather than escalating immediately.",
+    "policy_gap": null
+  },
+  "friction": {
+    "clarifications": [
+      {
+        "turn": 13,
+        "type": "intent",
+        "cause": "proactive",
+        "note": "Offering choice of phone or contract ID"
+      },
+      {
+        "turn": 27,
+        "type": "verify",
+        "cause": "refused",
+        "note": "Insisting on name verification despite mismatch explanation"
+      }
+    ],
+    "corrections": [
+      {
+        "turn": 18,
+        "severity": "minor",
+        "note": "Caller clarifies he is not the contract holder"
+      }
+    ],
+    "loops": []
+  },
+  "actions": [
+    {
+      "type": "transfer",
+      "outcome": "failed",
+      "detail": "First transfer attempt timed out after 20 minutes"
+    },
+    {
+      "type": "account_lookup",
+      "outcome": "success",
+      "detail": "Looked up record via phone number"
+    },
+    {
+      "type": "verification",
+      "outcome": "failed",
+      "detail": "Name mismatch: Richard vs Sonia Diaz"
+    },
+    {
+      "type": "transfer",
+      "outcome": "failed",
+      "detail": "Second transfer failed due to no agents available"
+    }
+  ],
+  "insights": {
+    "summary": "The caller wanted to discuss a billing error involving an unfamiliar name. After a 20-minute failed transfer, the AI attempted to verify the account but could not proceed due to the name mismatch, eventually ending the call when the second transfer also failed.",
+    "verbatim": "It has a name I never heard of. Sonia Diaz. D I a z.",
+    "coaching": "When a caller explicitly states they are calling about a bill with an unfamiliar name, the agent should recognize this as a potential billing error or fraud inquiry and escalate to a human rather than forcing a standard verification loop that is guaranteed to fail."
+  },
+  "call_id": "1f66de08-ded5-42f0-92b7-877ccab7d014",
+  "schema_version": "v6.0",
+  "duration_seconds": 2266.8,
+  "ended_by": "agent"
+}

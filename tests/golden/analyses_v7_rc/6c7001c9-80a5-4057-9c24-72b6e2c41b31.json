@@ -1,0 +1,52 @@
+{
+  "turns": 1,
+  "repeat_caller": false,
+  "derailed_at": 2,
+  "resolution": {
+    "primary": {
+      "request_category": "none",
+      "request": "none",
+      "context": "Caller provided a recorded message instead of a request",
+      "human_requested": null,
+      "department_requested": null,
+      "scope": "no_request",
+      "outcome": "abandoned",
+      "detail": "The caller appears to be an automated system or recording that played a message back to the AI agent.",
+      "resolution_confirmed": null,
+      "transfer": null,
+      "abandon_stage": "pre_intent"
+    },
+    "secondary": null,
+    "steps": [
+      "Agent greeted the caller.",
+      "User played a recorded message stating no one is available.",
+      "Agent attempted to collect a name but the call ended."
+    ]
+  },
+  "scores": {
+    "effectiveness": 1,
+    "quality": 3,
+    "effort": 1
+  },
+  "sentiment": {
+    "start": "neutral",
+    "end": "neutral"
+  },
+  "impediment": null,
+  "agent_issue": null,
+  "friction": {
+    "clarifications": [],
+    "corrections": [],
+    "loops": []
+  },
+  "actions": [],
+  "insights": {
+    "summary": "The call was answered by a recording or another automated system on the user's end, resulting in no request being made.",
+    "verbatim": "It seems like no one is available to take your call at the moment.",
+    "coaching": null
+  },
+  "call_id": "6c7001c9-80a5-4057-9c24-72b6e2c41b31",
+  "schema_version": "v7.0",
+  "duration_seconds": 45.9,
+  "ended_by": "customer"
+}

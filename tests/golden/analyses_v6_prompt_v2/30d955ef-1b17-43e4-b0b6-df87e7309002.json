@@ -1,0 +1,57 @@
+{
+  "turns": 4,
+  "repeat_caller": false,
+  "derailed_at": null,
+  "resolution": {
+    "primary": {
+      "request": "Speak with a billing representative",
+      "context": "Caller immediately requested a human agent for billing",
+      "scope": "out_of_scope",
+      "outcome": "abandoned",
+      "detail": "Caller requested a representative, waited through a long hold message, and then declined AI help when told no one was available.",
+      "resolution_confirmed": null,
+      "transfer": null,
+      "abandon_stage": "mid_task"
+    },
+    "secondary": null,
+    "steps": [
+      "Caller requested a representative immediately.",
+      "Agent warned of long wait times and asked if caller wanted to proceed.",
+      "Caller confirmed they wanted to wait and specified the billing department.",
+      "Agent played a long concierge hold message for approximately 20 minutes.",
+      "Agent interrupted hold message to state no representative was available and offered AI assistance for billing.",
+      "Caller declined AI assistance and the call ended."
+    ]
+  },
+  "scores": {
+    "effectiveness": 4,
+    "quality": 3,
+    "effort": 4
+  },
+  "sentiment": {
+    "start": "neutral",
+    "end": "neutral"
+  },
+  "failure": null,
+  "friction": {
+    "clarifications": [],
+    "corrections": [],
+    "loops": []
+  },
+  "actions": [
+    {
+      "type": "transfer",
+      "outcome": "failed",
+      "detail": "Attempted transfer to billing; no representative available after long hold."
+    }
+  ],
+  "insights": {
+    "summary": "The caller requested a billing representative and waited through a 20-minute hold loop only to be told no one was available; they declined the AI's offer to help with billing and hung up.",
+    "verbatim": "Wait for representative.",
+    "coaching": "The agent correctly identified the out-of-scope request and attempted transfer, but the extremely long hold time followed by a 'no one available' message creates high friction."
+  },
+  "call_id": "30d955ef-1b17-43e4-b0b6-df87e7309002",
+  "schema_version": "v6.0",
+  "duration_seconds": 1339.7,
+  "ended_by": "agent"
+}

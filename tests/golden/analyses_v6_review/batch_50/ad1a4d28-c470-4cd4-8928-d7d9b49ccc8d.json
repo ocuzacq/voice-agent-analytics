@@ -1,0 +1,67 @@
+{
+  "turns": 7,
+  "repeat_caller": false,
+  "derailed_at": null,
+  "resolution": {
+    "primary": {
+      "request": "speak with customer service about RCI exchange",
+      "context": "The caller wanted to discuss an RCI exchange issue with a human representative.",
+      "scope": "out_of_scope",
+      "outcome": "transferred",
+      "detail": "The agent correctly identified the request for RCI exchange assistance and transferred the caller to the concierge department.",
+      "resolution_confirmed": null,
+      "transfer": {
+        "reason": "out_of_scope",
+        "destination": "concierge",
+        "queue_detected": true
+      },
+      "abandon_stage": null
+    },
+    "secondary": null,
+    "steps": [
+      "Caller requested customer service twice.",
+      "Agent asked for the caller's name and intent.",
+      "Caller provided name and specified RCI exchange as the reason for the call.",
+      "Agent confirmed the intent and initiated a transfer to the concierge department.",
+      "Transcript ends with the caller in the hold queue."
+    ]
+  },
+  "scores": {
+    "effectiveness": 5,
+    "quality": 5,
+    "effort": 2
+  },
+  "sentiment": {
+    "start": "neutral",
+    "end": "neutral"
+  },
+  "failure": null,
+  "friction": {
+    "clarifications": [
+      {
+        "turn": 7,
+        "type": "name",
+        "cause": "proactive",
+        "note": "Agent asked to spell name for accuracy."
+      }
+    ],
+    "corrections": [],
+    "loops": []
+  },
+  "actions": [
+    {
+      "type": "transfer",
+      "outcome": "success",
+      "detail": "Transferred to concierge for RCI exchange help."
+    }
+  ],
+  "insights": {
+    "summary": "The caller wanted to speak to customer service regarding an RCI exchange. The AI agent successfully gathered the caller's name and specific intent before routing them to the concierge queue.",
+    "verbatim": "This is about RCR r c I Attrillion",
+    "coaching": null
+  },
+  "call_id": "ad1a4d28-c470-4cd4-8928-d7d9b49ccc8d",
+  "schema_version": "v6.0",
+  "duration_seconds": 1631.9,
+  "ended_by": "agent"
+}

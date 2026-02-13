@@ -1,0 +1,80 @@
+{
+  "turns": 7,
+  "repeat_caller": false,
+  "derailed_at": null,
+  "resolution": {
+    "primary": {
+      "request": "Confirm management company change",
+      "context": "Caller was confused about the transition from Daily Management Resorts to Vacatia",
+      "scope": "in_scope",
+      "outcome": "fulfilled",
+      "detail": "The agent confirmed that Vacatia now manages the Florida property and Daily Management is no longer the provider.",
+      "resolution_confirmed": true,
+      "transfer": null,
+      "abandon_stage": null
+    },
+    "secondary": {
+      "request": "Check RCI membership status",
+      "context": "Caller wanted to know if they still use RCI for scheduling vacations",
+      "scope": "in_scope",
+      "outcome": "transferred",
+      "detail": "The agent correctly identified the RCI inquiry and transferred the caller to the concierge department.",
+      "resolution_confirmed": null,
+      "transfer": {
+        "reason": "out_of_scope",
+        "destination": "concierge",
+        "queue_detected": true
+      },
+      "abandon_stage": null
+    },
+    "steps": [
+      "Agent greeted caller and asked for name.",
+      "Caller asked about the management company change.",
+      "Agent performed account lookup and verified caller's state.",
+      "Agent confirmed the transition to Vacatia.",
+      "Caller asked a follow-up about RCI membership.",
+      "Agent initiated transfer to concierge for RCI assistance."
+    ]
+  },
+  "scores": {
+    "effectiveness": 5,
+    "quality": 5,
+    "effort": 1
+  },
+  "sentiment": {
+    "start": "neutral",
+    "end": "satisfied"
+  },
+  "failure": null,
+  "friction": {
+    "clarifications": [],
+    "corrections": [],
+    "loops": []
+  },
+  "actions": [
+    {
+      "type": "account_lookup",
+      "outcome": "success",
+      "detail": "Located record via caller ID"
+    },
+    {
+      "type": "verification",
+      "outcome": "success",
+      "detail": "Confirmed Florida residency"
+    },
+    {
+      "type": "transfer",
+      "outcome": "success",
+      "detail": "Connected to concierge for RCI inquiry"
+    }
+  ],
+  "insights": {
+    "summary": "The caller wanted to confirm the management change to Vacatia and then asked about RCI membership. The agent successfully answered the first question and transferred the second to the concierge department.",
+    "verbatim": "You answered my question. Thank you. Oh, are we still with RCI? To schedule vacations?",
+    "coaching": null
+  },
+  "call_id": "031d21ea-a5b9-4ade-a3a3-1a2199eaabf6",
+  "schema_version": "v6.0",
+  "duration_seconds": 1409.8,
+  "ended_by": "customer"
+}

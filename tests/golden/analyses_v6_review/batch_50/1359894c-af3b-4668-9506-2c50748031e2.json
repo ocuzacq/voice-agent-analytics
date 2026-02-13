@@ -1,0 +1,71 @@
+{
+  "turns": 5,
+  "repeat_caller": true,
+  "derailed_at": null,
+  "resolution": {
+    "primary": {
+      "request": "Transfer to web support",
+      "context": "Caller is frustrated after multiple failed attempts and issues with the online portal",
+      "scope": "out_of_scope",
+      "outcome": "transferred",
+      "detail": "The agent successfully transferred the caller to a representative after the caller repeatedly requested human assistance for web support.",
+      "resolution_confirmed": null,
+      "transfer": {
+        "reason": "customer_requested",
+        "destination": "concierge",
+        "queue_detected": false
+      },
+      "abandon_stage": null
+    },
+    "secondary": null,
+    "steps": [
+      "Caller immediately requests a concierge specialist and mentions prior disconnects.",
+      "Agent offers automated system or transfer with a 20-minute wait warning.",
+      "Caller asks for a direct number; agent declines and repeats transfer offer.",
+      "Caller specifies need for web support due to online issues.",
+      "Agent initiates transfer to a representative."
+    ]
+  },
+  "scores": {
+    "effectiveness": 4,
+    "quality": 4,
+    "effort": 4
+  },
+  "sentiment": {
+    "start": "angry",
+    "end": "frustrated"
+  },
+  "failure": null,
+  "friction": {
+    "clarifications": [],
+    "corrections": [],
+    "loops": [
+      {
+        "turns": [
+          3,
+          5,
+          7
+        ],
+        "type": "deflection",
+        "subject": "Transfer vs Automated System",
+        "note": "Agent repeatedly pushed automated system despite caller's clear frustration."
+      }
+    ]
+  },
+  "actions": [
+    {
+      "type": "transfer",
+      "outcome": "success",
+      "detail": "Transferred caller to representative for web support."
+    }
+  ],
+  "insights": {
+    "summary": "A frustrated repeat caller requested a human agent for web support after experiencing technical issues and previous disconnects; the AI agent eventually transferred them.",
+    "verbatim": "For the fourth time, I'm getting tired of talking to you. Can I get the concierge specialist that I was promised I would get over to?",
+    "coaching": "When a caller mentions it is their fourth time calling and they were previously disconnected, the agent should prioritize the transfer immediately rather than repeatedly offering the automated system."
+  },
+  "call_id": "1359894c-af3b-4668-9506-2c50748031e2",
+  "schema_version": "v6.0",
+  "duration_seconds": 98.3,
+  "ended_by": "agent"
+}

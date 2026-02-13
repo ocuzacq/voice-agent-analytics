@@ -1,0 +1,90 @@
+{
+  "turns": 24,
+  "repeat_caller": false,
+  "derailed_at": null,
+  "resolution": {
+    "primary": {
+      "request": "register for a new website account",
+      "context": "Customer received a message that their ownership type requires special handling for online registration.",
+      "scope": "in_scope",
+      "outcome": "fulfilled",
+      "detail": "The agent verified the customer's contract and sent a registration link for the Clubhouse portal to the email on file.",
+      "resolution_confirmed": true,
+      "transfer": null,
+      "abandon_stage": null
+    },
+    "secondary": null,
+    "steps": [
+      "Customer requested help with website registration.",
+      "Agent attempted lookup via phone number but failed.",
+      "Agent successfully located record using contract ID.",
+      "Agent verified identity using owner name and state of residence.",
+      "Agent confirmed contact details and sent the registration link via email."
+    ]
+  },
+  "scores": {
+    "effectiveness": 5,
+    "quality": 5,
+    "effort": 2
+  },
+  "sentiment": {
+    "start": "neutral",
+    "end": "satisfied"
+  },
+  "failure": null,
+  "friction": {
+    "clarifications": [
+      {
+        "turn": 3,
+        "type": "intent",
+        "cause": "proactive",
+        "note": "Agent clarifying if registration or password reset"
+      },
+      {
+        "turn": 27,
+        "type": "verify",
+        "cause": "proactive",
+        "note": "Agent asking to spell name for accuracy"
+      }
+    ],
+    "corrections": [
+      {
+        "turn": 30,
+        "severity": "minor",
+        "note": "Customer clarifies multiple owners on contract"
+      }
+    ],
+    "loops": []
+  },
+  "actions": [
+    {
+      "type": "account_lookup",
+      "outcome": "failed",
+      "detail": "Lookup by Brazilian phone number failed"
+    },
+    {
+      "type": "account_lookup",
+      "outcome": "success",
+      "detail": "Lookup by contract ID successful"
+    },
+    {
+      "type": "verification",
+      "outcome": "success",
+      "detail": "Verified name and state of residence"
+    },
+    {
+      "type": "send_clubhouse_link",
+      "outcome": "success",
+      "detail": "Sent registration link to Yahoo email"
+    }
+  ],
+  "insights": {
+    "summary": "The customer needed help registering for the new website due to a 'special handling' error. The agent successfully verified the account using a contract ID and sent the necessary registration link.",
+    "verbatim": "Perfect. So I have to log in in Vacatia, the new website.",
+    "coaching": null
+  },
+  "call_id": "8c10f101-1bc6-4735-a744-b8207cc06e0b",
+  "schema_version": "v6.0",
+  "duration_seconds": 409.3,
+  "ended_by": "agent"
+}

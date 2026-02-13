@@ -1,0 +1,62 @@
+{
+  "turns": 9,
+  "repeat_caller": false,
+  "derailed_at": null,
+  "resolution": {
+    "primary": {
+      "request": "End timeshare ownership",
+      "context": "The caller wants to surrender or terminate their ownership contract.",
+      "scope": "out_of_scope",
+      "outcome": "transferred",
+      "detail": "The AI correctly identified the request as out-of-scope and attempted a transfer to concierge, but the caller eventually abandoned after a 25-minute queue wait and no callback option.",
+      "resolution_confirmed": null,
+      "transfer": {
+        "reason": "out_of_scope",
+        "destination": "concierge",
+        "queue_detected": true
+      },
+      "abandon_stage": null
+    },
+    "secondary": null,
+    "steps": [
+      "Caller requested a human agent immediately.",
+      "AI collected caller name and intent (ending ownership).",
+      "AI attempted transfer to concierge department.",
+      "Caller waited in queue for approximately 25 minutes.",
+      "AI returned to the line when no agents were available, offering general info.",
+      "Caller requested a callback, which the AI could not provide.",
+      "Caller ended the call to try again later."
+    ]
+  },
+  "scores": {
+    "effectiveness": 4,
+    "quality": 4,
+    "effort": 5
+  },
+  "sentiment": {
+    "start": "neutral",
+    "end": "neutral"
+  },
+  "failure": null,
+  "friction": {
+    "clarifications": [],
+    "corrections": [],
+    "loops": []
+  },
+  "actions": [
+    {
+      "type": "transfer",
+      "outcome": "failed",
+      "detail": "Attempted transfer to concierge; caller sat in queue for 25 mins."
+    }
+  ],
+  "insights": {
+    "summary": "The caller wanted to terminate their timeshare ownership. The AI correctly identified this as out-of-scope and transferred to concierge, but after a 25-minute wait in the queue, the AI had to resume the call because no human agents were available.",
+    "verbatim": "I'm calling about our timeshare. We want to no longer have ownership over it.",
+    "coaching": "The AI handled the out-of-scope request and the subsequent queue failure professionally. No specific agent coaching is required as the friction was caused by human agent unavailability."
+  },
+  "call_id": "0a5afc8b-170e-4d53-8cb9-414afa914328",
+  "schema_version": "v6.0",
+  "duration_seconds": 1644.8,
+  "ended_by": "customer"
+}

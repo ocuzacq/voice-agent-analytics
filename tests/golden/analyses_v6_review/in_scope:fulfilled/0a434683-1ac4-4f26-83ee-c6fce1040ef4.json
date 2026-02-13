@@ -1,0 +1,79 @@
+{
+  "turns": 12,
+  "repeat_caller": false,
+  "derailed_at": null,
+  "resolution": {
+    "primary": {
+      "request": "Access owner account login",
+      "context": "Customer has never logged in before and needs to set up their owner's account.",
+      "scope": "in_scope",
+      "outcome": "fulfilled",
+      "detail": "Agent verified the customer and sent a Clubhouse registration link to their updated email address.",
+      "resolution_confirmed": true,
+      "transfer": null,
+      "abandon_stage": null
+    },
+    "secondary": null,
+    "steps": [
+      "Customer requested help logging into their account.",
+      "Agent performed account lookup and verification using name, phone, and state.",
+      "Customer clarified they need to set up a new account.",
+      "Agent identified outdated contact information and updated the email and phone for the session.",
+      "Agent sent the Clubhouse registration link and confirmed completion."
+    ]
+  },
+  "scores": {
+    "effectiveness": 5,
+    "quality": 5,
+    "effort": 2
+  },
+  "sentiment": {
+    "start": "neutral",
+    "end": "satisfied"
+  },
+  "failure": null,
+  "friction": {
+    "clarifications": [
+      {
+        "turn": 13,
+        "type": "intent",
+        "cause": "proactive",
+        "note": "Agent confirmed if registration link was needed."
+      }
+    ],
+    "corrections": [
+      {
+        "turn": 16,
+        "severity": "minor",
+        "note": "Customer corrected outdated email and phone digit."
+      }
+    ],
+    "loops": []
+  },
+  "actions": [
+    {
+      "type": "account_lookup",
+      "outcome": "success",
+      "detail": "Found record using phone number."
+    },
+    {
+      "type": "verification",
+      "outcome": "success",
+      "detail": "Verified name and state of residence."
+    },
+    {
+      "type": "send_clubhouse_link",
+      "outcome": "success",
+      "detail": "Sent registration link to rdnorman1@gmail.com."
+    }
+  ],
+  "insights": {
+    "summary": "The customer needed to set up their owner's account for the first time. The AI successfully verified the caller, updated their contact information, and sent the Clubhouse registration link.",
+    "verbatim": "No. You've been very helpful.",
+    "coaching": null
+  },
+  "call_id": "0a434683-1ac4-4f26-83ee-c6fce1040ef4",
+  "schema_version": "v6.0",
+  "duration_seconds": 187.9,
+  "ended_by": "agent"
+}

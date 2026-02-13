@@ -1,0 +1,123 @@
+{
+  "turns": 14,
+  "repeat_caller": false,
+  "derailed_at": 13,
+  "resolution": {
+    "primary": {
+      "request_category": "ownership_exit",
+      "request": "Sell timeshare ownership entirely",
+      "context": "Caller wants to sell their timeshare and requested a representative immediately",
+      "human_requested": "initial",
+      "department_requested": null,
+      "scope": "out_of_scope",
+      "outcome": "abandoned",
+      "detail": "The caller wanted to sell their timeshare (out of scope) and requested a representative; the transfer failed due to queue unavailability, and the caller eventually hung up.",
+      "resolution_confirmed": null,
+      "transfer": {
+        "reason": "customer_requested",
+        "destination": "concierge",
+        "queue_detected": true,
+        "queue_result": "caller_abandoned"
+      },
+      "abandon_stage": "mid_task"
+    },
+    "secondary": null,
+    "steps": [
+      "Caller requested a representative immediately.",
+      "Agent attempted to collect intent while waiting for a transfer.",
+      "Caller stated they wanted to sell their timeshare.",
+      "Agent entered a clarification loop regarding renting vs. selling.",
+      "Agent initiated transfer to concierge queue.",
+      "Caller waited in queue for approximately 25 minutes.",
+      "Queue timed out and returned the caller to the AI agent.",
+      "Agent informed caller no one was available; caller abandoned."
+    ]
+  },
+  "scores": {
+    "effectiveness": 2,
+    "quality": 2,
+    "effort": 5
+  },
+  "sentiment": {
+    "start": "neutral",
+    "end": "frustrated"
+  },
+  "impediment": {
+    "type": "transfer_queue",
+    "detail": "The transfer to a live representative failed because no agents were available after a 25-minute wait.",
+    "policy_gap": null
+  },
+  "agent_issue": {
+    "detail": "Agent entered a repetitive clarification loop (Turns 11-19) about renting vs. selling even after the user explicitly said 'ownership entirely' and 'no' to renting."
+  },
+  "friction": {
+    "clarifications": [
+      {
+        "turn": 11,
+        "type": "intent",
+        "cause": "proactive",
+        "note": "Clarifying rent vs sell"
+      },
+      {
+        "turn": 13,
+        "type": "repeat",
+        "cause": "misheard",
+        "note": "Asking about renting again after refusal"
+      },
+      {
+        "turn": 17,
+        "type": "repeat",
+        "cause": "misheard",
+        "note": "Asking about selling week vs ownership"
+      }
+    ],
+    "corrections": [
+      {
+        "turn": 12,
+        "severity": "minor",
+        "note": "User clarifies selling ownership entirely"
+      },
+      {
+        "turn": 14,
+        "severity": "minor",
+        "note": "User denies interest in renting"
+      },
+      {
+        "turn": 18,
+        "severity": "minor",
+        "note": "User denies selling just the week"
+      }
+    ],
+    "loops": [
+      {
+        "turns": [
+          11,
+          13,
+          15,
+          17,
+          19
+        ],
+        "type": "comprehension",
+        "subject": "renting vs selling",
+        "note": "Agent repeatedly asks about renting despite user refusals"
+      }
+    ]
+  },
+  "actions": [
+    {
+      "type": "transfer",
+      "outcome": "failed",
+      "detail": "Transfer to concierge queue timed out after 25 minutes"
+    }
+  ],
+  "insights": {
+    "summary": "The caller wanted to sell their timeshare and requested a representative. After a long wait in the queue, the system returned them to the AI because no agents were available, leading to an abandonment.",
+    "verbatim": "There are no representatives available to take your call right now, so waiting will not connect you with someone.",
+    "coaching": "The agent should have recognized the 'sell ownership' intent more quickly and avoided the repetitive loop about renting, especially since the user had already requested a representative at the start."
+  },
+  "call_id": "042dfaf7-8265-4bdd-a957-1cbec199b173",
+  "schema_version": "v7.0",
+  "duration_seconds": 1708.3,
+  "ended_by": "customer",
+  "ended_reason": "customer-ended-call"
+}

@@ -1,0 +1,84 @@
+{
+  "turns": 6,
+  "repeat_caller": false,
+  "derailed_at": 5,
+  "resolution": {
+    "primary": {
+      "request": "Report a fraudulent bill",
+      "context": "Caller believes they received an unauthorized or incorrect bill",
+      "scope": "out_of_scope",
+      "outcome": "transferred",
+      "detail": "The agent attempted to transfer the caller to concierge twice; first due to the nature of the request and later after a verification failure.",
+      "resolution_confirmed": null,
+      "transfer": {
+        "reason": "out_of_scope",
+        "destination": "concierge",
+        "queue_detected": true
+      },
+      "abandon_stage": null
+    },
+    "secondary": null,
+    "steps": [
+      "Caller reported a fraudulent bill.",
+      "Agent attempted to transfer to concierge immediately.",
+      "Queue was full; agent re-engaged to try and assist with billing details.",
+      "Agent attempted account lookup via contract ID.",
+      "Verification failed, and the agent initiated a second transfer to concierge.",
+      "Call ended due to maximum duration while caller was in the queue."
+    ]
+  },
+  "scores": {
+    "effectiveness": 3,
+    "quality": 3,
+    "effort": 4
+  },
+  "sentiment": {
+    "start": "neutral",
+    "end": "neutral"
+  },
+  "failure": null,
+  "friction": {
+    "clarifications": [
+      {
+        "turn": 3,
+        "type": "intent",
+        "cause": "proactive",
+        "note": "Agent confirming if bill was unauthorized"
+      },
+      {
+        "turn": 11,
+        "type": "verify",
+        "cause": "refused",
+        "note": "Caller stated no phone number on contract"
+      }
+    ],
+    "corrections": [],
+    "loops": []
+  },
+  "actions": [
+    {
+      "type": "transfer",
+      "outcome": "retry",
+      "detail": "Initial transfer attempt to concierge department"
+    },
+    {
+      "type": "account_lookup",
+      "outcome": "failed",
+      "detail": "Attempted lookup via contract ID V00G5J9X6"
+    },
+    {
+      "type": "transfer",
+      "outcome": "success",
+      "detail": "Second transfer attempt after verification failure"
+    }
+  ],
+  "insights": {
+    "summary": "The caller wanted to report a fraudulent bill. The agent correctly identified this as a complex issue and attempted a transfer, but due to high queue volume and a subsequent verification failure, the caller spent the remainder of the call on hold until the maximum duration was reached.",
+    "verbatim": "Fraudulent bill.",
+    "coaching": "The agent performed reasonably well given the circumstances. However, the initial transfer attempt (Turn 5) lasted over 25 minutes before the AI re-engaged; reducing the timeout for queue re-engagement could improve the experience."
+  },
+  "call_id": "9992a1e4-c33e-4887-a8bb-277615b4bc35",
+  "schema_version": "v6.0",
+  "duration_seconds": 2699.0,
+  "ended_by": "unknown"
+}

@@ -1,0 +1,69 @@
+{
+  "turns": 10,
+  "repeat_caller": false,
+  "derailed_at": null,
+  "resolution": {
+    "primary": {
+      "request": "Check maintenance bill details",
+      "context": "Caller had questions regarding a maintenance bill and ownership info",
+      "scope": "in_scope",
+      "outcome": "fulfilled",
+      "detail": "The agent verified the caller and provided the address and owner name on file.",
+      "resolution_confirmed": true,
+      "transfer": null,
+      "abandon_stage": null
+    },
+    "secondary": null,
+    "steps": [
+      "Agent identified the request as a maintenance bill inquiry.",
+      "Agent performed account lookup via phone number.",
+      "Agent verified identity after a name mismatch (Vincent vs Valerie).",
+      "Agent provided the address on file upon request.",
+      "Agent confirmed the owner name and contract details.",
+      "Caller confirmed no further assistance was needed."
+    ]
+  },
+  "scores": {
+    "effectiveness": 5,
+    "quality": 5,
+    "effort": 1
+  },
+  "sentiment": {
+    "start": "neutral",
+    "end": "satisfied"
+  },
+  "failure": null,
+  "friction": {
+    "clarifications": [
+      {
+        "turn": 9,
+        "type": "name",
+        "cause": "proactive",
+        "note": "Agent asked for spelling due to name mismatch"
+      }
+    ],
+    "corrections": [],
+    "loops": []
+  },
+  "actions": [
+    {
+      "type": "account_lookup",
+      "outcome": "success",
+      "detail": "Found record using phone number 201-213-8080"
+    },
+    {
+      "type": "verification",
+      "outcome": "success",
+      "detail": "Verified Valerie Creo in New Jersey"
+    }
+  ],
+  "insights": {
+    "summary": "The caller wanted to verify billing details and ownership information. The AI successfully looked up the account, handled a name mismatch gracefully, and provided the requested data.",
+    "verbatim": "Whose address is on file?",
+    "coaching": null
+  },
+  "call_id": "743d7b2a-ebf9-4534-a999-667c8687b0e2",
+  "schema_version": "v6.0",
+  "duration_seconds": 162.3,
+  "ended_by": "agent"
+}

@@ -1,0 +1,66 @@
+{
+  "turns": 3,
+  "repeat_caller": false,
+  "derailed_at": null,
+  "resolution": {
+    "primary": {
+      "request": "discuss maintenance fee billing discrepancy",
+      "context": "The caller has already paid but believes the amount might be incorrect.",
+      "scope": "out_of_scope",
+      "outcome": "transferred",
+      "detail": "The agent correctly identified a billing dispute/question and transferred the caller to the concierge department.",
+      "resolution_confirmed": null,
+      "transfer": {
+        "reason": "out_of_scope",
+        "destination": "concierge",
+        "queue_detected": true
+      },
+      "abandon_stage": null
+    },
+    "secondary": null,
+    "steps": [
+      "Caller requested to speak to someone about maintenance fees.",
+      "Agent offered a choice between making a payment or asking a question.",
+      "Caller clarified they have a question about the payment amount.",
+      "Agent initiated transfer to the concierge department."
+    ]
+  },
+  "scores": {
+    "effectiveness": 5,
+    "quality": 4,
+    "effort": 1
+  },
+  "sentiment": {
+    "start": "neutral",
+    "end": "neutral"
+  },
+  "failure": null,
+  "friction": {
+    "clarifications": [
+      {
+        "turn": 3,
+        "type": "intent",
+        "cause": "proactive",
+        "note": "Agent clarifying if payment or question."
+      }
+    ],
+    "corrections": [],
+    "loops": []
+  },
+  "actions": [
+    {
+      "type": "transfer",
+      "outcome": "success",
+      "detail": "Transferred to concierge for billing question."
+    }
+  ],
+  "insights": {
+    "summary": "The caller wanted to discuss a potential error in their maintenance fee amount. The AI agent correctly identified this as a billing inquiry and transferred the call to the concierge queue.",
+    "verbatim": "I have already paid it, think, but I'm not sure the amount is correct.",
+    "coaching": null
+  },
+  "call_id": "85e83aa3-65a2-449f-a63c-32b5907fae82",
+  "schema_version": "v6.0",
+  "duration_seconds": 1093.1,
+  "ended_by": "customer"
+}

@@ -1,0 +1,74 @@
+{
+  "turns": 8,
+  "repeat_caller": false,
+  "derailed_at": null,
+  "resolution": {
+    "primary": {
+      "request": "Pay maintenance fees",
+      "context": "Customer wants to settle their maintenance fee balance",
+      "scope": "in_scope",
+      "outcome": "fulfilled",
+      "detail": "Agent successfully verified the caller and sent a payment link via text and email.",
+      "resolution_confirmed": false,
+      "transfer": null,
+      "abandon_stage": null
+    },
+    "secondary": null,
+    "steps": [
+      "Caller requested to pay maintenance fees.",
+      "Agent performed account lookup via caller ID.",
+      "Agent requested name verification; caller provided a different name than the spelling provided later.",
+      "Agent verified state of residence.",
+      "Agent confirmed contact information on file.",
+      "Agent triggered payment link delivery via text and email."
+    ]
+  },
+  "scores": {
+    "effectiveness": 5,
+    "quality": 5,
+    "effort": 2
+  },
+  "sentiment": {
+    "start": "neutral",
+    "end": "satisfied"
+  },
+  "failure": null,
+  "friction": {
+    "clarifications": [
+      {
+        "turn": 7,
+        "type": "name",
+        "cause": "unclear",
+        "note": "Initial name provided did not match record"
+      }
+    ],
+    "corrections": [],
+    "loops": []
+  },
+  "actions": [
+    {
+      "type": "account_lookup",
+      "outcome": "success",
+      "detail": "Found record via caller ID"
+    },
+    {
+      "type": "verification",
+      "outcome": "success",
+      "detail": "Verified name spelling and state"
+    },
+    {
+      "type": "send_payment_link",
+      "outcome": "success",
+      "detail": "Sent link to cccirone@msn.com and phone on file"
+    }
+  ],
+  "insights": {
+    "summary": "The customer successfully requested and received a maintenance fee payment link after a brief name verification step.",
+    "verbatim": "Pay maintenance fees.",
+    "coaching": null
+  },
+  "call_id": "d187d1d7-130f-4436-974d-80d00a57e368",
+  "schema_version": "v6.0",
+  "duration_seconds": 119.4,
+  "ended_by": "agent"
+}

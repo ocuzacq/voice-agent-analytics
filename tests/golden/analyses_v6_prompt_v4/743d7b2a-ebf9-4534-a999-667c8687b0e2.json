@@ -1,0 +1,69 @@
+{
+  "turns": 10,
+  "repeat_caller": false,
+  "derailed_at": null,
+  "resolution": {
+    "primary": {
+      "request": "Inquire about maintenance bill details",
+      "context": "Caller wanted to verify the address and owner name on file for their maintenance bill.",
+      "scope": "in_scope",
+      "outcome": "fulfilled",
+      "detail": "The agent verified the caller and provided the address and owner name associated with the contract.",
+      "resolution_confirmed": true,
+      "transfer": null,
+      "abandon_stage": null
+    },
+    "secondary": null,
+    "steps": [
+      "Agent identified maintenance bill intent.",
+      "Agent performed account lookup via phone number.",
+      "Agent verified caller identity (name and state).",
+      "Agent provided address on file upon request.",
+      "Agent provided owner name and contract details upon request.",
+      "Caller confirmed no further needs and call ended."
+    ]
+  },
+  "scores": {
+    "effectiveness": 5,
+    "quality": 5,
+    "effort": 1
+  },
+  "sentiment": {
+    "start": "neutral",
+    "end": "satisfied"
+  },
+  "failure": null,
+  "friction": {
+    "clarifications": [
+      {
+        "turn": 9,
+        "type": "name",
+        "cause": "proactive",
+        "note": "Agent asked for spelling when name didn't match."
+      }
+    ],
+    "corrections": [],
+    "loops": []
+  },
+  "actions": [
+    {
+      "type": "account_lookup",
+      "outcome": "success",
+      "detail": "Found record using phone number 2012138080."
+    },
+    {
+      "type": "verification",
+      "outcome": "success",
+      "detail": "Verified caller Valerie Creo from New Jersey."
+    }
+  ],
+  "insights": {
+    "summary": "The caller successfully verified their account and obtained specific contract details (address and owner name) regarding their maintenance bill.",
+    "verbatim": "Whose address is on file?",
+    "coaching": null
+  },
+  "call_id": "743d7b2a-ebf9-4534-a999-667c8687b0e2",
+  "schema_version": "v6.0",
+  "duration_seconds": 162.3,
+  "ended_by": "agent"
+}

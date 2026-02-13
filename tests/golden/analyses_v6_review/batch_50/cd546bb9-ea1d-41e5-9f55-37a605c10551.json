@@ -1,0 +1,95 @@
+{
+  "turns": 9,
+  "repeat_caller": true,
+  "derailed_at": 2,
+  "resolution": {
+    "primary": {
+      "request": "Speak with a live representative",
+      "context": "Caller claims they were previously cut off after a long wait and is extremely frustrated.",
+      "scope": "in_scope",
+      "outcome": "transferred",
+      "detail": "The agent transferred the caller to a representative after the caller repeatedly refused to provide a name and demanded a human.",
+      "resolution_confirmed": null,
+      "transfer": {
+        "reason": "customer_requested",
+        "destination": "concierge",
+        "queue_detected": false
+      },
+      "abandon_stage": null
+    },
+    "secondary": null,
+    "steps": [
+      "Caller immediately complains about being cut off previously.",
+      "Agent attempts to collect caller's name multiple times.",
+      "Caller refuses to provide name and expresses anger.",
+      "Caller demands to speak with a live person.",
+      "Agent acknowledges frustration and initiates transfer to a representative."
+    ]
+  },
+  "scores": {
+    "effectiveness": 4,
+    "quality": 3,
+    "effort": 4
+  },
+  "sentiment": {
+    "start": "angry",
+    "end": "angry"
+  },
+  "failure": null,
+  "friction": {
+    "clarifications": [
+      {
+        "turn": 3,
+        "type": "name",
+        "cause": "proactive",
+        "note": "Agent asks for name to start verification."
+      },
+      {
+        "turn": 5,
+        "type": "name",
+        "cause": "refused",
+        "note": "Agent repeats name request after user pushback."
+      },
+      {
+        "turn": 7,
+        "type": "name",
+        "cause": "refused",
+        "note": "Third attempt to get name from angry caller."
+      }
+    ],
+    "corrections": [],
+    "loops": [
+      {
+        "turns": [
+          3,
+          5,
+          7
+        ],
+        "type": "info_retry",
+        "subject": "caller name",
+        "note": "Agent repeatedly asks for name despite caller refusal."
+      }
+    ]
+  },
+  "actions": [
+    {
+      "type": "verification",
+      "outcome": "failed",
+      "detail": "Agent tried three times to get name; caller refused."
+    },
+    {
+      "type": "transfer",
+      "outcome": "success",
+      "detail": "Agent successfully initiated transfer to a live representative."
+    }
+  ],
+  "insights": {
+    "summary": "The caller was highly agitated from the start, claiming they were previously cut off. After several failed attempts by the agent to collect a name, the caller demanded a human and was transferred.",
+    "verbatim": "Get me somebody I can talk to. And not you.",
+    "coaching": "When a caller is this escalated and explicitly mentions being cut off or waiting a long time, the agent should pivot to transfer sooner rather than persisting with name collection loops."
+  },
+  "call_id": "cd546bb9-ea1d-41e5-9f55-37a605c10551",
+  "schema_version": "v6.0",
+  "duration_seconds": 134.2,
+  "ended_by": "agent"
+}

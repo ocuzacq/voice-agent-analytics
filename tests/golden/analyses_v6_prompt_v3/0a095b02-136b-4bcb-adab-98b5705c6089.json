@@ -1,0 +1,68 @@
+{
+  "turns": 2,
+  "repeat_caller": false,
+  "derailed_at": 4,
+  "resolution": {
+    "primary": {
+      "request": "schedule a timeshare week",
+      "context": "Caller wants to book a stay",
+      "scope": "out_of_scope",
+      "outcome": "abandoned",
+      "detail": "Caller requested a reservation and then provided nonsensical input before hanging up.",
+      "resolution_confirmed": null,
+      "transfer": null,
+      "abandon_stage": "mid_task"
+    },
+    "secondary": null,
+    "steps": [
+      "Agent greeted caller",
+      "Caller requested to schedule a week",
+      "Agent asked for name",
+      "Caller provided nonsensical response about shapes",
+      "Agent attempted to clarify intent",
+      "Caller disconnected"
+    ]
+  },
+  "scores": {
+    "effectiveness": 3,
+    "quality": 4,
+    "effort": 3
+  },
+  "sentiment": {
+    "start": "neutral",
+    "end": "neutral"
+  },
+  "failure": {
+    "type": "customer_confusion",
+    "detail": "Caller provided nonsensical/riddle-like input in Turn 4 and then disconnected.",
+    "policy_gap": null
+  },
+  "friction": {
+    "clarifications": [
+      {
+        "turn": 5,
+        "type": "intent",
+        "cause": "unclear",
+        "note": "Agent clarifying intent after nonsensical user input"
+      }
+    ],
+    "corrections": [],
+    "loops": []
+  },
+  "actions": [
+    {
+      "type": "other",
+      "outcome": "success",
+      "detail": "Agent attempted to clarify intent after user confusion"
+    }
+  ],
+  "insights": {
+    "summary": "The caller initially wanted to schedule a timeshare week but then provided a nonsensical response about shapes and disconnected.",
+    "verbatim": "Which state? Has three sides? Patricia. Star. A triangle, or square.",
+    "coaching": "The agent handled the nonsensical input professionally by attempting to redirect back to the original intent."
+  },
+  "call_id": "0a095b02-136b-4bcb-adab-98b5705c6089",
+  "schema_version": "v6.0",
+  "duration_seconds": 37.6,
+  "ended_by": "customer"
+}

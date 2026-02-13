@@ -1,0 +1,95 @@
+{
+  "turns": 24,
+  "repeat_caller": false,
+  "derailed_at": null,
+  "resolution": {
+    "primary": {
+      "request_category": "portal_account",
+      "request": "Register a new account on the website",
+      "context": "Customer received a message saying their ownership type requires special handling for registration",
+      "human_requested": null,
+      "department_requested": null,
+      "scope": "in_scope",
+      "outcome": "fulfilled",
+      "detail": "The agent verified the caller using a contract ID and name, then sent a Clubhouse registration link via email.",
+      "resolution_confirmed": true,
+      "transfer": null,
+      "abandon_stage": null
+    },
+    "secondary": null,
+    "steps": [
+      "Caller stated they need to complete registration on the website.",
+      "Agent attempted lookup by phone number which failed.",
+      "Agent successfully looked up account using contract ID.",
+      "Agent performed verification; initial name provided by caller did not match, but the second name (parent) and state matched.",
+      "Agent confirmed contact details and sent the registration link via email.",
+      "Caller confirmed they would use the link to create the account."
+    ]
+  },
+  "scores": {
+    "effectiveness": 5,
+    "quality": 5,
+    "effort": 2
+  },
+  "sentiment": {
+    "start": "neutral",
+    "end": "satisfied"
+  },
+  "impediment": null,
+  "agent_issue": null,
+  "friction": {
+    "clarifications": [
+      {
+        "turn": 3,
+        "type": "intent",
+        "cause": "proactive",
+        "note": "Agent clarifying if registration or password reset"
+      },
+      {
+        "turn": 27,
+        "type": "verify",
+        "cause": "proactive",
+        "note": "Agent asking to spell name for verification"
+      }
+    ],
+    "corrections": [
+      {
+        "turn": 29,
+        "severity": "minor",
+        "note": "Agent noted name mismatch; caller provided parent's name"
+      }
+    ],
+    "loops": []
+  },
+  "actions": [
+    {
+      "type": "account_lookup",
+      "outcome": "failed",
+      "detail": "Lookup by Brazilian phone number returned no match"
+    },
+    {
+      "type": "account_lookup",
+      "outcome": "success",
+      "detail": "Lookup by contract ID successful"
+    },
+    {
+      "type": "verification",
+      "outcome": "success",
+      "detail": "Verified using secondary name on contract and state"
+    },
+    {
+      "type": "send_clubhouse_link",
+      "outcome": "success",
+      "detail": "Sent registration link to email on file"
+    }
+  ],
+  "insights": {
+    "summary": "The customer wanted to register for the online portal after seeing an error message. The agent successfully verified the account using a contract ID and a secondary owner's name, then sent the registration link via email.",
+    "verbatim": "Perfect. So I have to log in in Vacatia, the new website.",
+    "coaching": null
+  },
+  "call_id": "8c10f101-1bc6-4735-a744-b8207cc06e0b",
+  "schema_version": "v7.0",
+  "duration_seconds": 409.3,
+  "ended_by": "agent"
+}

@@ -1,0 +1,80 @@
+{
+  "turns": 12,
+  "repeat_caller": false,
+  "derailed_at": null,
+  "resolution": {
+    "primary": {
+      "request": "set up owner account login",
+      "context": "Customer has never logged in before and needs a registration link",
+      "scope": "in_scope",
+      "outcome": "fulfilled",
+      "detail": "The agent verified the caller and sent a Clubhouse registration link after updating the contact information for the delivery.",
+      "resolution_confirmed": true,
+      "transfer": null,
+      "abandon_stage": null
+    },
+    "secondary": null,
+    "steps": [
+      "Caller requested help logging into their account.",
+      "Agent performed account lookup and identity verification.",
+      "Agent identified that the caller needed a new registration link.",
+      "Agent confirmed contact details and corrected the email and phone number per user input.",
+      "Agent confirmed sending the Clubhouse registration link.",
+      "Caller confirmed the agent was helpful and ended the call."
+    ]
+  },
+  "scores": {
+    "effectiveness": 5,
+    "quality": 5,
+    "effort": 2
+  },
+  "sentiment": {
+    "start": "neutral",
+    "end": "satisfied"
+  },
+  "failure": null,
+  "friction": {
+    "clarifications": [
+      {
+        "turn": 15,
+        "type": "verify",
+        "cause": "proactive",
+        "note": "Agent proactively confirmed contact info before sending link"
+      }
+    ],
+    "corrections": [
+      {
+        "turn": 16,
+        "severity": "minor",
+        "note": "User corrected outdated email and phone number"
+      }
+    ],
+    "loops": []
+  },
+  "actions": [
+    {
+      "type": "account_lookup",
+      "outcome": "success",
+      "detail": "Located account using phone number"
+    },
+    {
+      "type": "verification",
+      "outcome": "success",
+      "detail": "Verified name and state of residence"
+    },
+    {
+      "type": "send_clubhouse_link",
+      "outcome": "success",
+      "detail": "Sent registration link to updated email"
+    }
+  ],
+  "insights": {
+    "summary": "The customer wanted to set up their online owner account for the first time. The agent successfully verified the user, corrected their contact information, and sent the registration link.",
+    "verbatim": "No. You've been very helpful.",
+    "coaching": null
+  },
+  "call_id": "0a434683-1ac4-4f26-83ee-c6fce1040ef4",
+  "schema_version": "v6.0",
+  "duration_seconds": 187.9,
+  "ended_by": "agent"
+}

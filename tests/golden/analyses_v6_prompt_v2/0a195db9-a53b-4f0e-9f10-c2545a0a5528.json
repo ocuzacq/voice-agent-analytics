@@ -1,0 +1,66 @@
+{
+  "turns": 4,
+  "repeat_caller": false,
+  "derailed_at": null,
+  "resolution": {
+    "primary": {
+      "request": "Make a maintenance payment",
+      "context": "Caller wanted to pay maintenance fees over the phone",
+      "scope": "in_scope",
+      "outcome": "transferred",
+      "detail": "The AI offered a payment link, but the caller requested to pay over the phone, which is out-of-scope for the AI, leading to a transfer.",
+      "resolution_confirmed": null,
+      "transfer": {
+        "reason": "customer_requested",
+        "destination": "concierge",
+        "queue_detected": true
+      },
+      "abandon_stage": null
+    },
+    "secondary": null,
+    "steps": [
+      "Agent greeted caller.",
+      "Caller requested to make a maintenance payment.",
+      "Agent offered to send a payment link via text or email.",
+      "Caller refused the link and requested to pay over the phone.",
+      "Agent transferred the caller to the concierge department.",
+      "Caller remained in the hold queue for over 25 minutes."
+    ]
+  },
+  "scores": {
+    "effectiveness": 5,
+    "quality": 5,
+    "effort": 2
+  },
+  "sentiment": {
+    "start": "neutral",
+    "end": "neutral"
+  },
+  "failure": null,
+  "friction": {
+    "clarifications": [],
+    "corrections": [],
+    "loops": []
+  },
+  "actions": [
+    {
+      "type": "send_payment_link",
+      "outcome": "success",
+      "detail": "Offered payment link via text or email"
+    },
+    {
+      "type": "transfer",
+      "outcome": "success",
+      "detail": "Transferred to concierge per customer request"
+    }
+  ],
+  "insights": {
+    "summary": "The caller wanted to make a maintenance payment but specifically requested to do so over the phone rather than using a link. The AI correctly identified the out-of-scope request for phone processing and transferred the caller to the concierge department.",
+    "verbatim": "No. On the phone. I'm gonna call and make it over the phone payment.",
+    "coaching": null
+  },
+  "call_id": "0a195db9-a53b-4f0e-9f10-c2545a0a5528",
+  "schema_version": "v6.0",
+  "duration_seconds": 1710.0,
+  "ended_by": "customer"
+}

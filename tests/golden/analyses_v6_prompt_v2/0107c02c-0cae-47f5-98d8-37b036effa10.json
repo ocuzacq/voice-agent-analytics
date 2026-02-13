@@ -1,0 +1,84 @@
+{
+  "turns": 9,
+  "repeat_caller": false,
+  "derailed_at": null,
+  "resolution": {
+    "primary": {
+      "request": "Speak to a concierge about billing",
+      "context": "Caller initially asked for concierge, then billing, then maintenance, before returning to concierge request.",
+      "scope": "out_of_scope",
+      "outcome": "transferred",
+      "detail": "The agent correctly identified the request for concierge services and transferred the caller to the appropriate department.",
+      "resolution_confirmed": null,
+      "transfer": {
+        "reason": "customer_requested",
+        "destination": "concierge",
+        "queue_detected": true
+      },
+      "abandon_stage": null
+    },
+    "secondary": null,
+    "steps": [
+      "Caller requested concierge at the start of the call.",
+      "Agent attempted to narrow down the intent (billing/maintenance).",
+      "Agent performed account lookup and identity verification.",
+      "Caller reiterated the need for billing/maintenance assistance.",
+      "Caller ultimately requested a human concierge again.",
+      "Agent transferred the call to the concierge department."
+    ]
+  },
+  "scores": {
+    "effectiveness": 5,
+    "quality": 5,
+    "effort": 2
+  },
+  "sentiment": {
+    "start": "neutral",
+    "end": "neutral"
+  },
+  "failure": null,
+  "friction": {
+    "clarifications": [
+      {
+        "turn": 3,
+        "type": "intent",
+        "cause": "proactive",
+        "note": "Agent seeking specific reason for concierge request"
+      },
+      {
+        "turn": 5,
+        "type": "intent",
+        "cause": "proactive",
+        "note": "Agent clarifying maintenance vs mortgage billing"
+      }
+    ],
+    "corrections": [],
+    "loops": []
+  },
+  "actions": [
+    {
+      "type": "account_lookup",
+      "outcome": "success",
+      "detail": "Found record via caller ID"
+    },
+    {
+      "type": "verification",
+      "outcome": "success",
+      "detail": "Verified name spelling and state"
+    },
+    {
+      "type": "transfer",
+      "outcome": "success",
+      "detail": "Transferred to concierge department"
+    }
+  ],
+  "insights": {
+    "summary": "The caller requested a concierge for billing and maintenance issues. The agent verified the caller's identity and then successfully transferred them to the concierge queue as requested.",
+    "verbatim": "Speak to a concierge.",
+    "coaching": null
+  },
+  "call_id": "0107c02c-0cae-47f5-98d8-37b036effa10",
+  "schema_version": "v6.0",
+  "duration_seconds": 897.6,
+  "ended_by": "customer"
+}

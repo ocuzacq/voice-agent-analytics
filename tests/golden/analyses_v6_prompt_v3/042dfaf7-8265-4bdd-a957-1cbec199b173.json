@@ -1,0 +1,103 @@
+{
+  "turns": 14,
+  "repeat_caller": false,
+  "derailed_at": 13,
+  "resolution": {
+    "primary": {
+      "request": "sell timeshare ownership entirely",
+      "context": "The caller wants to get rid of their timeshare property.",
+      "scope": "out_of_scope",
+      "outcome": "abandoned",
+      "detail": "The caller wanted to sell their ownership, which is out of scope; the AI attempted a transfer, but no agents were available after a 25-minute wait.",
+      "resolution_confirmed": null,
+      "transfer": {
+        "reason": "out_of_scope",
+        "destination": "concierge",
+        "queue_detected": true
+      },
+      "abandon_stage": "mid_task"
+    },
+    "secondary": null,
+    "steps": [
+      "Caller requested a representative immediately.",
+      "AI identified the intent as selling timeshare ownership.",
+      "AI attempted to clarify if the caller meant renting or selling.",
+      "AI initiated a transfer to the concierge department.",
+      "Caller waited in a queue for approximately 25 minutes.",
+      "AI informed the caller that no representatives were available and offered to help again.",
+      "Caller expressed frustration that the AI could not help and ended the call."
+    ]
+  },
+  "scores": {
+    "effectiveness": 2,
+    "quality": 3,
+    "effort": 5
+  },
+  "sentiment": {
+    "start": "neutral",
+    "end": "frustrated"
+  },
+  "failure": {
+    "type": "wrong_action",
+    "detail": "The AI entered a repetitive clarification loop about renting vs selling after the user had already specified 'ownership entirely'.",
+    "policy_gap": null
+  },
+  "friction": {
+    "clarifications": [
+      {
+        "turn": 11,
+        "type": "intent",
+        "cause": "proactive",
+        "note": "AI clarifying rent vs sell ownership"
+      },
+      {
+        "turn": 13,
+        "type": "intent",
+        "cause": "misheard",
+        "note": "AI asked about renting after user said ownership"
+      }
+    ],
+    "corrections": [
+      {
+        "turn": 12,
+        "severity": "minor",
+        "note": "User clarified they want to sell ownership entirely"
+      },
+      {
+        "turn": 14,
+        "severity": "moderate",
+        "note": "User corrected AI that they do not want to rent"
+      }
+    ],
+    "loops": [
+      {
+        "turns": [
+          11,
+          13,
+          15,
+          17,
+          19
+        ],
+        "type": "intent_retry",
+        "subject": "selling vs renting",
+        "note": "AI repeatedly asked for clarification on selling intent"
+      }
+    ]
+  },
+  "actions": [
+    {
+      "type": "transfer",
+      "outcome": "failed",
+      "detail": "Transfer to concierge failed due to no availability"
+    }
+  ],
+  "insights": {
+    "summary": "The caller wanted to sell their timeshare ownership, which is out of scope. After a long clarification loop and a 25-minute hold time with no available agents, the caller abandoned the call.",
+    "verbatim": "Instead of ownership entirely... You just saw it out right.",
+    "coaching": "The AI should have recognized 'ownership entirely' as a request to sell/surrender and transferred immediately rather than looping on rental questions."
+  },
+  "call_id": "042dfaf7-8265-4bdd-a957-1cbec199b173",
+  "schema_version": "v6.0",
+  "duration_seconds": 1708.3,
+  "ended_by": "customer"
+}

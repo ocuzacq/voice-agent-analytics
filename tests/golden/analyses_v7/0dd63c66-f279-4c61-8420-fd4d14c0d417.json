@@ -1,0 +1,117 @@
+{
+  "turns": 27,
+  "repeat_caller": false,
+  "derailed_at": 27,
+  "resolution": {
+    "primary": {
+      "request_category": "maintenance_payment",
+      "request": "Pay maintenance fees for two contracts",
+      "context": "Caller wanted to pay for two Grandview at Las Vegas contracts simultaneously",
+      "human_requested": "after_service",
+      "department_requested": null,
+      "scope": "in_scope",
+      "outcome": "fulfilled",
+      "detail": "The AI successfully sent two separate payment links for the requested contracts after a failed transfer attempt.",
+      "resolution_confirmed": true,
+      "transfer": null,
+      "abandon_stage": null
+    },
+    "secondary": {
+      "request_category": "other",
+      "request": "Discuss Bonaventure contract with a person",
+      "context": "Caller stated they no longer have the Bonaventure property and wanted to speak to someone about it",
+      "human_requested": "after_service",
+      "department_requested": null,
+      "scope": "out_of_scope",
+      "outcome": "transferred",
+      "detail": "The caller requested a representative to discuss a specific property they claim not to own anymore; the AI initiated a transfer.",
+      "resolution_confirmed": null,
+      "transfer": null,
+      "abandon_stage": null
+    },
+    "steps": [
+      "Caller requested to pay maintenance fees.",
+      "AI identified three contracts; caller disputed the Bonaventure contract and the account numbers provided by the AI.",
+      "Caller requested a representative due to account number mismatch.",
+      "Transfer failed after a 6-minute queue wait; AI re-engaged.",
+      "Caller provided their own account numbers, and AI sent two separate payment links.",
+      "Caller confirmed receipt of both links.",
+      "Caller requested a representative to discuss the Bonaventure contract specifically."
+    ]
+  },
+  "scores": {
+    "effectiveness": 4,
+    "quality": 4,
+    "effort": 4
+  },
+  "sentiment": {
+    "start": "neutral",
+    "end": "neutral"
+  },
+  "impediment": {
+    "type": "transfer_queue",
+    "detail": "The initial transfer attempt resulted in a 6-minute wait followed by a system message that no representatives were available.",
+    "policy_gap": null
+  },
+  "agent_issue": null,
+  "friction": {
+    "clarifications": [
+      {
+        "turn": 11,
+        "type": "intent",
+        "cause": "proactive",
+        "note": "AI clarifying it can only process one contract"
+      }
+    ],
+    "corrections": [
+      {
+        "turn": 12,
+        "severity": "minor",
+        "note": "Caller states they no longer have Bonaventure"
+      },
+      {
+        "turn": 22,
+        "severity": "moderate",
+        "note": "Caller disputes account numbers provided by AI"
+      }
+    ],
+    "loops": []
+  },
+  "actions": [
+    {
+      "type": "account_lookup",
+      "outcome": "success",
+      "detail": "Looked up contracts for Sharon l Warren"
+    },
+    {
+      "type": "transfer",
+      "outcome": "failed",
+      "detail": "Transfer to concierge failed after queue timeout"
+    },
+    {
+      "type": "send_payment_link",
+      "outcome": "success",
+      "detail": "Sent first link to WP welding at comcast dot net"
+    },
+    {
+      "type": "send_payment_link",
+      "outcome": "success",
+      "detail": "Sent second link to WP welding at comcast dot net"
+    },
+    {
+      "type": "transfer",
+      "outcome": "success",
+      "detail": "Initiated transfer for Bonaventure inquiry"
+    }
+  ],
+  "insights": {
+    "summary": "The caller initially wanted to pay maintenance fees but requested a transfer when the AI's account numbers didn't match theirs. After the transfer failed, the AI successfully sent two payment links using the caller's provided account numbers before transferring them for a separate inquiry.",
+    "verbatim": "Those are different account numbers than I have. Can I speak to a representative?",
+    "coaching": null
+  },
+  "call_id": "0dd63c66-f279-4c61-8420-fd4d14c0d417",
+  "schema_version": "v7.0",
+  "duration_seconds": 954.2,
+  "ended_by": "customer",
+  "ended_reason": "hangup-during-warm-transfer"
+}

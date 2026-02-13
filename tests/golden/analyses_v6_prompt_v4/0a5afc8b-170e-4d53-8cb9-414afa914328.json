@@ -1,0 +1,62 @@
+{
+  "turns": 9,
+  "repeat_caller": false,
+  "derailed_at": null,
+  "resolution": {
+    "primary": {
+      "request": "end timeshare ownership",
+      "context": "Caller wants to surrender or terminate their contract",
+      "scope": "out_of_scope",
+      "outcome": "abandoned",
+      "detail": "The AI correctly identified the out-of-scope request and attempted a transfer, but no agents were available in the queue.",
+      "resolution_confirmed": null,
+      "transfer": {
+        "reason": "out_of_scope",
+        "destination": "concierge",
+        "queue_detected": true
+      },
+      "abandon_stage": "mid_task"
+    },
+    "secondary": null,
+    "steps": [
+      "Caller requested concierge department immediately.",
+      "AI attempted transfer but warned of long wait times.",
+      "AI collected caller name and intent (ending ownership) while in the queue process.",
+      "Caller waited in a long queue (approx 25 minutes) before the AI re-engaged due to no available agents.",
+      "AI offered limited info but confirmed it cannot process termination.",
+      "Caller asked for a callback, which the AI cannot facilitate.",
+      "Caller ended the call after being told to call back later."
+    ]
+  },
+  "scores": {
+    "effectiveness": 5,
+    "quality": 5,
+    "effort": 5
+  },
+  "sentiment": {
+    "start": "neutral",
+    "end": "neutral"
+  },
+  "failure": null,
+  "friction": {
+    "clarifications": [],
+    "corrections": [],
+    "loops": []
+  },
+  "actions": [
+    {
+      "type": "transfer",
+      "outcome": "failed",
+      "detail": "Transfer to concierge failed after 25 minute queue wait."
+    }
+  ],
+  "insights": {
+    "summary": "The caller wanted to terminate their timeshare ownership. The AI correctly identified this as out-of-scope and attempted a transfer, but the caller was eventually forced to abandon after a 25-minute wait when no human agents were available.",
+    "verbatim": "I'm calling about our timeshare. We want to no longer have ownership over it.",
+    "coaching": "The AI performed its role correctly by identifying the out-of-scope intent and routing to the queue. The failure to connect was due to human agent unavailability, not AI logic."
+  },
+  "call_id": "0a5afc8b-170e-4d53-8cb9-414afa914328",
+  "schema_version": "v6.0",
+  "duration_seconds": 1644.8,
+  "ended_by": "customer"
+}

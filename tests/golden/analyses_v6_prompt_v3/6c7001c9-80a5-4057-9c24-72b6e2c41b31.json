@@ -1,0 +1,53 @@
+{
+  "turns": 1,
+  "repeat_caller": false,
+  "derailed_at": 2,
+  "resolution": {
+    "primary": {
+      "request": "none articulated",
+      "context": "caller played a recording or spoke a message that sounded like a system prompt",
+      "scope": "no_request",
+      "outcome": "abandoned",
+      "detail": "The caller played a recorded message back to the AI and then disconnected.",
+      "resolution_confirmed": null,
+      "transfer": null,
+      "abandon_stage": "pre_intent"
+    },
+    "secondary": null,
+    "steps": [
+      "Agent greeted the caller.",
+      "Caller played a recorded message stating no one is available.",
+      "Agent attempted to re-engage and ask for a name.",
+      "Caller disconnected."
+    ]
+  },
+  "scores": {
+    "effectiveness": 1,
+    "quality": 3,
+    "effort": 5
+  },
+  "sentiment": {
+    "start": "neutral",
+    "end": "neutral"
+  },
+  "failure": {
+    "type": "other",
+    "detail": "Caller played a recording back to the agent and did not provide a request.",
+    "policy_gap": null
+  },
+  "friction": {
+    "clarifications": [],
+    "corrections": [],
+    "loops": []
+  },
+  "actions": [],
+  "insights": {
+    "summary": "The caller played a recorded message back to the AI agent and then hung up without stating a request.",
+    "verbatim": "It seems like no one is available to take your call at the moment.",
+    "coaching": null
+  },
+  "call_id": "6c7001c9-80a5-4057-9c24-72b6e2c41b31",
+  "schema_version": "v6.0",
+  "duration_seconds": 45.9,
+  "ended_by": "customer"
+}

@@ -1,0 +1,84 @@
+{
+  "turns": 8,
+  "repeat_caller": false,
+  "derailed_at": null,
+  "resolution": {
+    "primary": {
+      "request_category": "mortgage_payment",
+      "request": "check mortgage balance",
+      "context": "Caller wanted to know how much they still owe on their mortgage",
+      "human_requested": null,
+      "department_requested": null,
+      "scope": "in_scope",
+      "outcome": "fulfilled",
+      "detail": "Agent successfully looked up the account and provided the mortgage balance and next due date.",
+      "resolution_confirmed": true,
+      "transfer": null,
+      "abandon_stage": null
+    },
+    "secondary": {
+      "request_category": "exchange_program",
+      "request": "reactivate RCI membership",
+      "context": "Caller lost access to RCI and wanted to know why and how to fix it",
+      "human_requested": null,
+      "department_requested": null,
+      "scope": "in_scope",
+      "outcome": "fulfilled",
+      "detail": "Agent explained the inactive status and provided the RCI website for reactivation.",
+      "resolution_confirmed": true,
+      "transfer": null,
+      "abandon_stage": null
+    },
+    "steps": [
+      "Caller requested mortgage balance.",
+      "Agent performed account lookup and verified name.",
+      "Agent provided mortgage balance, monthly payment amount, and next due date.",
+      "Caller inquired about RCI access issues.",
+      "Agent identified inactive status and provided RCI contact information for renewal.",
+      "Caller confirmed they had no further questions."
+    ]
+  },
+  "scores": {
+    "effectiveness": 5,
+    "quality": 5,
+    "effort": 1
+  },
+  "sentiment": {
+    "start": "neutral",
+    "end": "satisfied"
+  },
+  "impediment": null,
+  "agent_issue": null,
+  "friction": {
+    "clarifications": [],
+    "corrections": [],
+    "loops": []
+  },
+  "actions": [
+    {
+      "type": "account_lookup",
+      "outcome": "success",
+      "detail": "Located account for Paul B. Moses at Berkshire Mountain Lodge"
+    },
+    {
+      "type": "other",
+      "outcome": "success",
+      "detail": "Provided mortgage balance and payment details verbally"
+    },
+    {
+      "type": "other",
+      "outcome": "success",
+      "detail": "Provided RCI website address for membership renewal"
+    }
+  ],
+  "insights": {
+    "summary": "The caller successfully retrieved their mortgage balance and received instructions on how to reactivate their RCI membership.",
+    "verbatim": "Questions about how much I still owe on my mortgage.",
+    "coaching": null
+  },
+  "call_id": "064e5d82-f507-4f25-bb85-d9320b8f463c",
+  "schema_version": "v7.0",
+  "duration_seconds": 133.5,
+  "ended_by": "agent",
+  "ended_reason": "assistant-ended-call"
+}

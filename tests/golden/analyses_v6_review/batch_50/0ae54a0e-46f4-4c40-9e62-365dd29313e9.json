@@ -1,0 +1,58 @@
+{
+  "turns": 2,
+  "repeat_caller": false,
+  "derailed_at": null,
+  "resolution": {
+    "primary": {
+      "request": "Speak to a representative",
+      "context": "Caller immediately requested human assistance",
+      "scope": "in_scope",
+      "outcome": "transferred",
+      "detail": "The agent correctly identified the transfer request and initiated the connection to a representative.",
+      "resolution_confirmed": null,
+      "transfer": {
+        "reason": "customer_requested",
+        "destination": "concierge",
+        "queue_detected": false
+      },
+      "abandon_stage": null
+    },
+    "secondary": null,
+    "steps": [
+      "Agent greeted caller",
+      "Caller requested a representative",
+      "Agent confirmed and initiated transfer"
+    ]
+  },
+  "scores": {
+    "effectiveness": 5,
+    "quality": 5,
+    "effort": 1
+  },
+  "sentiment": {
+    "start": "neutral",
+    "end": "neutral"
+  },
+  "failure": null,
+  "friction": {
+    "clarifications": [],
+    "corrections": [],
+    "loops": []
+  },
+  "actions": [
+    {
+      "type": "transfer",
+      "outcome": "success",
+      "detail": "Successfully initiated transfer to a representative upon request"
+    }
+  ],
+  "insights": {
+    "summary": "The caller immediately requested to speak with a representative, and the AI agent efficiently processed the transfer without unnecessary friction.",
+    "verbatim": "Speak to a representative.",
+    "coaching": null
+  },
+  "call_id": "0ae54a0e-46f4-4c40-9e62-365dd29313e9",
+  "schema_version": "v6.0",
+  "duration_seconds": 111.5,
+  "ended_by": "customer"
+}

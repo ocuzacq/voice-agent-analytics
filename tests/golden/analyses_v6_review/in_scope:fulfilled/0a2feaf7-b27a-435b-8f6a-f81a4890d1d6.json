@@ -1,0 +1,83 @@
+{
+  "turns": 11,
+  "repeat_caller": true,
+  "derailed_at": null,
+  "resolution": {
+    "primary": {
+      "request": "make a payment",
+      "context": "Customer is unable to log in to their account due to an invalid account number error and a previous link failing.",
+      "scope": "in_scope",
+      "outcome": "fulfilled",
+      "detail": "The agent verified the customer and sent a payment link via email and text.",
+      "resolution_confirmed": false,
+      "transfer": null,
+      "abandon_stage": null
+    },
+    "secondary": {
+      "request": "troubleshoot account login",
+      "context": "Customer reports account number is invalid and previous registration link failed.",
+      "scope": "in_scope",
+      "outcome": "fulfilled",
+      "detail": "Agent pivoted from login troubleshooting to providing a direct payment link to satisfy the customer's ultimate goal.",
+      "resolution_confirmed": true,
+      "transfer": null,
+      "abandon_stage": null
+    },
+    "steps": [
+      "Customer identified themselves and reported login issues.",
+      "Agent performed account lookup and verification using phone, name, and state.",
+      "Customer explained that a previously sent registration link did not work.",
+      "Agent identified the primary goal was to make a payment.",
+      "Agent confirmed property and contact details.",
+      "Agent sent a payment link via email and text."
+    ]
+  },
+  "scores": {
+    "effectiveness": 5,
+    "quality": 5,
+    "effort": 2
+  },
+  "sentiment": {
+    "start": "frustrated",
+    "end": "satisfied"
+  },
+  "failure": null,
+  "friction": {
+    "clarifications": [
+      {
+        "turn": 5,
+        "type": "name",
+        "cause": "proactive",
+        "note": "Confirming spelling of name for verification"
+      }
+    ],
+    "corrections": [],
+    "loops": []
+  },
+  "actions": [
+    {
+      "type": "account_lookup",
+      "outcome": "success",
+      "detail": "Located account using phone number"
+    },
+    {
+      "type": "verification",
+      "outcome": "success",
+      "detail": "Verified name and state of residence"
+    },
+    {
+      "type": "send_payment_link",
+      "outcome": "success",
+      "detail": "Sent link to email and text"
+    }
+  ],
+  "insights": {
+    "summary": "Customer was frustrated by login errors and a failed previous link; the agent successfully verified them and sent a direct payment link to resolve their underlying need.",
+    "verbatim": "I'm trying to get into my account. The account number is wrong. ... You sent me it already and it did not work.",
+    "coaching": null
+  },
+  "call_id": "0a2feaf7-b27a-435b-8f6a-f81a4890d1d6",
+  "schema_version": "v6.0",
+  "duration_seconds": 190.9,
+  "ended_by": "agent"
+}

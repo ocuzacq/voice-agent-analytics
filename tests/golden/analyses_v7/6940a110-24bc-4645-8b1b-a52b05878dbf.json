@@ -1,0 +1,110 @@
+{
+  "turns": 9,
+  "repeat_caller": false,
+  "derailed_at": 13,
+  "resolution": {
+    "primary": {
+      "request_category": "maintenance_payment",
+      "request": "pay maintenance fees and view balance",
+      "context": "Caller is calling from Australia and cannot access their account online",
+      "human_requested": null,
+      "department_requested": null,
+      "scope": "in_scope",
+      "outcome": "abandoned",
+      "detail": "The AI failed to verify the caller's identity despite a successful contract lookup, leading to a transfer and subsequent abandonment in the queue.",
+      "resolution_confirmed": null,
+      "transfer": {
+        "reason": "task_failure",
+        "destination": "concierge",
+        "queue_detected": true,
+        "queue_result": "caller_abandoned"
+      },
+      "abandon_stage": "mid_task"
+    },
+    "secondary": null,
+    "steps": [
+      "Caller requested to pay maintenance fees and check balance.",
+      "Agent attempted account lookup via phone number, which the caller did not know (Australia).",
+      "Agent successfully looked up record using contract ID 350375.",
+      "Agent attempted to verify name, but the name on file (Kenneth Beaumont) did not match the caller (Sandra Haining).",
+      "After multiple failed verification attempts, the agent transferred the caller to the concierge department.",
+      "Caller waited in the queue for over 10 minutes before disconnecting."
+    ]
+  },
+  "scores": {
+    "effectiveness": 2,
+    "quality": 3,
+    "effort": 4
+  },
+  "sentiment": {
+    "start": "neutral",
+    "end": "frustrated"
+  },
+  "impediment": {
+    "type": "verification",
+    "detail": "The name provided by the caller (Sandra Haining) did not match the name on the record found via contract ID (Kenneth Beaumont).",
+    "policy_gap": null
+  },
+  "agent_issue": null,
+  "friction": {
+    "clarifications": [
+      {
+        "turn": 11,
+        "type": "verify",
+        "cause": "proactive",
+        "note": "Agent asking to confirm name on contract"
+      },
+      {
+        "turn": 17,
+        "type": "verify",
+        "cause": "tech",
+        "note": "Agent asking for letter by letter spelling"
+      }
+    ],
+    "corrections": [
+      {
+        "turn": 14,
+        "severity": "major",
+        "note": "Caller rejects the name Kenneth Beaumont read by agent"
+      }
+    ],
+    "loops": [
+      {
+        "turns": [
+          15,
+          17
+        ],
+        "type": "info_retry",
+        "subject": "name verification",
+        "note": "Repeatedly asking for name spelling after mismatch"
+      }
+    ]
+  },
+  "actions": [
+    {
+      "type": "account_lookup",
+      "outcome": "success",
+      "detail": "Found record using contract ID 350375"
+    },
+    {
+      "type": "verification",
+      "outcome": "failed",
+      "detail": "Name Sandra Haining did not match Kenneth Beaumont"
+    },
+    {
+      "type": "transfer",
+      "outcome": "success",
+      "detail": "Transferred to concierge after verification failure"
+    }
+  ],
+  "insights": {
+    "summary": "The caller wanted to pay maintenance fees but was blocked by a name mismatch during verification after a successful contract lookup. The call was transferred to a human queue where the caller eventually hung up after a long wait.",
+    "verbatim": "I'm looking at owner's invoice. And my name is on the owner's invoice. Sandra... Haining.",
+    "coaching": "The agent followed protocol for a name mismatch, but the mismatch itself (Sandra Haining vs Kenneth Beaumont) suggests either a data issue or a spouse/co-owner calling whose name isn't the primary on the digital record."
+  },
+  "call_id": "6940a110-24bc-4645-8b1b-a52b05878dbf",
+  "schema_version": "v7.0",
+  "duration_seconds": 1119.0,
+  "ended_by": "customer",
+  "ended_reason": "customer-ended-call"
+}

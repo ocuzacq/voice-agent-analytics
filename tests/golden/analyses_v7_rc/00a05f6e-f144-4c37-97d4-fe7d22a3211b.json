@@ -1,0 +1,98 @@
+{
+  "turns": 9,
+  "repeat_caller": false,
+  "derailed_at": null,
+  "resolution": {
+    "primary": {
+      "request_category": "maintenance_payment",
+      "request": "Pay annual maintenance fee",
+      "context": "Caller wanted to pay their annual fee for The Grandview at Las Vegas",
+      "human_requested": null,
+      "department_requested": null,
+      "scope": "in_scope",
+      "outcome": "fulfilled",
+      "detail": "The AI successfully verified the caller and sent a payment link to the email and phone number on file.",
+      "resolution_confirmed": false,
+      "transfer": null,
+      "abandon_stage": null
+    },
+    "secondary": {
+      "request_category": "account_details_update",
+      "request": "Change the phone number",
+      "context": "Caller wanted to update contact information after receiving the payment link",
+      "human_requested": null,
+      "department_requested": "concierge",
+      "scope": "out_of_scope",
+      "outcome": "abandoned",
+      "detail": "The request to change a phone number is out of scope; the AI correctly transferred the caller, but the caller hung up after a long wait in the queue.",
+      "resolution_confirmed": null,
+      "transfer": {
+        "reason": "out_of_scope",
+        "destination": "concierge",
+        "queue_detected": true,
+        "queue_result": "caller_abandoned"
+      },
+      "abandon_stage": "mid_task"
+    },
+    "steps": [
+      "Caller requested to pay annual fee.",
+      "AI performed account lookup via phone number and verified state of residence.",
+      "AI provided balance and property details.",
+      "AI confirmed contact info and sent payment link.",
+      "Caller then requested to change their phone number.",
+      "AI identified request as out of scope and transferred to concierge.",
+      "Caller abandoned after approximately 15 minutes in the transfer queue."
+    ]
+  },
+  "scores": {
+    "effectiveness": 5,
+    "quality": 5,
+    "effort": 2
+  },
+  "sentiment": {
+    "start": "neutral",
+    "end": "neutral"
+  },
+  "impediment": {
+    "type": "transfer_queue",
+    "detail": "The caller abandoned the call after waiting in the concierge transfer queue for over 15 minutes.",
+    "policy_gap": null
+  },
+  "agent_issue": null,
+  "friction": {
+    "clarifications": [],
+    "corrections": [],
+    "loops": []
+  },
+  "actions": [
+    {
+      "type": "account_lookup",
+      "outcome": "success",
+      "detail": "Pulled record using phone number 5418064851"
+    },
+    {
+      "type": "verification",
+      "outcome": "success",
+      "detail": "Verified state of residence as Oregon"
+    },
+    {
+      "type": "send_payment_link",
+      "outcome": "success",
+      "detail": "Sent link to htsshell@gmail.com and 5413874444"
+    },
+    {
+      "type": "transfer",
+      "outcome": "success",
+      "detail": "Transferred to concierge for phone number update"
+    }
+  ],
+  "insights": {
+    "summary": "The AI successfully fulfilled the primary request to send a payment link but had to transfer the caller for a phone number update, which is out of scope. The caller abandoned during the long transfer wait.",
+    "verbatim": "I need to change the phone number.",
+    "coaching": null
+  },
+  "call_id": "00a05f6e-f144-4c37-97d4-fe7d22a3211b",
+  "schema_version": "v7.0",
+  "duration_seconds": 1119.8,
+  "ended_by": "customer"
+}

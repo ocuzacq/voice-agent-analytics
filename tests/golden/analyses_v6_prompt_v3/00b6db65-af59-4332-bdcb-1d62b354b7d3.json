@@ -1,0 +1,77 @@
+{
+  "turns": 8,
+  "repeat_caller": false,
+  "derailed_at": 17,
+  "resolution": {
+    "primary": {
+      "request": "make a maintenance fee payment",
+      "context": "Caller wants to pay fees but cannot find contract ID and has verification issues",
+      "scope": "in_scope",
+      "outcome": "transferred",
+      "detail": "The agent attempted to verify the account using an account number provided by the caller, but failed and transferred to concierge.",
+      "resolution_confirmed": false,
+      "transfer": {
+        "reason": "task_failure",
+        "destination": "concierge",
+        "queue_detected": false
+      },
+      "abandon_stage": null
+    },
+    "secondary": null,
+    "steps": [
+      "Caller requested to make a payment.",
+      "Agent asked for name and phone number on contract.",
+      "Caller did not know the phone number on file.",
+      "Agent requested contract ID; caller offered account number or vacation ID.",
+      "Caller provided an account number after a brief hold.",
+      "Agent failed to verify the account with the provided number and initiated a transfer."
+    ]
+  },
+  "scores": {
+    "effectiveness": 3,
+    "quality": 4,
+    "effort": 3
+  },
+  "sentiment": {
+    "start": "neutral",
+    "end": "neutral"
+  },
+  "failure": {
+    "type": "tech_issue",
+    "detail": "The agent was unable to verify the account even after the caller provided a specific account number, leading to a transfer.",
+    "policy_gap": null
+  },
+  "friction": {
+    "clarifications": [
+      {
+        "turn": 11,
+        "type": "verify",
+        "cause": "unclear",
+        "note": "Agent clarifies which ID types are acceptable"
+      }
+    ],
+    "corrections": [],
+    "loops": []
+  },
+  "actions": [
+    {
+      "type": "account_lookup",
+      "outcome": "failed",
+      "detail": "Attempted lookup with account number 872100275210"
+    },
+    {
+      "type": "transfer",
+      "outcome": "success",
+      "detail": "Transfer to concierge after verification failure"
+    }
+  ],
+  "insights": {
+    "summary": "The caller wanted to make a payment but didn't know their contract phone number. After providing an account number, the AI failed to verify the record and transferred the call to concierge.",
+    "verbatim": "I don't know what number I have on my contract. I've got a vacation ID. An account number, Which one do you want?",
+    "coaching": "The agent handled the lack of phone number well by offering alternatives, but the final verification failure on a 12-digit account number suggests a lookup or data matching issue."
+  },
+  "call_id": "00b6db65-af59-4332-bdcb-1d62b354b7d3",
+  "schema_version": "v6.0",
+  "duration_seconds": 205.6,
+  "ended_by": "customer"
+}

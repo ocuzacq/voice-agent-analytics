@@ -1,0 +1,99 @@
+{
+  "turns": 16,
+  "repeat_caller": true,
+  "derailed_at": null,
+  "resolution": {
+    "primary": {
+      "request": "Book two weeks at Bonaventure",
+      "context": "Customer is frustrated about losing weeks and previous call drops",
+      "scope": "out_of_scope",
+      "outcome": "transferred",
+      "detail": "The AI correctly identified that it cannot book or assign units and transferred the caller to concierge.",
+      "resolution_confirmed": null,
+      "transfer": {
+        "reason": "out_of_scope",
+        "destination": "concierge",
+        "queue_detected": false
+      },
+      "abandon_stage": null
+    },
+    "secondary": {
+      "request": "Resolve customer complaint",
+      "context": "Unhappy with website and previous AI interactions",
+      "scope": "out_of_scope",
+      "outcome": "transferred",
+      "detail": "The complaint was bundled into the booking request and ultimately transferred to a human agent.",
+      "resolution_confirmed": null,
+      "transfer": {
+        "reason": "out_of_scope",
+        "destination": "concierge",
+        "queue_detected": false
+      },
+      "abandon_stage": null
+    },
+    "steps": [
+      "Caller identifies as an unhappy customer with a complaint.",
+      "AI acknowledges frustration and offers transfer or automated help.",
+      "Caller chooses automated system.",
+      "AI performs account lookup and verification.",
+      "Caller requests a reservation for specific dates in 2027.",
+      "AI clarifies dates and contract details.",
+      "Caller asks to pay and secure a specific unit.",
+      "AI explains it cannot book units and initiates transfer to concierge."
+    ]
+  },
+  "scores": {
+    "effectiveness": 5,
+    "quality": 4,
+    "effort": 3
+  },
+  "sentiment": {
+    "start": "angry",
+    "end": "neutral"
+  },
+  "failure": null,
+  "friction": {
+    "clarifications": [
+      {
+        "turn": 19,
+        "type": "intent",
+        "cause": "proactive",
+        "note": "Clarifying property name vs contract record"
+      },
+      {
+        "turn": 25,
+        "type": "intent",
+        "cause": "proactive",
+        "note": "Reconciling requested dates with fixed week schedule"
+      }
+    ],
+    "corrections": [],
+    "loops": []
+  },
+  "actions": [
+    {
+      "type": "account_lookup",
+      "outcome": "success",
+      "detail": "Found record via caller ID"
+    },
+    {
+      "type": "verification",
+      "outcome": "success",
+      "detail": "Verified name and state"
+    },
+    {
+      "type": "transfer",
+      "outcome": "success",
+      "detail": "Routing to concierge for booking and complaint"
+    }
+  ],
+  "insights": {
+    "summary": "The caller was highly frustrated due to previous technical issues and wanted to book specific weeks for 2027. The AI successfully verified the account and clarified the dates before correctly transferring the out-of-scope booking request to concierge.",
+    "verbatim": "I'm gonna lose two weeks, and nobody's helping me. And you've thrown me off your website, you, Jamie, have hung up on me four times now.",
+    "coaching": null
+  },
+  "call_id": "0b59f63d-d6d7-41da-89e6-68a36eb3c07b",
+  "schema_version": "v6.0",
+  "duration_seconds": 448.6,
+  "ended_by": "customer"
+}

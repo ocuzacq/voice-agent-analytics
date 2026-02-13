@@ -1,0 +1,54 @@
+{
+  "turns": 1,
+  "repeat_caller": false,
+  "derailed_at": 2,
+  "resolution": {
+    "primary": {
+      "request_category": "none",
+      "request": "none",
+      "context": "Caller played a recorded message or spoke a phrase mimicking a queue timeout",
+      "human_requested": null,
+      "department_requested": null,
+      "scope": "no_request",
+      "outcome": "abandoned",
+      "detail": "The caller played a recording or spoke a phrase about no one being available and then disconnected.",
+      "resolution_confirmed": null,
+      "transfer": null,
+      "abandon_stage": "pre_intent"
+    },
+    "secondary": null,
+    "steps": [
+      "Agent greeted the caller.",
+      "User provided a recorded-sounding message about no one being available.",
+      "Agent attempted to re-engage and ask for a name.",
+      "Caller disconnected."
+    ]
+  },
+  "scores": {
+    "effectiveness": 1,
+    "quality": 3,
+    "effort": 1
+  },
+  "sentiment": {
+    "start": "neutral",
+    "end": "neutral"
+  },
+  "impediment": null,
+  "agent_issue": null,
+  "friction": {
+    "clarifications": [],
+    "corrections": [],
+    "loops": []
+  },
+  "actions": [],
+  "insights": {
+    "summary": "The caller provided a recorded message stating no one was available and then hung up before stating a request.",
+    "verbatim": "It seems like no one is available to take your call at the moment.",
+    "coaching": null
+  },
+  "call_id": "6c7001c9-80a5-4057-9c24-72b6e2c41b31",
+  "schema_version": "v7.0",
+  "duration_seconds": 45.9,
+  "ended_by": "customer",
+  "ended_reason": "customer-ended-call"
+}

@@ -1,0 +1,104 @@
+{
+  "turns": 10,
+  "repeat_caller": false,
+  "derailed_at": 5,
+  "resolution": {
+    "primary": {
+      "request": "Pay maintenance fee",
+      "context": "Caller wanted to make a payment but failed name verification",
+      "scope": "in_scope",
+      "outcome": "transferred",
+      "detail": "The agent could not verify the caller's name against the record and transferred to concierge after the caller requested a representative.",
+      "resolution_confirmed": false,
+      "transfer": {
+        "reason": "customer_requested",
+        "destination": "concierge",
+        "queue_detected": true
+      },
+      "abandon_stage": null
+    },
+    "secondary": null,
+    "steps": [
+      "Caller requested to pay maintenance fees.",
+      "Agent attempted name verification but failed to find a match.",
+      "Agent requested spelling and contract ID to locate the record.",
+      "Record was found via contract ID, but name verification failed again.",
+      "Caller became frustrated and requested a representative.",
+      "Agent transferred the call to the concierge department."
+    ]
+  },
+  "scores": {
+    "effectiveness": 3,
+    "quality": 3,
+    "effort": 4
+  },
+  "sentiment": {
+    "start": "neutral",
+    "end": "frustrated"
+  },
+  "failure": {
+    "type": "wrong_action",
+    "detail": "Agent persisted in name verification loops despite the caller providing a contract ID and consistent name, leading to customer frustration.",
+    "policy_gap": null
+  },
+  "friction": {
+    "clarifications": [
+      {
+        "turn": 5,
+        "type": "name",
+        "cause": "tech",
+        "note": "Name match failed on initial lookup"
+      },
+      {
+        "turn": 11,
+        "type": "verify",
+        "cause": "tech",
+        "note": "Repeated request for name spelling"
+      }
+    ],
+    "corrections": [],
+    "loops": [
+      {
+        "turns": [
+          5,
+          11,
+          19
+        ],
+        "type": "info_retry",
+        "subject": "Name verification",
+        "note": "Agent repeatedly failed to verify name"
+      }
+    ]
+  },
+  "actions": [
+    {
+      "type": "account_lookup",
+      "outcome": "failed",
+      "detail": "Initial name lookup for Caroline Vasquez failed"
+    },
+    {
+      "type": "account_lookup",
+      "outcome": "success",
+      "detail": "Located record using contract ID 5516928"
+    },
+    {
+      "type": "verification",
+      "outcome": "failed",
+      "detail": "Name verification failed after contract ID lookup"
+    },
+    {
+      "type": "transfer",
+      "outcome": "success",
+      "detail": "Transferred to concierge after user request"
+    }
+  ],
+  "insights": {
+    "summary": "The caller wanted to pay maintenance fees but was blocked by repeated name verification failures, even after providing a valid contract ID. The call ended in a transfer to concierge at the caller's request.",
+    "verbatim": "Talk to representative. Talk Take me to take me to representative. I don't wanna talk to you.",
+    "coaching": "When a caller provides a valid contract ID but the name doesn't match perfectly, the agent should consider if the caller is a spouse or relative, or offer to send the payment link to the contact on file rather than looping on name verification."
+  },
+  "call_id": "00abd708-ff74-43bb-b8cd-9e2a8a72deed",
+  "schema_version": "v6.0",
+  "duration_seconds": 575.0,
+  "ended_by": "customer"
+}

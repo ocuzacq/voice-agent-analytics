@@ -1,0 +1,86 @@
+{
+  "turns": 7,
+  "repeat_caller": false,
+  "derailed_at": 15,
+  "resolution": {
+    "primary": {
+      "request": "pay maintenance fees",
+      "context": "Customer wanted to pay a balance of $1,484.81 via credit card",
+      "scope": "in_scope",
+      "outcome": "transferred",
+      "detail": "The AI successfully verified the account and balance but encountered a technical error when attempting to send the payment link, resulting in a transfer.",
+      "resolution_confirmed": false,
+      "transfer": {
+        "reason": "task_failure",
+        "destination": "concierge",
+        "queue_detected": true
+      },
+      "abandon_stage": null
+    },
+    "secondary": null,
+    "steps": [
+      "Customer requested to pay maintenance fees.",
+      "Agent performed identity verification (name spelling and state).",
+      "Agent retrieved account balance and contract details.",
+      "Agent confirmed contact information for link delivery.",
+      "Agent encountered a system error while sending the link and initiated a transfer to concierge."
+    ]
+  },
+  "scores": {
+    "effectiveness": 3,
+    "quality": 4,
+    "effort": 3
+  },
+  "sentiment": {
+    "start": "neutral",
+    "end": "neutral"
+  },
+  "failure": {
+    "type": "tech_issue",
+    "detail": "The agent explicitly stated there was an issue sending the information after the user confirmed their phone number.",
+    "policy_gap": null
+  },
+  "friction": {
+    "clarifications": [
+      {
+        "turn": 5,
+        "type": "name",
+        "cause": "proactive",
+        "note": "Agent asked for spelling of name"
+      }
+    ],
+    "corrections": [],
+    "loops": []
+  },
+  "actions": [
+    {
+      "type": "account_lookup",
+      "outcome": "success",
+      "detail": "Located account for Paul Markowitz"
+    },
+    {
+      "type": "verification",
+      "outcome": "success",
+      "detail": "Verified name spelling and state of Illinois"
+    },
+    {
+      "type": "send_payment_link",
+      "outcome": "failed",
+      "detail": "System error occurred during link generation/delivery"
+    },
+    {
+      "type": "transfer",
+      "outcome": "success",
+      "detail": "Transferred to concierge due to technical failure"
+    }
+  ],
+  "insights": {
+    "summary": "The customer attempted to pay maintenance fees. The AI successfully identified the account and balance but failed to send the payment link due to a technical error, leading to a transfer to the concierge department.",
+    "verbatim": "It seems like there was an issue while sending your information. I will now transfer you to our concierge department.",
+    "coaching": "The agent followed the correct protocol for a technical failure by transferring to a human, but the underlying API/delivery issue for the payment link needs investigation."
+  },
+  "call_id": "25d30736-73bb-44fa-a42a-2e38a1ea3b73",
+  "schema_version": "v6.0",
+  "duration_seconds": 749.7,
+  "ended_by": "customer"
+}

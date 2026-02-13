@@ -1,0 +1,61 @@
+{
+  "turns": 3,
+  "repeat_caller": false,
+  "derailed_at": null,
+  "resolution": {
+    "primary": {
+      "request": "Speak to a human representative",
+      "context": "Caller immediately requested a human agent upon greeting.",
+      "scope": "in_scope",
+      "outcome": "abandoned",
+      "detail": "The agent attempted a transfer to concierge, but after a 19-minute queue wait, no representatives were available and the caller declined further AI assistance.",
+      "resolution_confirmed": null,
+      "transfer": {
+        "reason": "customer_requested",
+        "destination": "concierge",
+        "queue_detected": true
+      },
+      "abandon_stage": "mid_task"
+    },
+    "secondary": null,
+    "steps": [
+      "Agent greeted caller.",
+      "Caller requested a human representative.",
+      "Agent warned of a 20-minute wait and caller agreed to hold.",
+      "Agent initiated transfer and caller waited in queue for approximately 19 minutes.",
+      "Queue returned the caller to the AI agent stating no representatives were available.",
+      "Caller declined AI help and the call ended."
+    ]
+  },
+  "scores": {
+    "effectiveness": 4,
+    "quality": 5,
+    "effort": 4
+  },
+  "sentiment": {
+    "start": "neutral",
+    "end": "neutral"
+  },
+  "failure": null,
+  "friction": {
+    "clarifications": [],
+    "corrections": [],
+    "loops": []
+  },
+  "actions": [
+    {
+      "type": "transfer",
+      "outcome": "failed",
+      "detail": "Transfer to concierge failed after 19 minute queue wait."
+    }
+  ],
+  "insights": {
+    "summary": "The caller requested a human agent immediately. After holding for 19 minutes in the concierge queue, the system reported no agents were available and the caller disconnected.",
+    "verbatim": "May I may I speak to a human? Human?",
+    "coaching": "The AI agent performed correctly by honoring the immediate escalation request and providing a wait time warning. The failure was in the human queue availability, not the AI's logic."
+  },
+  "call_id": "48858181-2589-4d84-aa9d-73b02ce1be7c",
+  "schema_version": "v6.0",
+  "duration_seconds": 1191.2,
+  "ended_by": "agent"
+}

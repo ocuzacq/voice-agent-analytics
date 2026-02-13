@@ -1,0 +1,70 @@
+{
+  "turns": 4,
+  "repeat_caller": false,
+  "derailed_at": null,
+  "resolution": {
+    "primary": {
+      "request_category": "billing_dispute",
+      "request": "Speak with billing department",
+      "context": "Caller wanted to discuss billing with a representative",
+      "human_requested": "initial",
+      "department_requested": "billing",
+      "scope": "out_of_scope",
+      "outcome": "abandoned",
+      "detail": "Caller requested billing department, waited in queue for 20 minutes, and then declined AI assistance when the transfer failed.",
+      "resolution_confirmed": null,
+      "transfer": {
+        "reason": "customer_requested",
+        "destination": "concierge",
+        "queue_detected": true,
+        "queue_result": "unavailable"
+      },
+      "abandon_stage": "mid_task"
+    },
+    "secondary": null,
+    "steps": [
+      "Caller requested a representative immediately.",
+      "AI offered to transfer but warned of long wait times.",
+      "Caller specified the billing department.",
+      "AI placed caller in a queue for approximately 20 minutes.",
+      "Transfer failed due to no agents being available; AI re-engaged to offer automated help.",
+      "Caller declined automated help and the call ended."
+    ]
+  },
+  "scores": {
+    "effectiveness": 3,
+    "quality": 3,
+    "effort": 5
+  },
+  "sentiment": {
+    "start": "neutral",
+    "end": "neutral"
+  },
+  "impediment": {
+    "type": "transfer_queue",
+    "detail": "No representatives were available in the queue after a 20-minute wait.",
+    "policy_gap": null
+  },
+  "agent_issue": null,
+  "friction": {
+    "clarifications": [],
+    "corrections": [],
+    "loops": []
+  },
+  "actions": [
+    {
+      "type": "transfer",
+      "outcome": "failed",
+      "detail": "Attempted transfer to billing/concierge queue; no agents available."
+    }
+  ],
+  "insights": {
+    "summary": "The caller requested the billing department immediately and waited in a queue for 20 minutes before the AI re-engaged to report no agents were available. The caller declined automated assistance and hung up.",
+    "verbatim": "Wait for representative... Billing.",
+    "coaching": "The agent correctly identified the request for a human and attempted the transfer, but the 20-minute queue time followed by a failure to connect is a significant friction point."
+  },
+  "call_id": "30d955ef-1b17-43e4-b0b6-df87e7309002",
+  "schema_version": "v7.0",
+  "duration_seconds": 1339.7,
+  "ended_by": "agent"
+}

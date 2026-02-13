@@ -1,0 +1,102 @@
+{
+  "turns": 20,
+  "repeat_caller": false,
+  "derailed_at": 33,
+  "resolution": {
+    "primary": {
+      "request_category": "maintenance_payment",
+      "request": "Pay maintenance fee by phone",
+      "context": "Caller has no internet connection and needs to pay fees via the automated phone system",
+      "human_requested": "after_service",
+      "department_requested": null,
+      "scope": "in_scope",
+      "outcome": "abandoned",
+      "detail": "AI provided contract and owner IDs for the phone system, but the system didn't recognize them; the subsequent transfer failed due to no agents being available.",
+      "resolution_confirmed": null,
+      "transfer": {
+        "reason": "customer_requested",
+        "destination": "concierge",
+        "queue_detected": true,
+        "queue_result": "unavailable"
+      },
+      "abandon_stage": "mid_task"
+    },
+    "secondary": {
+      "request_category": "account_details_update",
+      "request": "Add phone number to account",
+      "context": "Caller wanted to update contact info to help with system recognition",
+      "human_requested": null,
+      "department_requested": null,
+      "scope": "out_of_scope",
+      "outcome": "transferred",
+      "detail": "AI correctly identified it cannot update account info and offered to transfer the caller.",
+      "resolution_confirmed": null,
+      "transfer": {
+        "reason": "out_of_scope",
+        "destination": "concierge",
+        "queue_detected": true,
+        "queue_result": "unavailable"
+      },
+      "abandon_stage": null
+    },
+    "steps": [
+      "Caller requested a representative initially but agreed to try the automated system.",
+      "Caller stated intent to pay maintenance fees via phone.",
+      "AI provided Contract ID and Resort Management ID (Owner ID) to assist with the phone payment system.",
+      "Caller reported the phone system did not recognize the provided numbers.",
+      "Caller requested to add a phone number to the account; AI declined as out-of-scope.",
+      "Caller requested a representative and was placed in a queue.",
+      "Queue timed out with a message that no representatives were available.",
+      "Caller attempted to explain the situation again (no internet) but eventually agreed to call back later."
+    ]
+  },
+  "scores": {
+    "effectiveness": 3,
+    "quality": 4,
+    "effort": 5
+  },
+  "sentiment": {
+    "start": "neutral",
+    "end": "frustrated"
+  },
+  "impediment": {
+    "type": "transfer_queue",
+    "detail": "The transfer queue returned an 'all representatives busy' message after a long wait, forcing the caller to abandon.",
+    "policy_gap": null
+  },
+  "agent_issue": null,
+  "friction": {
+    "clarifications": [
+      {
+        "turn": 9,
+        "type": "intent",
+        "cause": "proactive",
+        "note": "Clarifying maintenance vs mortgage payment"
+      }
+    ],
+    "corrections": [],
+    "loops": []
+  },
+  "actions": [
+    {
+      "type": "account_lookup",
+      "outcome": "success",
+      "detail": "Looked up account using Contract ID 501255"
+    },
+    {
+      "type": "transfer",
+      "outcome": "failed",
+      "detail": "Transferred to concierge; queue returned unavailable message"
+    }
+  ],
+  "insights": {
+    "summary": "The caller wanted to pay maintenance fees via phone because they lacked internet access. The AI provided the necessary IDs, but when the caller reported the phone system failed to recognize them, the subsequent transfer to a human agent failed due to queue unavailability.",
+    "verbatim": "I need to pay my maintenance. Fee, and I don't have an Internet connection.",
+    "coaching": "The agent performed well within its capabilities, correctly identifying out-of-scope requests and providing the requested account data. The failure was operational (queue availability) rather than behavioral."
+  },
+  "call_id": "0720df23-59a4-45cb-bc7f-1784be51b611",
+  "schema_version": "v7.0",
+  "duration_seconds": 683.7,
+  "ended_by": "agent",
+  "ended_reason": "assistant-ended-call"
+}

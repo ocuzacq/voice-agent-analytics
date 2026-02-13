@@ -1,0 +1,64 @@
+{
+  "turns": 2,
+  "repeat_caller": false,
+  "derailed_at": null,
+  "resolution": {
+    "primary": {
+      "request_category": "human_transfer",
+      "request": "Speak to a real person",
+      "context": "Caller immediately requested a human agent",
+      "human_requested": "initial",
+      "department_requested": null,
+      "scope": "out_of_scope",
+      "outcome": "transferred",
+      "detail": "The caller requested a representative immediately and was placed in the transfer queue.",
+      "resolution_confirmed": null,
+      "transfer": {
+        "reason": "customer_requested",
+        "destination": "concierge",
+        "queue_detected": false,
+        "queue_result": null
+      },
+      "abandon_stage": null
+    },
+    "secondary": null,
+    "steps": [
+      "Agent greeted the caller.",
+      "Caller requested a live person.",
+      "Agent confirmed the transfer and asked if anything else was needed.",
+      "Caller declined further help and was placed on hold for transfer."
+    ]
+  },
+  "scores": {
+    "effectiveness": 5,
+    "quality": 5,
+    "effort": 1
+  },
+  "sentiment": {
+    "start": "neutral",
+    "end": "neutral"
+  },
+  "impediment": null,
+  "agent_issue": null,
+  "friction": {
+    "clarifications": [],
+    "corrections": [],
+    "loops": []
+  },
+  "actions": [
+    {
+      "type": "transfer",
+      "outcome": "success",
+      "detail": "Initiated transfer to concierge per customer request"
+    }
+  ],
+  "insights": {
+    "summary": "The caller immediately requested a human agent upon greeting, and the AI correctly facilitated the transfer without friction.",
+    "verbatim": "Let me speak to a real person, Jamie.",
+    "coaching": null
+  },
+  "call_id": "77d49f12-fbd9-43c1-b7a4-985af65da04a",
+  "schema_version": "v7.0",
+  "duration_seconds": 283.4,
+  "ended_by": "customer"
+}

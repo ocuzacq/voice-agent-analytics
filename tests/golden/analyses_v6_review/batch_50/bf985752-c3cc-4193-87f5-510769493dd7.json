@@ -1,0 +1,103 @@
+{
+  "turns": 11,
+  "repeat_caller": false,
+  "derailed_at": null,
+  "resolution": {
+    "primary": {
+      "request": "transfer to representative",
+      "context": "Caller immediately requested a human agent at the start of the call.",
+      "scope": "out_of_scope",
+      "outcome": "abandoned",
+      "detail": "The initial transfer attempt failed after a long queue wait, and the AI re-engaged the caller.",
+      "resolution_confirmed": null,
+      "transfer": {
+        "reason": "customer_requested",
+        "destination": "concierge",
+        "queue_detected": true
+      },
+      "abandon_stage": "mid_task"
+    },
+    "secondary": {
+      "request": "fix missing contract on portal dashboard",
+      "context": "After the first transfer failed, the caller explained that one of their properties (Mizner Place) is missing from their online account.",
+      "scope": "out_of_scope",
+      "outcome": "transferred",
+      "detail": "The AI identified the issue as a technical account discrepancy and routed the caller back to the concierge queue.",
+      "resolution_confirmed": null,
+      "transfer": {
+        "reason": "out_of_scope",
+        "destination": "concierge",
+        "queue_detected": true
+      },
+      "abandon_stage": null
+    },
+    "steps": [
+      "Caller requested a representative immediately.",
+      "AI attempted transfer to concierge; caller waited in queue for approximately 19 minutes.",
+      "Transfer failed (no agents available); AI re-engaged to offer automated help.",
+      "Caller provided phone number, name, and state for verification.",
+      "Caller reported a missing timeshare (Mizner Place) on their online dashboard.",
+      "AI confirmed the contract exists in the system but acknowledged it's missing from the user's portal.",
+      "AI transferred the caller back to the concierge department for technical account resolution."
+    ]
+  },
+  "scores": {
+    "effectiveness": 5,
+    "quality": 5,
+    "effort": 4
+  },
+  "sentiment": {
+    "start": "neutral",
+    "end": "neutral"
+  },
+  "failure": null,
+  "friction": {
+    "clarifications": [
+      {
+        "turn": 15,
+        "type": "intent",
+        "cause": "misheard",
+        "note": "AI misheard 'Mizner' as 'Pfizer' initially."
+      }
+    ],
+    "corrections": [
+      {
+        "turn": 16,
+        "severity": "minor",
+        "note": "User corrected resort name to Meissner/Mizner."
+      }
+    ],
+    "loops": []
+  },
+  "actions": [
+    {
+      "type": "transfer",
+      "outcome": "failed",
+      "detail": "First transfer attempt timed out after 19 minutes."
+    },
+    {
+      "type": "account_lookup",
+      "outcome": "success",
+      "detail": "Located account via phone number."
+    },
+    {
+      "type": "verification",
+      "outcome": "success",
+      "detail": "Verified name and state."
+    },
+    {
+      "type": "transfer",
+      "outcome": "success",
+      "detail": "Second transfer to concierge for portal issue."
+    }
+  ],
+  "insights": {
+    "summary": "The caller initially wanted a representative but was forced back to the AI after a 20-minute wait. The AI then successfully verified the caller and identified a portal data discrepancy before routing them back to a human agent.",
+    "verbatim": "Account working. Mizner is missing from dashboard.",
+    "coaching": null
+  },
+  "call_id": "bf985752-c3cc-4193-87f5-510769493dd7",
+  "schema_version": "v6.0",
+  "duration_seconds": 1607.1,
+  "ended_by": "customer"
+}

@@ -1,0 +1,85 @@
+{
+  "turns": 9,
+  "repeat_caller": false,
+  "derailed_at": null,
+  "resolution": {
+    "primary": {
+      "request": "Pay annual maintenance fee",
+      "context": "Caller wanted to pay their maintenance balance for The Grandview at Las Vegas",
+      "scope": "in_scope",
+      "outcome": "fulfilled",
+      "detail": "The AI verified the caller and sent a payment link to the email and phone number on file.",
+      "resolution_confirmed": false,
+      "transfer": null,
+      "abandon_stage": null
+    },
+    "secondary": {
+      "request": "Change phone number",
+      "context": "Caller wanted to update their contact information after receiving the payment link",
+      "scope": "out_of_scope",
+      "outcome": "transferred",
+      "detail": "The AI correctly identified that account changes require a human agent and transferred the call to concierge.",
+      "resolution_confirmed": null,
+      "transfer": {
+        "reason": "out_of_scope",
+        "destination": "concierge",
+        "queue_detected": true
+      },
+      "abandon_stage": null
+    },
+    "steps": [
+      "Caller requested to pay annual fee.",
+      "AI performed account lookup and verified caller's state.",
+      "AI identified property and balance, then confirmed contact details.",
+      "AI sent payment link via text/email.",
+      "Caller then requested to change their phone number.",
+      "AI transferred the caller to the concierge department."
+    ]
+  },
+  "scores": {
+    "effectiveness": 5,
+    "quality": 5,
+    "effort": 1
+  },
+  "sentiment": {
+    "start": "neutral",
+    "end": "neutral"
+  },
+  "failure": null,
+  "friction": {
+    "clarifications": [],
+    "corrections": [],
+    "loops": []
+  },
+  "actions": [
+    {
+      "type": "account_lookup",
+      "outcome": "success",
+      "detail": "Found record using phone number provided by caller."
+    },
+    {
+      "type": "verification",
+      "outcome": "success",
+      "detail": "Verified identity via state of residence (Oregon)."
+    },
+    {
+      "type": "send_payment_link",
+      "outcome": "success",
+      "detail": "Sent payment link for contract 406240."
+    },
+    {
+      "type": "transfer",
+      "outcome": "success",
+      "detail": "Transferred to concierge for phone number update."
+    }
+  ],
+  "insights": {
+    "summary": "The caller successfully received a payment link for their maintenance fees and was then transferred to a human agent to update their phone number.",
+    "verbatim": "I need to change the phone number.",
+    "coaching": null
+  },
+  "call_id": "00a05f6e-f144-4c37-97d4-fe7d22a3211b",
+  "schema_version": "v6.0",
+  "duration_seconds": 1119.8,
+  "ended_by": "customer"
+}

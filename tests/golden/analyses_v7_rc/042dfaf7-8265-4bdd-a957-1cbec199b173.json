@@ -1,0 +1,109 @@
+{
+  "turns": 14,
+  "repeat_caller": false,
+  "derailed_at": 13,
+  "resolution": {
+    "primary": {
+      "request_category": "ownership_exit",
+      "request": "Sell timeshare ownership entirely",
+      "context": "Caller wants to sell their property outright",
+      "human_requested": "initial",
+      "department_requested": null,
+      "scope": "out_of_scope",
+      "outcome": "abandoned",
+      "detail": "The caller requested a representative to sell their timeshare; the AI attempted a transfer but the queue timed out after 25 minutes, leading the caller to hang up.",
+      "resolution_confirmed": null,
+      "transfer": {
+        "reason": "customer_requested",
+        "destination": "concierge",
+        "queue_detected": true,
+        "queue_result": "unavailable"
+      },
+      "abandon_stage": "mid_task"
+    },
+    "secondary": null,
+    "steps": [
+      "Caller immediately requested a representative.",
+      "AI attempted to collect intent and name before transferring.",
+      "Caller stated they wanted to sell their timeshare ownership entirely.",
+      "AI attempted transfer to concierge department.",
+      "Caller waited in queue for approximately 25 minutes.",
+      "Queue timed out and AI re-engaged stating no agents were available.",
+      "Caller expressed frustration and disconnected."
+    ]
+  },
+  "scores": {
+    "effectiveness": 2,
+    "quality": 2,
+    "effort": 5
+  },
+  "sentiment": {
+    "start": "neutral",
+    "end": "frustrated"
+  },
+  "impediment": {
+    "type": "transfer_queue",
+    "detail": "The caller was held in a transfer queue for over 25 minutes before being told no representatives were available.",
+    "policy_gap": null
+  },
+  "agent_issue": {
+    "detail": "Agent entered a repetitive loop (Turns 13-19) asking the caller to clarify their intent to sell despite the caller already stating they wanted to sell the ownership entirely in Turn 12."
+  },
+  "friction": {
+    "clarifications": [
+      {
+        "turn": 11,
+        "type": "intent",
+        "cause": "proactive",
+        "note": "Clarifying rent vs sell"
+      },
+      {
+        "turn": 17,
+        "type": "intent",
+        "cause": "misheard",
+        "note": "Asking if caller wants to sell outright"
+      }
+    ],
+    "corrections": [
+      {
+        "turn": 14,
+        "severity": "minor",
+        "note": "Caller denies wanting to rent"
+      },
+      {
+        "turn": 18,
+        "severity": "minor",
+        "note": "Caller denies AI's phrasing of selling outright"
+      }
+    ],
+    "loops": [
+      {
+        "turns": [
+          13,
+          15,
+          17,
+          19
+        ],
+        "type": "intent_retry",
+        "subject": "selling vs renting",
+        "note": "Agent repeatedly asks for clarification on selling"
+      }
+    ]
+  },
+  "actions": [
+    {
+      "type": "transfer",
+      "outcome": "failed",
+      "detail": "Transfer to concierge timed out after long wait"
+    }
+  ],
+  "insights": {
+    "summary": "The caller wanted to sell their timeshare and requested a representative. After a 25-minute wait in the queue, the system informed them no one was available, and the caller abandoned the call in frustration.",
+    "verbatim": "There are no representatives available to take your call right now, so waiting will not connect you with someone.",
+    "coaching": "The agent should have proceeded to transfer immediately after Turn 12 when the caller clearly stated they wanted to sell the ownership entirely, rather than looping on clarification questions."
+  },
+  "call_id": "042dfaf7-8265-4bdd-a957-1cbec199b173",
+  "schema_version": "v7.0",
+  "duration_seconds": 1708.3,
+  "ended_by": "customer"
+}

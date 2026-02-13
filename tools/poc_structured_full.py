@@ -6,7 +6,7 @@ Validates:
   1. Per-intent resolution: primary always present, secondary optional
   2. TransferDetail nested inside IntentResolution
   3. Conditional fields per outcome (fulfilled→confirmed, transferred→transfer, abandoned→stage)
-  4. All other sub-models (Scores, Sentiment, Failure, Friction, etc.)
+  4. All other sub-models (Scores, Sentiment, Impediment, AgentIssue, Friction, etc.)
 
 Usage:
     source .env
@@ -67,7 +67,7 @@ Each intent is independently resolved with its own scope, outcome, and details.
 Scope reflects what the AI CAN do, not what happened on this call.
 If the AI has a defined pathway for the request, it is in_scope — even if the call
 fails mid-flow (verification error, tech issue, etc.). A mid-flow failure changes the
-outcome or failure type, NOT the scope.
+outcome or impediment, NOT the scope.
 
 **in_scope** — AI has a defined capability:
 - Payment links      — Pay maintenance fees, balance, etc. AI sends payment link via text/email
@@ -126,9 +126,9 @@ primary request. Clarifications, verifications, and troubleshooting that serve t
 are steps[], not a second intent. Test: would the customer describe this as "I called about TWO
 things" or "I called about one thing that had complications"?
 
-### Key principle: transfer is neutral, not failure
+### Key principle: transfer is neutral, not a problem
 An out-of-scope call correctly transferred to concierge is GOOD routing.
-Only set failure when something actually went WRONG during the call.
+Only set impediment when something observably BLOCKED the customer.
 
 ### Transfer outcomes — classify what the transcript shows
 Always populate the transfer object when a transfer is attempted, regardless of final outcome.
@@ -146,17 +146,20 @@ succeed — classify based on what happened next. Both transfer and abandon_stag
 ## Sentiment
 - satisfied (end only) = customer explicitly pleased with outcome, not just neutral
 
-## Failure guidance
-A name not matching the record is NOT tech_issue if the lookup itself succeeded.
-wrong_action evaluates the agent's decisions, not the call's outcome. A successful transfer does
-not erase wrong actions taken before it (e.g., unnecessary verification on an explicit escalation
-request). Examples: verifying identity for an out-of-scope request that should have been
-transferred immediately, or persisting with name verification when the caller is likely
-a family member.
-Queue unavailability (no agents available after hold) is NOT a failure of the AI agent — the AI
-correctly routed the call. But evaluate the agent's behavior across the ENTIRE call: unnecessary
-loops, delayed escalation, or missed intent before the transfer can still be wrong_action even
-when the transfer itself was correct.
+## Impediment vs agent_issue (cross-field guidance)
+These are orthogonal — set each independently based on its own criteria.
+
+Impediment bright-line: when multiple steps fail in sequence (lookup → transfer → queue timeout),
+pick the ROOT observable blocker, not the downstream consequence. The lookup failing is what
+started the cascade; the queue timeout is secondary.
+
+Agent issue bright-line: a failed action (lookup returned no match) is NOT an agent issue.
+An agent DECISION about a failed action can be (e.g., retrying the same approach instead of
+asking the caller for alternative info). Evaluate what the agent chose to do, not what the
+system returned.
+
+A name not matching the record is an impediment (account_lookup or verification), not an agent
+issue — unless the agent had information to try a different approach and didn't.
 
 ## Actions
 Track EVERY distinct tool/action attempted. List each attempt separately if retried.
@@ -209,12 +212,16 @@ def run_test(transcript_path: Path, model_name: str = "gemini-3-flash-preview") 
     if hasattr(response, 'parsed') and response.parsed is not None:
         analysis: CallAnalysis = response.parsed
 
+        ended_reason_raw = preprocessed.get("metadata", {}).get("ended_reason")
+        _override_queue_result(analysis, ended_reason_raw)
+
         record = CallRecord(
             **analysis.model_dump(),
             call_id=call_id,
             schema_version=SCHEMA_VERSION,
             duration_seconds=round(preprocessed.get("metadata", {}).get("duration", 0), 1) or None,
-            ended_by=_map_ended_reason(preprocessed.get("metadata", {}).get("ended_reason")),
+            ended_by=_map_ended_reason(ended_reason_raw),
+            ended_reason=ended_reason_raw,
         )
 
         print(f"response.parsed: {type(analysis).__name__}")
@@ -224,7 +231,7 @@ def run_test(transcript_path: Path, model_name: str = "gemini-3-flash-preview") 
         # Resolution summary
         r = analysis.resolution
         print(f"\n--- Resolution Summary ---")
-        print(f"  PRIMARY:  [{r.primary.scope}] {r.primary.request}")
+        print(f"  PRIMARY:  [{r.primary.scope}] {r.primary.request}  (category={r.primary.request_category})")
         if r.primary.human_requested:
             dept = f"  dept={r.primary.department_requested}" if r.primary.department_requested else ""
             print(f"            human_requested={r.primary.human_requested}{dept}")
@@ -233,14 +240,15 @@ def run_test(transcript_path: Path, model_name: str = "gemini-3-flash-preview") 
             print(f"  confirmed={r.primary.resolution_confirmed}")
         elif r.primary.outcome == "transferred":
             t = r.primary.transfer
-            print(f"  reason={t.reason}  dest={t.destination}  queue={t.queue_detected}")
+            qr = f"  queue_result={t.queue_result}" if t.queue_result else ""
+            print(f"  reason={t.reason}  dest={t.destination}  queue={t.queue_detected}{qr}")
         elif r.primary.outcome == "abandoned":
             print(f"  stage={r.primary.abandon_stage}")
         else:
             print()
 
         if r.secondary:
-            print(f"  SECONDARY: [{r.secondary.scope}] {r.secondary.request}")
+            print(f"  SECONDARY: [{r.secondary.scope}] {r.secondary.request}  (category={r.secondary.request_category})")
             if r.secondary.human_requested:
                 dept = f"  dept={r.secondary.department_requested}" if r.secondary.department_requested else ""
                 print(f"            human_requested={r.secondary.human_requested}{dept}")
@@ -259,7 +267,8 @@ def run_test(transcript_path: Path, model_name: str = "gemini-3-flash-preview") 
 
         # Other checks
         print(f"\n--- Other Fields ---")
-        print(f"  failure:     {analysis.failure.type + ': ' + analysis.failure.detail if analysis.failure else 'null'}")
+        print(f"  impediment:  {analysis.impediment.type + ': ' + analysis.impediment.detail if analysis.impediment else 'null'}")
+        print(f"  agent_issue: {analysis.agent_issue.detail if analysis.agent_issue else 'null'}")
         print(f"  derailed_at: {analysis.derailed_at}")
         print(f"  scores:      eff={analysis.scores.effectiveness} qual={analysis.scores.quality} eff={analysis.scores.effort}")
         print(f"  sentiment:   {analysis.sentiment.start} → {analysis.sentiment.end}")
@@ -292,11 +301,32 @@ def _map_ended_reason(ended_reason: str | None) -> str:
     r = ended_reason.lower()
     if "assistant" in r or "agent" in r:
         return "agent"
-    if "user" in r or "customer" in r:
+    if "user" in r or "customer" in r or "hangup" in r or "silence" in r:
         return "customer"
     if "error" in r:
         return "error"
     return "unknown"
+
+
+def _override_queue_result(analysis: CallAnalysis, ended_reason: str | None) -> None:
+    """Deterministically override queue_result using telephony ended_reason.
+
+    Mutates analysis.resolution.primary.transfer (and secondary if present) in-place.
+    Only overrides when ended_reason provides ground truth; otherwise keeps LLM value.
+    """
+    if not ended_reason:
+        return
+    r = ended_reason.lower()
+    for intent in [analysis.resolution.primary, analysis.resolution.secondary]:
+        if intent is None or intent.transfer is None:
+            continue
+        if "forwarded" in r:
+            # Platform confirmed successful handoff
+            intent.transfer.queue_result = "connected"
+        elif "hangup" in r or "customer-ended" in r or "silence" in r:
+            # Caller hung up or timed out — if queue was detected, they abandoned it
+            if intent.transfer.queue_detected:
+                intent.transfer.queue_result = "caller_abandoned"
 
 
 if __name__ == "__main__":

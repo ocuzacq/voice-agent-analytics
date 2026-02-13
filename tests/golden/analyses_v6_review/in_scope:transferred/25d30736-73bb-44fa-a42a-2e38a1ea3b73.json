@@ -1,0 +1,79 @@
+{
+  "turns": 7,
+  "repeat_caller": false,
+  "derailed_at": 15,
+  "resolution": {
+    "primary": {
+      "request": "pay maintenance fees",
+      "context": "Customer wanted to pay a balance of $1,484.81 for Vacation Village at Bonaventure.",
+      "scope": "in_scope",
+      "outcome": "transferred",
+      "detail": "The agent successfully looked up the account and balance but failed to send the payment link due to a technical error.",
+      "resolution_confirmed": null,
+      "transfer": {
+        "reason": "task_failure",
+        "destination": "concierge",
+        "queue_detected": true
+      },
+      "abandon_stage": null
+    },
+    "secondary": null,
+    "steps": [
+      "Customer requested to pay maintenance fees.",
+      "Agent performed account lookup and verification.",
+      "Agent identified the property, contract number, and balance.",
+      "Agent attempted to send a payment link but encountered a technical issue.",
+      "Agent transferred the caller to the concierge department."
+    ]
+  },
+  "scores": {
+    "effectiveness": 3,
+    "quality": 4,
+    "effort": 3
+  },
+  "sentiment": {
+    "start": "neutral",
+    "end": "neutral"
+  },
+  "failure": {
+    "type": "tech_issue",
+    "detail": "The agent encountered an error while attempting to generate or send the payment link, forcing a transfer.",
+    "policy_gap": null
+  },
+  "friction": {
+    "clarifications": [],
+    "corrections": [],
+    "loops": []
+  },
+  "actions": [
+    {
+      "type": "account_lookup",
+      "outcome": "success",
+      "detail": "Located account for Paul Markowitz in Illinois."
+    },
+    {
+      "type": "verification",
+      "outcome": "success",
+      "detail": "Verified name and state."
+    },
+    {
+      "type": "send_payment_link",
+      "outcome": "failed",
+      "detail": "System error occurred while sending information."
+    },
+    {
+      "type": "transfer",
+      "outcome": "success",
+      "detail": "Transferred to concierge due to technical failure."
+    }
+  ],
+  "insights": {
+    "summary": "The customer wanted to pay maintenance fees. The agent successfully verified the account and balance but experienced a technical failure when trying to send the payment link, resulting in a transfer to a human agent.",
+    "verbatim": "I would like to pay my maintenance fees with a credit card.",
+    "coaching": "The agent handled the verification and lookup perfectly; the failure was technical and outside the agent's conversational logic."
+  },
+  "call_id": "25d30736-73bb-44fa-a42a-2e38a1ea3b73",
+  "schema_version": "v6.0",
+  "duration_seconds": 749.7,
+  "ended_by": "customer"
+}

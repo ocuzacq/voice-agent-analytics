@@ -1,20 +1,20 @@
 #!/usr/bin/env python3
 """
-V6 Dashboard — AI Voice Agent Performance Analytics
+V7 Dashboard — AI Voice Agent Performance Analytics
 
-Reads v6.0 analysis JSONs via DuckDB read_json_auto() and prints a 4-act
+Reads v7.0 analysis JSONs via DuckDB read_json_auto() and prints a 4-act
 narrative dashboard to stdout. No ETL — DuckDB dot notation reads nested
 JSON fields directly.
 
 Acts:
   1. The Big Picture     — scope split, containment, top requests
-  2. Human Requests      — human_requested/department_requested analysis (v5+ only)
-  3. Quality & Failure   — failure modes, preventable escalations, scores, sentiment
-  4. Operational Details  — duration, actions, transfers, friction, abandons
+  2. Human Requests      — human_requested/department_requested analysis
+  3. Quality & Impediments — impediments, agent issues, preventable escalations, scores, sentiment
+  4. Operational Details  — duration, actions, transfers, queue performance, friction, abandons
 
 Usage:
-    python3 tools/dashboard_v6.py tests/golden/analyses_v6_prompt_v5/
-    python3 tools/dashboard_v6.py tests/golden/analyses_v6_review/batch_50/
+    python3 tools/dashboard_v7.py tests/golden/analyses_v7/
+    python3 tools/dashboard_v7.py runs/v7_batch/
 """
 
 import sys
@@ -106,9 +106,9 @@ def render_header_kpis(con, json_src, directory):
     contain = pct(in_f, in_t)
 
     path_label = Path(directory).name
-    print(f"\n  V6 DASHBOARD: {path_label}")
+    print(f"\n  V7 DASHBOARD: {path_label}")
     print("  " + "=" * (W - 4))
-    print(f"  {total} calls  |  containment: {contain} ({in_f}/{in_t} in-scope)"
+    print(f"  {total} calls  |  fulfillment: {contain} ({in_f}/{in_t} in-scope)"
           f"  |  avg {avg_dur:.0f}s  |  eff={avg_eff} qual={avg_qual} effort={avg_effort}")
 
     return total
@@ -154,7 +154,7 @@ def render_scope_outcome(con, json_src, total):
     hdr = f"  {'':16s}"
     for o in outcomes:
         hdr += f"{o:>14s}"
-    hdr += f"  {'TOTAL':>6s}"
+    hdr += f"  {'TOTAL':>14s}"
     print(hdr)
     print("  " + "─" * (W - 4))
 
@@ -168,9 +168,9 @@ def render_scope_outcome(con, json_src, total):
             if n == 0:
                 line += f"{'—':>14s}"
             else:
-                cell = f"{n:>3d} ({pct(n, row_total):>4s})"
+                cell = f"{n:>3d} ({pct(n, total):>4s})"
                 line += f"{cell:>14s}"
-        line += f"  {row_total:>6d}"
+        line += f"  {row_total:>4d} ({pct(row_total, total):>4s})"
         print(line)
 
     # Totals row
@@ -178,39 +178,154 @@ def render_scope_outcome(con, json_src, total):
     print("  " + "─" * (W - 4))
     line = f"  {'TOTAL':<16s}"
     for ct in col_totals:
-        line += f"{ct:>14d}"
-    line += f"  {sum(col_totals):>6d}"
+        cell = f"{ct:>3d} ({pct(ct, total):>4s})"
+        line += f"{cell:>14s}"
+    line += f"  {sum(col_totals):>4d} ({pct(sum(col_totals), total):>4s})"
     print(line)
 
-    # Interpretation
-    in_xfer = grid.get("in_scope", {}).get("transferred", 0)
-    in_aband = grid.get("in_scope", {}).get("abandoned", 0)
-    if in_xfer > 0:
-        print(f"\n  → {in_xfer} in-scope transfers = preventable escalations")
-    if in_aband > 0:
-        print(f"  → {in_aband} in-scope abandoned = worst outcome (AI had capability but caller left)")
+    # Containment breakdown by scope (in_scope + out_of_scope, excluding no_request)
+    request_total = sum(grid.get("in_scope", {}).values()) + sum(grid.get("out_of_scope", {}).values())
+    if request_total > 0:
+        try:
+            buckets = con.sql(f"""
+                SELECT
+                    resolution.primary.scope AS scope,
+                    CASE
+                        WHEN resolution.primary.outcome = 'fulfilled'
+                            THEN 'fulfilled'
+                        WHEN ended_reason = 'assistant-forwarded-call'
+                            THEN 'escalated'
+                        WHEN resolution.primary.transfer IS NOT NULL
+                            THEN 'transfer_abandoned'
+                        ELSE 'unresolved'
+                    END AS bucket,
+                    COUNT(*) AS n
+                FROM {json_src}
+                WHERE resolution.primary.scope IN ('in_scope', 'out_of_scope')
+                GROUP BY 1, 2
+            """).fetchall()
+
+            # Build per-scope dicts
+            data = {}
+            for scope, bucket, n in buckets:
+                data.setdefault(scope, {})[bucket] = n
+
+            print(f"\n  Containment breakdown ({request_total} calls with a request):\n")
+            print(f"    {'':<26s} {'in_scope':>10s} {'out_scope':>10s} {'total':>10s}")
+            print("    " + "─" * 58)
+
+            for label, key in [("Contained", None), ("  Fulfilled", "fulfilled"),
+                               ("  Unresolved", "unresolved"),
+                               ("Not contained", None), ("  Escalated to human", "escalated"),
+                               ("  Transfer abandoned", "transfer_abandoned")]:
+                if key:
+                    ins = data.get("in_scope", {}).get(key, 0)
+                    oos = data.get("out_of_scope", {}).get(key, 0)
+                    tot = ins + oos
+                    print(f"    {label:<26s} {ins:>4d} {pct(ins, sum(data.get('in_scope', {}).values())):>5s}"
+                          f" {oos:>4d} {pct(oos, sum(data.get('out_of_scope', {}).values())):>5s}"
+                          f" {tot:>4d} {pct(tot, request_total):>5s}")
+                else:
+                    # Header row for contained / not contained
+                    if label == "Contained":
+                        keys = ["fulfilled", "unresolved"]
+                    else:
+                        keys = ["escalated", "transfer_abandoned"]
+                    ins = sum(data.get("in_scope", {}).get(k, 0) for k in keys)
+                    oos = sum(data.get("out_of_scope", {}).get(k, 0) for k in keys)
+                    tot = ins + oos
+                    ins_t = sum(data.get("in_scope", {}).values())
+                    oos_t = sum(data.get("out_of_scope", {}).values())
+                    print(f"    {label:<26s} {ins:>4d} {pct(ins, ins_t):>5s}"
+                          f" {oos:>4d} {pct(oos, oos_t):>5s}"
+                          f" {tot:>4d} {pct(tot, request_total):>5s}  {bar(tot, request_total, 16)}")
+        except Exception:
+            pass
 
 
 def render_top_requests(con, json_src):
-    """1.4 Top Requests — by scope + outcome."""
-    section("1.4", "TOP REQUESTS (primary intent)")
+    """1.4 Top Requests — in-scope (fulfilled / unfulfilled) + out-of-scope.
 
-    rows = con.sql(f"""
-        SELECT
-            resolution.primary.request AS request,
-            resolution.primary.scope AS scope,
-            resolution.primary.outcome AS outcome,
-            COUNT(*) AS n
+    When request_category is present (v7.1+), groups by the enum for clean
+    deterministic rows. Falls back to LOWER(request) for older data.
+    """
+    has_cat = has_column(con, json_src, "resolution.primary.request_category")
+    if has_cat:
+        # COALESCE handles mixed data where some analyses predate request_category
+        group_col = "COALESCE(resolution.primary.request_category, '(uncategorized)')"
+    else:
+        group_col = "LOWER(resolution.primary.request)"
+    col_label = "category" if has_cat else "request"
+
+    # --- In-scope: fulfilled ---
+    ful_rows = con.sql(f"""
+        SELECT {group_col} AS grp, COUNT(*) AS n
         FROM {json_src}
-        GROUP BY request, scope, outcome
-        ORDER BY n DESC
-        LIMIT 20
+        WHERE resolution.primary.scope = 'in_scope'
+          AND resolution.primary.outcome = 'fulfilled'
+        GROUP BY grp ORDER BY n DESC LIMIT 20
     """).fetchall()
+    ful_total = sum(n for _, n in ful_rows)
 
-    print(f"  {'request':<40s} {'scope':<14s} {'outcome':<13s} {'n':>3s}")
+    section("1.4a", f"IN-SCOPE REQUESTS — FULFILLED ({ful_total} calls)")
+    print(f"  {col_label:<40s} {'n':>4s}  {'pct':>5s}")
     print("  " + "─" * (W - 4))
-    for request, scope, outcome, n in rows:
-        print(f"  {trunc(request, 40):<40s} {scope:<14s} {outcome:<13s} {n:>3d}")
+    for grp, n in ful_rows:
+        print(f"  {trunc(grp, 40):<40s} {n:>4d}  {pct(n, ful_total):>5s}")
+
+    # --- In-scope: unfulfilled (abandoned + transferred) ---
+    unf_rows = con.sql(f"""
+        SELECT
+            {group_col} AS grp,
+            COUNT(*) AS n,
+            SUM(CASE WHEN resolution.primary.outcome = 'abandoned' THEN 1 ELSE 0 END) AS abandoned,
+            SUM(CASE WHEN resolution.primary.outcome = 'transferred' THEN 1 ELSE 0 END) AS transferred
+        FROM {json_src}
+        WHERE resolution.primary.scope = 'in_scope'
+          AND resolution.primary.outcome != 'fulfilled'
+        GROUP BY grp ORDER BY n DESC LIMIT 20
+    """).fetchall()
+    unf_total = sum(n for _, n, _, _ in unf_rows)
+
+    section("1.4b", f"IN-SCOPE REQUESTS — UNFULFILLED ({unf_total} calls)")
+    print(f"  {col_label:<35s} {'n':>4s}  {'abandoned':>9s} {'transferred':>11s}")
+    print("  " + "─" * (W - 4))
+    for grp, n, abn, xfr in unf_rows:
+        print(f"  {trunc(grp, 35):<35s} {n:>4d}  {abn:>9d} {xfr:>11d}")
+
+    if ful_total + unf_total > 0:
+        print(f"\n  → In-scope fulfillment: {ful_total}/{ful_total + unf_total}"
+              f" ({pct(ful_total, ful_total + unf_total)})")
+
+    # --- Out-of-scope ---
+    oos_rows = con.sql(f"""
+        SELECT
+            {group_col} AS grp,
+            COUNT(*) AS n,
+            SUM(CASE WHEN resolution.primary.outcome = 'abandoned' THEN 1 ELSE 0 END) AS abandoned,
+            SUM(CASE WHEN resolution.primary.outcome = 'transferred' THEN 1 ELSE 0 END) AS transferred
+        FROM {json_src}
+        WHERE resolution.primary.scope = 'out_of_scope'
+        GROUP BY grp ORDER BY n DESC LIMIT 20
+    """).fetchall()
+    oos_total = sum(n for _, n, _, _ in oos_rows)
+
+    section("1.4c", f"OUT-OF-SCOPE REQUESTS ({oos_total} calls)")
+    print(f"  {col_label:<35s} {'n':>4s}  {'abandoned':>9s} {'transferred':>11s}")
+    print("  " + "─" * (W - 4))
+    for grp, n, abn, xfr in oos_rows:
+        print(f"  {trunc(grp, 35):<35s} {n:>4d}  {abn:>9d} {xfr:>11d}")
+
+    # --- no_request summary ---
+    nr = con.sql(f"""
+        SELECT COUNT(*) FROM {json_src}
+        WHERE resolution.primary.scope = 'no_request'
+    """).fetchone()[0]
+    if nr > 0:
+        print(f"\n  no_request: {nr} calls (abandoned before articulating intent)")
+
+    if not has_cat:
+        print(f"\n  [Using free-text LOWER(request) grouping — upgrade to v7.1+ for request_category enum]")
 
 
 # ---------------------------------------------------------------------------
@@ -254,12 +369,12 @@ def render_human_overview(con, json_src, total):
 
 
 def render_organic_containment(con, json_src):
-    """2.2 Organic vs Standard Containment."""
-    section("2.2", "ORGANIC vs STANDARD CONTAINMENT")
+    """2.2 Organic vs Standard Fulfillment."""
+    section("2.2", "ORGANIC vs STANDARD FULFILLMENT")
 
     stats = con.sql(f"""
         SELECT
-            -- Standard containment
+            -- Standard fulfillment
             COUNT(*) FILTER (resolution.primary.scope = 'in_scope'
                 AND resolution.primary.outcome = 'fulfilled')           AS std_fulfilled,
             COUNT(*) FILTER (resolution.primary.scope = 'in_scope')    AS std_total,
@@ -276,12 +391,12 @@ def render_organic_containment(con, json_src):
 
     std_f, std_t, org_f, org_t = stats
 
-    print(f"  Standard containment:  {pct(std_f, std_t):>5s}  ({std_f}/{std_t} in-scope)")
-    print(f"  Organic containment:   {pct(org_f, org_t):>5s}  ({org_f}/{org_t} in-scope, excl initial human requests)")
+    print(f"  Standard fulfillment:  {pct(std_f, std_t):>5s}  ({std_f}/{std_t} in-scope)")
+    print(f"  Organic fulfillment:   {pct(org_f, org_t):>5s}  ({org_f}/{org_t} in-scope, excl initial human requests)")
 
     if std_t > 0 and org_t > 0 and std_t != org_t:
         gap = (org_f / org_t if org_t else 0) - (std_f / std_t if std_t else 0)
-        print(f"\n  Gap: {gap:+.0%} — {'organic higher (initial requests drag down containment)' if gap > 0 else 'standard higher (some initial human requests still get fulfilled)'}")
+        print(f"\n  Gap: {gap:+.0%} — {'organic higher (initial requests drag down fulfillment)' if gap > 0 else 'standard higher (some initial human requests still get fulfilled)'}")
 
 
 def render_scope_x_human(con, json_src):
@@ -370,42 +485,129 @@ def render_department_requests(con, json_src):
 
 
 # ---------------------------------------------------------------------------
-# Act 3: Quality & Failure
+# Act 3: Quality & Impediments
 # ---------------------------------------------------------------------------
 
-def render_failure_modes(con, json_src):
-    """3.1 Failure Modes by Scope."""
+def render_impediments(con, json_src):
+    """3.1 Impediments by Scope + Agent Issues."""
+    imp_total = con.sql(f"""
+        SELECT COUNT(*) FROM {json_src} WHERE impediment IS NOT NULL
+    """).fetchone()[0]
+
+    ai_total = con.sql(f"""
+        SELECT COUNT(*) FROM {json_src} WHERE agent_issue IS NOT NULL
+    """).fetchone()[0]
+
+    section("3.1", f"IMPEDIMENTS BY SCOPE ({imp_total} calls) + AGENT ISSUES ({ai_total} calls)")
+
+    if imp_total == 0 and ai_total == 0:
+        print("  No impediments or agent issues detected.")
+        return imp_total
+
+    if imp_total > 0:
+        rows = con.sql(f"""
+            SELECT
+                impediment.type AS imp_type,
+                resolution.primary.scope AS scope,
+                COUNT(*) AS n,
+                LIST(insights.coaching) FILTER (insights.coaching IS NOT NULL) AS coaching
+            FROM {json_src}
+            WHERE impediment IS NOT NULL
+            GROUP BY imp_type, scope
+            ORDER BY n DESC
+        """).fetchall()
+
+        # Aggregate
+        by_type = {}
+        for itype, scope, n, coaching in rows:
+            if itype not in by_type:
+                by_type[itype] = {"total": 0, "scopes": {}, "coaching": []}
+            by_type[itype]["total"] += n
+            by_type[itype]["scopes"][scope] = n
+            if coaching:
+                by_type[itype]["coaching"].extend(coaching)
+
+        scopes = ["in_scope", "out_of_scope", "no_request"]
+        active_scopes = [s for s in scopes if any(d["scopes"].get(s, 0) for d in by_type.values())]
+
+        hdr = f"  {'impediment_type':<20s}"
+        for s in active_scopes:
+            hdr += f"{s:>14s}"
+        hdr += f"  {'TOTAL':>5s}  {'pct':>4s}"
+        print(hdr)
+        print("  " + "─" * (W - 4))
+
+        for itype, data in sorted(by_type.items(), key=lambda x: -x[1]["total"]):
+            line = f"  {itype:<20s}"
+            for s in active_scopes:
+                v = data["scopes"].get(s, 0)
+                line += f"{v:>14d}" if v else f"{'—':>14s}"
+            line += f"  {data['total']:>5d}  {pct(data['total'], imp_total):>4s}"
+            print(line)
+            # Show one coaching sample
+            if data["coaching"]:
+                sample = trunc(data["coaching"][0].replace("\n", " "), 65)
+                print(f"    ↳ {sample}")
+
+    if ai_total > 0:
+        print(f"\n  Agent issues ({ai_total} calls):")
+        ai_rows = con.sql(f"""
+            SELECT
+                resolution.primary.scope AS scope,
+                COUNT(*) AS n,
+                LIST(agent_issue.detail) AS details
+            FROM {json_src}
+            WHERE agent_issue IS NOT NULL
+            GROUP BY scope
+            ORDER BY n DESC
+        """).fetchall()
+
+        for scope, n, details in ai_rows:
+            print(f"    {scope}: {n}")
+            if details:
+                sample = trunc(details[0].replace("\n", " "), 65)
+                print(f"      ↳ {sample}")
+
+    # Overlap
+    both = con.sql(f"""
+        SELECT COUNT(*) FROM {json_src}
+        WHERE impediment IS NOT NULL AND agent_issue IS NOT NULL
+    """).fetchone()[0]
+    if both > 0:
+        print(f"\n  → {both} calls have BOTH impediment + agent issue")
+
+    return imp_total
+
+
+def render_failure_modes_compat(con, json_src):
+    """3.1 (compat) Failure modes for v6.0 schema data (has failure, not impediment)."""
     fail_total = con.sql(f"""
         SELECT COUNT(*) FROM {json_src} WHERE failure IS NOT NULL
     """).fetchone()[0]
 
-    section("3.1", f"FAILURE MODES BY SCOPE ({fail_total} calls with failures)")
+    section("3.1", f"FAILURE MODES BY SCOPE ({fail_total} calls) [v6.0 compat]")
 
     if fail_total == 0:
         print("  No failures detected.")
-        return fail_total
+        return
 
     rows = con.sql(f"""
         SELECT
-            failure.type AS failure_type,
+            failure.type AS ftype,
             resolution.primary.scope AS scope,
-            COUNT(*) AS n,
-            LIST(insights.coaching) FILTER (insights.coaching IS NOT NULL) AS coaching
+            COUNT(*) AS n
         FROM {json_src}
         WHERE failure IS NOT NULL
-        GROUP BY failure_type, scope
+        GROUP BY ftype, scope
         ORDER BY n DESC
     """).fetchall()
 
-    # Aggregate
     by_type = {}
-    for ftype, scope, n, coaching in rows:
+    for ftype, scope, n in rows:
         if ftype not in by_type:
-            by_type[ftype] = {"total": 0, "scopes": {}, "coaching": []}
+            by_type[ftype] = {"total": 0, "scopes": {}}
         by_type[ftype]["total"] += n
         by_type[ftype]["scopes"][scope] = n
-        if coaching:
-            by_type[ftype]["coaching"].extend(coaching)
 
     scopes = ["in_scope", "out_of_scope", "no_request"]
     active_scopes = [s for s in scopes if any(d["scopes"].get(s, 0) for d in by_type.values())]
@@ -424,12 +626,8 @@ def render_failure_modes(con, json_src):
             line += f"{v:>14d}" if v else f"{'—':>14s}"
         line += f"  {data['total']:>5d}  {pct(data['total'], fail_total):>4s}"
         print(line)
-        # Show one coaching sample
-        if data["coaching"]:
-            sample = trunc(data["coaching"][0].replace("\n", " "), 65)
-            print(f"    ↳ {sample}")
 
-    return fail_total
+    print(f"\n  [Using v6.0 failure model — upgrade to v7.0 for impediment/agent_issue detail]")
 
 
 def render_preventable_escalations(con, json_src):
@@ -440,7 +638,8 @@ def render_preventable_escalations(con, json_src):
         SELECT
             resolution.primary.request AS request,
             resolution.primary.outcome AS outcome,
-            COALESCE(failure.type, '—') AS failure_type,
+            COALESCE(impediment.type, '—') AS imp_type,
+            CASE WHEN agent_issue IS NOT NULL THEN 'yes' ELSE '—' END AS has_ai,
             insights.coaching AS coaching,
             call_id
         FROM {json_src}
@@ -454,11 +653,11 @@ def render_preventable_escalations(con, json_src):
         return
 
     print(f"  {len(rows)} calls where AI started in-scope service but caller asked for a human:\n")
-    print(f"  {'request':<35s} {'outcome':<13s} {'failure':12s} {'coaching'}")
+    print(f"  {'request':<32s} {'outcome':<12s} {'impediment':14s} {'agent_issue':>11s}  {'coaching'}")
     print("  " + "─" * (W - 4))
-    for request, outcome, ftype, coaching, cid in rows:
-        c = trunc(coaching or "—", 40) if coaching else "—"
-        print(f"  {trunc(request, 35):<35s} {outcome:<13s} {ftype:12s} {c}")
+    for request, outcome, imp_type, has_ai, coaching, cid in rows:
+        c = trunc(coaching or "—", 35) if coaching else "—"
+        print(f"  {trunc(request, 32):<32s} {outcome:<12s} {imp_type:14s} {has_ai:>11s}  {c}")
 
 
 def render_quality_scores(con, json_src):
@@ -619,9 +818,52 @@ def render_transfer_analysis(con, json_src):
         print(f"\n  → {queue_abandoned} transfers with queue detected + abandoned = staffing/wait problem")
 
 
+def render_queue_performance(con, json_src):
+    """4.4 Queue Performance — queue_result distribution."""
+    section("4.4", "QUEUE PERFORMANCE")
+
+    # Check if queue_result field exists in data
+    if not has_column(con, json_src, "resolution.primary.transfer.queue_result"):
+        print("  queue_result field not present in data (pre-v6.1 schema).")
+        return
+
+    queue_total = con.sql(f"""
+        SELECT COUNT(*) FROM {json_src}
+        WHERE resolution.primary.transfer IS NOT NULL
+          AND resolution.primary.transfer.queue_detected = true
+    """).fetchone()[0]
+
+    if queue_total == 0:
+        print("  No transfers with queue detected.")
+        return
+
+    rows = con.sql(f"""
+        SELECT
+            COALESCE(resolution.primary.transfer.queue_result, 'unknown') AS qr,
+            COUNT(*) AS n
+        FROM {json_src}
+        WHERE resolution.primary.transfer IS NOT NULL
+          AND resolution.primary.transfer.queue_detected = true
+        GROUP BY qr
+        ORDER BY n DESC
+    """).fetchall()
+
+    print(f"  {queue_total} transfers entered a queue:\n")
+    print(f"  {'queue_result':<22s} {'n':>4s}  {'pct':>5s}  {'bar'}")
+    print("  " + "─" * (W - 4))
+    for qr, n in rows:
+        print(f"  {qr:<22s} {n:>4d}  {pct(n, queue_total):>5s}  {bar(n, queue_total, 20)}")
+
+    unavail = sum(n for qr, n in rows if qr == "unavailable")
+    abandoned = sum(n for qr, n in rows if qr == "caller_abandoned")
+    if unavail + abandoned > 0:
+        print(f"\n  → {unavail + abandoned}/{queue_total} queue entries did NOT reach a human"
+              f" ({pct(unavail + abandoned, queue_total)})")
+
+
 def render_friction(con, json_src):
-    """4.4 Friction by Scope — clarifications, corrections, loops."""
-    section("4.4", "FRICTION BY SCOPE")
+    """4.5 Friction by Scope — clarifications, corrections, loops."""
+    section("4.5", "FRICTION BY SCOPE")
 
     rows = con.sql(f"""
         SELECT
@@ -650,8 +892,8 @@ def render_friction(con, json_src):
 
 
 def render_abandon_stages(con, json_src):
-    """4.5 Abandon Stage Analysis."""
-    section("4.5", "ABANDON STAGE ANALYSIS")
+    """4.6 Abandon Stage Analysis."""
+    section("4.6", "ABANDON STAGE ANALYSIS")
 
     rows = con.sql(f"""
         SELECT
@@ -677,8 +919,8 @@ def render_abandon_stages(con, json_src):
 
 
 def render_secondary_intents(con, json_src, total):
-    """4.6 Secondary Intents."""
-    section("4.6", "SECONDARY INTENTS")
+    """4.7 Secondary Intents."""
+    section("4.7", "SECONDARY INTENTS")
 
     sec_count = con.sql(f"""
         SELECT COUNT(*) FROM {json_src}
@@ -708,8 +950,8 @@ def render_secondary_intents(con, json_src, total):
 
 
 def render_operational_flags(con, json_src, total):
-    """4.7 Operational Flags — repeat callers, derailment."""
-    section("4.7", "OPERATIONAL FLAGS")
+    """4.8 Operational Flags — repeat callers, derailment."""
+    section("4.8", "OPERATIONAL FLAGS")
 
     flags = con.sql(f"""
         SELECT
@@ -735,10 +977,15 @@ def render_operational_flags(con, json_src, total):
 
 def run_dashboard(directory: str) -> None:
     con = duckdb.connect()
-    json_src = src(directory)
+    # Load data ONCE into a temp table so all sections see the same snapshot.
+    # Re-scanning the glob per query can produce slightly different row counts.
+    raw_src = src(directory)
+    con.sql(f"CREATE TEMP TABLE calls AS SELECT * FROM {raw_src}")
+    json_src = "calls"
 
-    # Detect human_requested field
+    # Detect field availability for backward compatibility
     has_hr = has_column(con, json_src, "resolution.primary.human_requested")
+    has_imp = has_column(con, json_src, "impediment")
 
     # === ACT 1 ===
     act_header("ACT 1: THE BIG PICTURE")
@@ -758,10 +1005,14 @@ def run_dashboard(directory: str) -> None:
         print("\n  [Act 2 skipped — human_requested field not present in data]")
 
     # === ACT 3 ===
-    act_header("ACT 3: QUALITY & FAILURE")
-    fail_total = render_failure_modes(con, json_src)
-    if has_hr:
-        render_preventable_escalations(con, json_src)
+    if has_imp:
+        act_header("ACT 3: QUALITY & IMPEDIMENTS")
+        render_impediments(con, json_src)
+        if has_hr:
+            render_preventable_escalations(con, json_src)
+    else:
+        act_header("ACT 3: QUALITY & FAILURE (v6.0 compat)")
+        render_failure_modes_compat(con, json_src)
     render_quality_scores(con, json_src)
     render_sentiment(con, json_src, total)
 
@@ -770,6 +1021,7 @@ def run_dashboard(directory: str) -> None:
     render_duration(con, json_src)
     render_action_performance(con, json_src)
     render_transfer_analysis(con, json_src)
+    render_queue_performance(con, json_src)
     render_friction(con, json_src)
     render_abandon_stages(con, json_src)
     render_secondary_intents(con, json_src, total)
@@ -782,8 +1034,8 @@ def run_dashboard(directory: str) -> None:
 
 def main():
     if len(sys.argv) < 2:
-        print("Usage: python3 tools/dashboard_v6.py <directory-of-v6-jsons>")
-        print("  e.g. python3 tools/dashboard_v6.py tests/golden/analyses_v6_prompt_v5/")
+        print("Usage: python3 tools/dashboard_v7.py <directory-of-analysis-jsons>")
+        print("  e.g. python3 tools/dashboard_v7.py tests/golden/analyses_v7/")
         sys.exit(1)
 
     directory = sys.argv[1].rstrip("/")

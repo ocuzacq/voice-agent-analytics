@@ -1,0 +1,113 @@
+{
+  "turns": 10,
+  "repeat_caller": false,
+  "derailed_at": 11,
+  "resolution": {
+    "primary": {
+      "request_category": "maintenance_payment",
+      "request": "Pay maintenance fee",
+      "context": "Caller wanted to pay fees but could not pass name verification",
+      "human_requested": "after_service",
+      "department_requested": null,
+      "scope": "in_scope",
+      "outcome": "abandoned",
+      "detail": "The caller was transferred to concierge after failing name verification multiple times, but hung up during the hold queue.",
+      "resolution_confirmed": false,
+      "transfer": {
+        "reason": "customer_requested",
+        "destination": "concierge",
+        "queue_detected": true,
+        "queue_result": "caller_abandoned"
+      },
+      "abandon_stage": "mid_task"
+    },
+    "secondary": null,
+    "steps": [
+      "Caller requested to pay maintenance fees.",
+      "Agent attempted account lookup by name but failed to find a match.",
+      "Agent asked for spelling and repeated it, but still found no match.",
+      "Agent successfully looked up record using contract ID.",
+      "Agent asked for name verification again against the found record, which failed.",
+      "Caller became frustrated and requested a representative.",
+      "Agent transferred caller to concierge queue.",
+      "Caller abandoned the call after several minutes of hold music/messages."
+    ]
+  },
+  "scores": {
+    "effectiveness": 2,
+    "quality": 3,
+    "effort": 5
+  },
+  "sentiment": {
+    "start": "neutral",
+    "end": "frustrated"
+  },
+  "impediment": {
+    "type": "verification",
+    "detail": "Agent repeatedly failed to verify the caller's name even after a successful contract ID lookup.",
+    "policy_gap": null
+  },
+  "agent_issue": {
+    "detail": "Agent entered a repetitive loop asking for the name and spelling multiple times without offering an alternative or acknowledging the mismatch might be due to a different name on the contract."
+  },
+  "friction": {
+    "clarifications": [
+      {
+        "turn": 5,
+        "type": "name",
+        "cause": "tech",
+        "note": "Initial name lookup failed"
+      },
+      {
+        "turn": 11,
+        "type": "name",
+        "cause": "tech",
+        "note": "Second name lookup failed"
+      }
+    ],
+    "corrections": [],
+    "loops": [
+      {
+        "turns": [
+          5,
+          11,
+          19
+        ],
+        "type": "info_retry",
+        "subject": "name verification",
+        "note": "Repeatedly asking for name/spelling despite failures"
+      }
+    ]
+  },
+  "actions": [
+    {
+      "type": "account_lookup",
+      "outcome": "failed",
+      "detail": "Lookup by name 'Caroline Vazquez' failed"
+    },
+    {
+      "type": "account_lookup",
+      "outcome": "success",
+      "detail": "Lookup by contract ID 5516928 succeeded"
+    },
+    {
+      "type": "verification",
+      "outcome": "failed",
+      "detail": "Name verification failed against found record"
+    },
+    {
+      "type": "transfer",
+      "outcome": "success",
+      "detail": "Transferred to concierge queue"
+    }
+  ],
+  "insights": {
+    "summary": "The caller wanted to pay a maintenance fee but was blocked by name verification. Despite finding the account via contract ID, the agent's persistence on name matching led to a transfer and subsequent abandonment.",
+    "verbatim": "Talk to representative. Talk Take me to take me to representative. I don't wanna talk to you.",
+    "coaching": "When a contract ID lookup succeeds but the name doesn't match, the agent should recognize this is common in timeshares and move to an alternative verification or offer the transfer sooner rather than looping on the name spelling."
+  },
+  "call_id": "00abd708-ff74-43bb-b8cd-9e2a8a72deed",
+  "schema_version": "v7.0",
+  "duration_seconds": 575.0,
+  "ended_by": "customer"
+}

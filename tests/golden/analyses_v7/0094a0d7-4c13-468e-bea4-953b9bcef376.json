@@ -1,0 +1,87 @@
+{
+  "turns": 8,
+  "repeat_caller": false,
+  "derailed_at": 7,
+  "resolution": {
+    "primary": {
+      "request_category": "billing_dispute",
+      "request": "discuss maintenance billing frequency",
+      "context": "Caller believes they are billed every two years but received a bill after only 14 months",
+      "human_requested": "initial",
+      "department_requested": null,
+      "scope": "out_of_scope",
+      "outcome": "transferred",
+      "detail": "Caller requested a representative multiple times to dispute billing frequency; after a failed queue attempt and brief AI interaction, they were sent back to the queue.",
+      "resolution_confirmed": null,
+      "transfer": {
+        "reason": "out_of_scope",
+        "destination": "concierge",
+        "queue_detected": true,
+        "queue_result": "caller_abandoned"
+      },
+      "abandon_stage": null
+    },
+    "secondary": null,
+    "steps": [
+      "Caller immediately requested a representative.",
+      "AI warned of long wait times and attempted to deflect.",
+      "Caller entered queue but was returned to AI after no agents were available.",
+      "Caller explained a billing dispute regarding maintenance fee frequency.",
+      "AI attempted to assist but caller struggled to provide resort information.",
+      "Caller insisted on a representative and was transferred back to the queue."
+    ]
+  },
+  "scores": {
+    "effectiveness": 3,
+    "quality": 3,
+    "effort": 5
+  },
+  "sentiment": {
+    "start": "neutral",
+    "end": "frustrated"
+  },
+  "impediment": {
+    "type": "transfer_queue",
+    "detail": "Initial transfer attempt resulted in a 5-minute queue wait followed by a system message that no agents were available.",
+    "policy_gap": null
+  },
+  "agent_issue": null,
+  "friction": {
+    "clarifications": [],
+    "corrections": [],
+    "loops": [
+      {
+        "turns": [
+          7,
+          13,
+          17
+        ],
+        "type": "deflection",
+        "subject": "representative request",
+        "note": "AI repeatedly attempts to deflect representative requests"
+      }
+    ]
+  },
+  "actions": [
+    {
+      "type": "transfer",
+      "outcome": "failed",
+      "detail": "Initial transfer to concierge timed out after 5 minutes"
+    },
+    {
+      "type": "transfer",
+      "outcome": "success",
+      "detail": "Second transfer attempt at end of call"
+    }
+  ],
+  "insights": {
+    "summary": "Caller wanted to dispute the frequency of their maintenance fee billing. After an initial failed transfer and long queue wait, the AI tried to assist, but the caller's request was out of scope and they ultimately insisted on a human agent.",
+    "verbatim": "My maintenance supposed to be every two years. And it seemed like y'all doing it every a year and three two months. I got a bill. I need to speak to a representative.",
+    "coaching": "The agent correctly identified the billing dispute but should have recognized earlier that complex billing frequency issues are out of scope, rather than attempting to collect resort info after the caller already expressed high frustration with the queue."
+  },
+  "call_id": "0094a0d7-4c13-468e-bea4-953b9bcef376",
+  "schema_version": "v7.0",
+  "duration_seconds": 745.8,
+  "ended_by": "customer",
+  "ended_reason": "hangup-during-warm-transfer"
+}

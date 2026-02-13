@@ -1,0 +1,67 @@
+{
+  "agent_id": "IdNSnJmoukxviqoTIWOZ",
+  "duration": 397.758829,
+  "ended_reason": "customer-ended-call",
+  "messages": [
+    {
+      "role": "assistant",
+      "timestamp": 1770756017.6708813,
+      "content": "Hi, thank you for calling Vacation Village Resorts. This is Jamie on a recorded line. How can I help you today?"
+    },
+    {
+      "role": "user",
+      "timestamp": 1770756027.8427296,
+      "content": "Billing department, please."
+    },
+    {
+      "role": "assistant",
+      "timestamp": 1770756033.158225,
+      "content": "Alright, I can connect you to a representative in the billing department, but just so you know, we\u2019re experiencing longer-than-usual wait times"
+    },
+    {
+      "role": "assistant",
+      "timestamp": 1770756033.158225,
+      "content": "-- up to twenty minutes. The fastest way to get help is through our automated system, which resolves about ninety percent of all calls. Would you prefer to be connected to a representative, or continue with the automated system?"
+    },
+    {
+      "role": "user",
+      "timestamp": 1770756056.324034,
+      "content": "Representative, please."
+    },
+    {
+      "role": "assistant",
+      "timestamp": 1770756060.9248054,
+      "content": "Please hold while I connect you"
+    },
+    {
+      "role": "assistant",
+      "timestamp": 1770756304.1711252,
+      "content": "Thank you for calling the concierge department for the Vacation Village family of resorts, where owner satisfaction is our top priority. We apologize for the brief wait, and we appreciate your patience. Our hours of operation are 8:30 AM to 6:00 PM Eastern Standard Time. We understand that sometimes nothing beats speaking to a real person. Our team is working diligently to ensure your call is answered as soon as possible. In the meantime, why not explore our website and discover all that Vacation Village Resorts has to offer? Our website is a valuable resource filled with product information, frequently asked questions, important contact information for mortgage services and maintenance fee payments, and much more. Save time and find the answers you need at vacationvillageresorts.com. For real-time assistance, we encourage you to try out our Text Us Now feature. Simply visit our website and look for the Text Us button at the bottom right corner of the screen. With just a few taps, you can connect with one of our dedicated agents who will be happy to assist you promptly. At Vacation Village Resorts, we believe in providing exceptional customer service at every touchpoint. If you prefer to remain on the line, rest assured that your call is essential to us, and we'll be with you shortly."
+    },
+    {
+      "role": "assistant",
+      "timestamp": null,
+      "content": "Thank you for calling the concierge department for the Vacation Village family of resorts, where owner satisfaction is our top priority. We apologize for the brief wait, and we appreciate your patience. Our hours of operation are 8:30 AM to 6:00 PM Eastern Standard Time. We understand that sometimes nothing beats speaking to a real person. Our team is working diligently to ensure your call is answered as soon as possible. In the meantime, why not explore our website and discover all that Vacation Village Resorts has to offer? Our website is a valuable resource filled with product information, frequently asked questions, important contact information for mortgage services and maintenance fee payments, and much more. Save time and find the answers you need at vacationvillageresorts.com. For real-time assistance, we encourage you to try out our Text Us Now feature. Simply visit our website and look for the Text Us button at the bottom right corner of the screen. With just a few taps, you can connect with one of our dedicated agents who will be happy to assist you promptly. At Vacation Village Resorts, we believe in providing exceptional customer service at every touchpoint. If you prefer to remain on the line, rest assured that your call is essential to us, and we'll be with you shortly."
+    },
+    {
+      "role": "assistant",
+      "timestamp": 1770756385.4090867,
+      "content": "I just want to let you know that all representatives are currently busy and no one is available"
+    },
+    {
+      "role": "assistant",
+      "timestamp": 1770756385.4090867,
+      "content": "to take your call right now. If you\u2019d like, I can assist you with your billing request, or you can call back later when someone is available. What would you prefer?"
+    },
+    {
+      "role": "user",
+      "timestamp": 1770756406.101263,
+      "content": "Never anybody is available. This is terrible."
+    },
+    {
+      "role": "user",
+      "timestamp": 1770756408.9835835,
+      "content": "Sight. Horrible. Horrible."
+    }
+  ]
+}

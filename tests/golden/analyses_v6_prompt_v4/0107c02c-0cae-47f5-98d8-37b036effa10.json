@@ -1,0 +1,94 @@
+{
+  "turns": 9,
+  "repeat_caller": false,
+  "derailed_at": 7,
+  "resolution": {
+    "primary": {
+      "request": "speak to a concierge",
+      "context": "billing and maintenance fee inquiry",
+      "scope": "out_of_scope",
+      "outcome": "transferred",
+      "detail": "The caller requested a concierge multiple times and was eventually transferred to the queue after a verification process.",
+      "resolution_confirmed": null,
+      "transfer": {
+        "reason": "customer_requested",
+        "destination": "concierge",
+        "queue_detected": true
+      },
+      "abandon_stage": null
+    },
+    "secondary": null,
+    "steps": [
+      "Caller requested concierge immediately.",
+      "Agent attempted to narrow down the intent to billing/maintenance.",
+      "Agent performed account lookup and identity verification.",
+      "Agent asked for specific billing needs.",
+      "Caller reiterated the request for a concierge.",
+      "Agent transferred the caller to the concierge queue."
+    ]
+  },
+  "scores": {
+    "effectiveness": 4,
+    "quality": 4,
+    "effort": 3
+  },
+  "sentiment": {
+    "start": "neutral",
+    "end": "neutral"
+  },
+  "failure": {
+    "type": "wrong_action",
+    "detail": "Agent persisted with identity verification and intent narrowing after the caller had already requested a concierge at Turn 2.",
+    "policy_gap": null
+  },
+  "friction": {
+    "clarifications": [
+      {
+        "turn": 3,
+        "type": "intent",
+        "cause": "proactive",
+        "note": "Agent narrowing down concierge service type"
+      },
+      {
+        "turn": 5,
+        "type": "intent",
+        "cause": "proactive",
+        "note": "Agent clarifying maintenance vs mortgage"
+      },
+      {
+        "turn": 15,
+        "type": "intent",
+        "cause": "proactive",
+        "note": "Agent asking for specific billing action"
+      }
+    ],
+    "corrections": [],
+    "loops": []
+  },
+  "actions": [
+    {
+      "type": "account_lookup",
+      "outcome": "success",
+      "detail": "Pulled record via caller ID"
+    },
+    {
+      "type": "verification",
+      "outcome": "success",
+      "detail": "Verified name spelling and state"
+    },
+    {
+      "type": "transfer",
+      "outcome": "success",
+      "detail": "Connected to concierge department queue"
+    }
+  ],
+  "insights": {
+    "summary": "The caller initially requested a concierge. The agent spent several turns verifying the caller's identity and narrowing down the billing intent before finally transferring the caller to the requested department.",
+    "verbatim": "Speak to a concierge.",
+    "coaching": "When a caller explicitly asks for a human agent or concierge at the start of the call, the agent should prioritize the transfer rather than putting the caller through a full verification flow for an out-of-scope request."
+  },
+  "call_id": "0107c02c-0cae-47f5-98d8-37b036effa10",
+  "schema_version": "v6.0",
+  "duration_seconds": 897.6,
+  "ended_by": "customer"
+}

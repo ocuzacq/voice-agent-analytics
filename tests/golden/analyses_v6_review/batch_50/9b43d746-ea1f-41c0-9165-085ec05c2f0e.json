@@ -1,0 +1,91 @@
+{
+  "turns": 12,
+  "repeat_caller": false,
+  "derailed_at": null,
+  "resolution": {
+    "primary": {
+      "request": "make a maintenance fee payment",
+      "context": "Caller wanted to pay $1296.17 via credit card",
+      "scope": "in_scope",
+      "outcome": "fulfilled",
+      "detail": "The agent successfully verified the account and confirmed sending the payment link.",
+      "resolution_confirmed": false,
+      "transfer": null,
+      "abandon_stage": null
+    },
+    "secondary": {
+      "request": "update cell phone number",
+      "context": "Caller wanted to change contact information",
+      "scope": "out_of_scope",
+      "outcome": "transferred",
+      "detail": "The agent correctly identified the request as out of scope and transferred the caller to the concierge department.",
+      "resolution_confirmed": null,
+      "transfer": {
+        "reason": "out_of_scope",
+        "destination": "concierge",
+        "queue_detected": true
+      },
+      "abandon_stage": null
+    },
+    "steps": [
+      "Caller initially requested an agent and was placed in a 20-minute queue.",
+      "After the queue failed to provide a human, the AI re-engaged.",
+      "Caller requested to make a payment.",
+      "AI performed account lookup and identity verification (name, state).",
+      "AI confirmed balance and contact details, then initiated the payment link send.",
+      "Caller requested to update their phone number.",
+      "AI transferred the caller to concierge for the account update."
+    ]
+  },
+  "scores": {
+    "effectiveness": 5,
+    "quality": 4,
+    "effort": 3
+  },
+  "sentiment": {
+    "start": "neutral",
+    "end": "neutral"
+  },
+  "failure": null,
+  "friction": {
+    "clarifications": [],
+    "corrections": [],
+    "loops": []
+  },
+  "actions": [
+    {
+      "type": "transfer",
+      "outcome": "failed",
+      "detail": "Initial transfer attempt timed out after 25 minutes in queue."
+    },
+    {
+      "type": "account_lookup",
+      "outcome": "success",
+      "detail": "Looked up account via phone number 4032398855."
+    },
+    {
+      "type": "verification",
+      "outcome": "success",
+      "detail": "Verified name Randy Law and state Alberta."
+    },
+    {
+      "type": "send_payment_link",
+      "outcome": "success",
+      "detail": "Confirmed sending link for $1296.17 balance."
+    },
+    {
+      "type": "transfer",
+      "outcome": "success",
+      "detail": "Transferred to concierge for phone number update."
+    }
+  ],
+  "insights": {
+    "summary": "The caller initially wanted an agent but eventually used the AI to successfully receive a payment link after a long wait in the initial queue. A secondary request to update a phone number was correctly transferred.",
+    "verbatim": "I'm working on your payment link now. Is there anything else I can help you with today?",
+    "coaching": null
+  },
+  "call_id": "9b43d746-ea1f-41c0-9165-085ec05c2f0e",
+  "schema_version": "v6.0",
+  "duration_seconds": 2696.3,
+  "ended_by": "unknown"
+}

@@ -1,0 +1,402 @@
+{
+  "agent_id": "IdNSnJmoukxviqoTIWOZ",
+  "duration": 954.230479,
+  "ended_reason": "hangup-during-warm-transfer",
+  "messages": [
+    {
+      "role": "assistant",
+      "timestamp": 1770658760.676721,
+      "content": "Hi, thank you for calling Vacation Village Resorts. This is Jamie on a recorded line. How can I help you today?"
+    },
+    {
+      "role": "user",
+      "timestamp": 1770658769.6727798,
+      "content": "I'd like to make a make a maintenance payments."
+    },
+    {
+      "role": "assistant",
+      "timestamp": 1770658775.690202,
+      "content": "Great, I can help you with your maintenance payment. Could you please provide your full name as it appears"
+    },
+    {
+      "role": "assistant",
+      "timestamp": 1770658775.690202,
+      "content": "on your account?"
+    },
+    {
+      "role": "user",
+      "timestamp": 1770658786.1817298,
+      "content": "Sharon l Warren."
+    },
+    {
+      "role": "user",
+      "timestamp": 1770658788.3881874,
+      "content": "S h e r o n"
+    },
+    {
+      "role": "assistant",
+      "timestamp": 1770658793.6302598,
+      "content": "Alright, Sharon l Warren. Can you tell me the main reason"
+    },
+    {
+      "role": "assistant",
+      "timestamp": 1770658793.6302598,
+      "content": "for your call today? Are you looking to pay your yearly maintenance fee?"
+    },
+    {
+      "role": "user",
+      "timestamp": 1770658803.2277741,
+      "content": "Yes."
+    },
+    {
+      "role": "assistant",
+      "timestamp": 1770658805.6288154,
+      "content": "I can send you a link to pay your yearly maintenance fee. Does that sound good to you?"
+    },
+    {
+      "role": "user",
+      "timestamp": 1770658814.6877792,
+      "content": "Yes."
+    },
+    {
+      "role": "assistant",
+      "timestamp": 1770658820.2091954,
+      "content": "So, I found three contracts under your name. Only one contract can be processed at a time, so"
+    },
+    {
+      "role": "assistant",
+      "timestamp": 1770658820.2091954,
+      "content": "you'll need to pick which one you'd like to handle today. Here are your options: -- -- - Vacation Village at Bonaventure -- - The Grandview at Las Vegas (two contracts) -- -- Which resort would you like to make a maintenance payment for?"
+    },
+    {
+      "role": "user",
+      "timestamp": 1770658839.1135788,
+      "content": "I would like to make the both of the payments on the Grand View loss Vegas."
+    },
+    {
+      "role": "assistant",
+      "timestamp": 1770658846.794553,
+      "content": "Just to clarify, I can only process"
+    },
+    {
+      "role": "user",
+      "timestamp": 1770658848.64924,
+      "content": "We no longer have a vacation."
+    },
+    {
+      "role": "assistant",
+      "timestamp": 1770658851.8508153,
+      "content": "I understand, but I do see two active contracts for The Grandview at Las Vegas under your name. Would you like to select one of these contracts to proceed with, or do"
+    },
+    {
+      "role": "assistant",
+      "timestamp": 1770658851.8508153,
+      "content": "you need help with something else?"
+    },
+    {
+      "role": "user",
+      "timestamp": 1770658848.64924,
+      "content": "Yes."
+    },
+    {
+      "role": "assistant",
+      "timestamp": 1770658865.1340861,
+      "content": "Alright, which of"
+    },
+    {
+      "role": "user",
+      "timestamp": 1770658865.7790358,
+      "content": "I need to pay both of them. At one."
+    },
+    {
+      "role": "assistant",
+      "timestamp": 1770658870.0907753,
+      "content": "I totally get wanting to pay both at once, but I can only process one contract at a time. Would you like to start with the first Grandview at Las Vegas contract, or the second one?"
+    },
+    {
+      "role": "user",
+      "timestamp": 1770658883.4541473,
+      "content": "Can I do this online?"
+    },
+    {
+      "role": "assistant",
+      "timestamp": 1770658885.0960553,
+      "content": "Yes, you can make maintenance payments online using the payment link I send you. Which Grandview at Las Vegas contract would you like to start with -- contract number two zero five two one seven zero or contract number two zero five two one seven two?"
+    },
+    {
+      "role": "user",
+      "timestamp": 1770658905.0393748,
+      "content": "I'm not seeing that. It's These are not"
+    },
+    {
+      "role": "assistant",
+      "timestamp": 1770658911.0161765,
+      "content": "I understand this is confusing."
+    },
+    {
+      "role": "user",
+      "timestamp": 1770658912.7130697,
+      "content": "yeah. Those are different account numbers than I have"
+    },
+    {
+      "role": "assistant",
+      "timestamp": 1770658916.5158417,
+      "content": "I see, it sounds like the contract numbers I have on file don't match what you have."
+    },
+    {
+      "role": "user",
+      "timestamp": 1770658918.3480136,
+      "content": "Can I speak to a representative?"
+    },
+    {
+      "role": "assistant",
+      "timestamp": 1770658933.2359602,
+      "content": "I can connect you to a representative, but just so you know, we are experiencing longer-than-usual wait times of up to twenty minutes. The fastest way to get help is through our automated system, which resolves about ninety percent of all calls. Would you still like to wait for a representative, or would you prefer to continue with the automated system?"
+    },
+    {
+      "role": "user",
+      "timestamp": 1770658955.9283059,
+      "content": "I'll wait for a representative."
+    },
+    {
+      "role": "assistant",
+      "timestamp": 1770658960.2643044,
+      "content": "Please hold while I connect you"
+    },
+    {
+      "role": "assistant",
+      "timestamp": 1770659203.777117,
+      "content": "Thank you for calling the concierge department for the Vacation Village family of resorts, where owner satisfaction is our top priority. We apologize for the brief wait, and we appreciate your patience. Our hours of operation are 8:30 AM to 6:00 PM Eastern Standard Time. We understand that sometimes nothing beats speaking to a real person. Our team is working diligently to ensure your call is answered as soon as possible. In the meantime, why not explore our website and discover all that Vacation Village Resorts has to offer? Our website is a valuable resource filled with product information, frequently asked questions, important contact information for mortgage services and maintenance fee payments, and much more. Save time and find the answers you need at vacationvillageresorts.com. For real-time assistance, we encourage you to try out our Text Us Now feature. Simply visit our website and look for the Text Us button at the bottom right corner of the screen. With just a few taps, you can connect with one of our dedicated agents who will be happy to assist you promptly. At Vacation Village Resorts, we believe in providing exceptional customer service at every touchpoint. If you prefer to remain on the line, rest assured that your call is essential to us, and we'll be with you shortly."
+    },
+    {
+      "role": "assistant",
+      "timestamp": null,
+      "content": "Thank you for calling the concierge department for the Vacation Village family of resorts, where owner satisfaction is our top priority. We apologize for the brief wait, and we appreciate your patience. Our hours of operation are 8:30 AM to 6:00 PM Eastern Standard Time. We understand that sometimes nothing beats speaking to a real person. Our team is working diligently to ensure your call is answered as soon as possible. In the meantime, why not explore our website and discover all that Vacation Village Resorts has to offer? Our website is a valuable resource filled with product information, frequently asked questions, important contact information for mortgage services and maintenance fee payments, and much more. Save time and find the answers you need at vacationvillageresorts.com. For real-time assistance, we encourage you to try out our Text Us Now feature. Simply visit our website and look for the Text Us button at the bottom right corner of the screen. With just a few taps, you can connect with one of our dedicated agents who will be happy to assist you promptly. At Vacation Village Resorts, we believe in providing exceptional customer service at every touchpoint. If you prefer to remain on the line, rest assured that your call is essential to us, and we'll be with you shortly."
+    },
+    {
+      "role": "assistant",
+      "timestamp": 1770659285.9525383,
+      "content": "Actually, all representatives are currently busy and no one is available to take your call right now. I can help you with your request, or if you prefer, you can call back a little later. Would you like to continue with me for your maintenance payment?"
+    },
+    {
+      "role": "user",
+      "timestamp": 1770659301.6722798,
+      "content": "Yes."
+    },
+    {
+      "role": "assistant",
+      "timestamp": 1770659307.0747852,
+      "content": "Alright, let's get you set up to pay your maintenance fee. Can you provide the contract number you have for your Grandview at Las Vegas ownership?"
+    },
+    {
+      "role": "user",
+      "timestamp": 1770659324.5887957,
+      "content": "I have"
+    },
+    {
+      "role": "user",
+      "timestamp": 1770659325.6337314,
+      "content": "two of them."
+    },
+    {
+      "role": "user",
+      "timestamp": 1770659326.511644,
+      "content": "I'd like to pay one them I'd like to pay them both at one."
+    },
+    {
+      "role": "assistant",
+      "timestamp": 1770659334.216102,
+      "content": "I understand you have two contracts and want to pay both at once, but I can only process one"
+    },
+    {
+      "role": "assistant",
+      "timestamp": 1770659334.216102,
+      "content": "contract at a time. Could you please provide the contract number for the first Grandview at Las Vegas contract you'd like to pay?"
+    },
+    {
+      "role": "user",
+      "timestamp": 1770659348.9160762,
+      "content": "Our account number is eight seven four one zero zero seven two one."
+    },
+    {
+      "role": "user",
+      "timestamp": 1770659353.9788446,
+      "content": "Seven six five."
+    },
+    {
+      "role": "assistant",
+      "timestamp": 1770659358.1606634,
+      "content": "I can send you a link to pay your yearly maintenance fee for the contract associated with account number eight seven"
+    },
+    {
+      "role": "assistant",
+      "timestamp": 1770659358.1606634,
+      "content": "four one zero zero seven two one seven six five. Does that sound good to you?"
+    },
+    {
+      "role": "user",
+      "timestamp": 1770659370.0023615,
+      "content": "Yes."
+    },
+    {
+      "role": "assistant",
+      "timestamp": 1770659375.5071,
+      "content": "Perfect, I can send you a payment link for your maintenance fee. What email address would you like the payment link sent to?"
+    },
+    {
+      "role": "user",
+      "timestamp": 1770659385.4420714,
+      "content": "WP welding at comcast"
+    },
+    {
+      "role": "user",
+      "timestamp": 1770659389.8490705,
+      "content": "dot net."
+    },
+    {
+      "role": "assistant",
+      "timestamp": 1770659391.827795,
+      "content": "Just to confirm, I'll send the maintenance payment link to WP welding at comcast dot net."
+    },
+    {
+      "role": "assistant",
+      "timestamp": 1770659391.827795,
+      "content": "Is that the correct email address?"
+    },
+    {
+      "role": "user",
+      "timestamp": 1770659401.7525263,
+      "content": "Yes."
+    },
+    {
+      "role": "assistant",
+      "timestamp": 1770659422.2508337,
+      "content": "Alright, I\u2019ve sent the payment link to WP"
+    },
+    {
+      "role": "assistant",
+      "timestamp": 1770659422.2508337,
+      "content": "welding at comcast dot net. Could you check your inbox and let me know if you received the email? If you don\u2019t see it, please check your spam or junk folder."
+    },
+    {
+      "role": "user",
+      "timestamp": 1770659448.9392211,
+      "content": "I have it."
+    },
+    {
+      "role": "assistant",
+      "timestamp": 1770659451.660006,
+      "content": "Glad you received the email. Would"
+    },
+    {
+      "role": "assistant",
+      "timestamp": 1770659451.660006,
+      "content": "you like to process another contract or are you all set for today?"
+    },
+    {
+      "role": "user",
+      "timestamp": 1770659461.4602926,
+      "content": "I would like to talk to also process eight seven four one zero zero"
+    },
+    {
+      "role": "user",
+      "timestamp": 1770659468.6830328,
+      "content": "seven two one seven six six."
+    },
+    {
+      "role": "assistant",
+      "timestamp": 1770659472.8874307,
+      "content": "Great, we can process your second contract"
+    },
+    {
+      "role": "assistant",
+      "timestamp": 1770659472.8874307,
+      "content": "as well. For your records, you have three contracts on file: Vacation Village at Bonaventure, and two at The Grandview at Las Vegas. You'd like to process the Grandview at Las Vegas contract ending in seven six six. What email address would you like the payment link sent to for this contract?"
+    },
+    {
+      "role": "user",
+      "timestamp": 1770659497.1643012,
+      "content": "W p welding at comcast dot net."
+    },
+    {
+      "role": "assistant",
+      "timestamp": 1770659501.8793757,
+      "content": "Just to confirm, I'll send the maintenance payment link for your Grandview at Las Vegas contract"
+    },
+    {
+      "role": "assistant",
+      "timestamp": 1770659501.8793757,
+      "content": "ending in seven six six to WP welding at comcast dot net. Is that correct?"
+    },
+    {
+      "role": "user",
+      "timestamp": 1770659513.1819808,
+      "content": "Yes."
+    },
+    {
+      "role": "assistant",
+      "timestamp": 1770659520.1302233,
+      "content": "I've sent the payment link for your Grandview at Las Vegas contract ending in"
+    },
+    {
+      "role": "assistant",
+      "timestamp": 1770659520.1302233,
+      "content": "seven six six to WP welding at comcast dot net. Could you check your inbox and let me know if you received the email? If you don't see it, please check your spam or junk folder."
+    },
+    {
+      "role": "user",
+      "timestamp": 1770659543.701314,
+      "content": "Yes. I got it."
+    },
+    {
+      "role": "assistant",
+      "timestamp": 1770659545.881475,
+      "content": "Let me confirm the information I have."
+    },
+    {
+      "role": "assistant",
+      "timestamp": 1770659545.881475,
+      "content": "You requested maintenance payment links for two Grandview at Las Vegas contracts, and both links were sent to WP welding at comcast dot net. Is all of that correct?"
+    },
+    {
+      "role": "user",
+      "timestamp": 1770659559.3730931,
+      "content": "Yes."
+    },
+    {
+      "role": "assistant",
+      "timestamp": 1770659565.878157,
+      "content": "Is there anything else you\u2019d like to process today, or"
+    },
+    {
+      "role": "assistant",
+      "timestamp": 1770659565.878157,
+      "content": "are you all set?"
+    },
+    {
+      "role": "user",
+      "timestamp": 1770659575.4377782,
+      "content": "I no. I need to speak to someone about the Bonaventure."
+    },
+    {
+      "role": "assistant",
+      "timestamp": 1770659582.4084134,
+      "content": "I can connect you to a representative for help with your Bonaventure contract, but there may be a wait of up to twenty minutes."
+    },
+    {
+      "role": "assistant",
+      "timestamp": 1770659582.4084134,
+      "content": "The automated system is the fastest way to get help and solves about ninety percent of all calls. Would you like to wait for a representative, or continue with the automated system?"
+    },
+    {
+      "role": "user",
+      "timestamp": 1770659599.9878845,
+      "content": "Weight. For the representative."
+    },
+    {
+      "role": "assistant",
+      "timestamp": 1770659606.9400322,
+      "content": "Please hold while I connect you"
+    }
+  ]
+}

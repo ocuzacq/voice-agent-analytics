@@ -1,0 +1,67 @@
+{
+  "turns": 4,
+  "repeat_caller": false,
+  "derailed_at": null,
+  "resolution": {
+    "primary": {
+      "request": "Add guest name to reservation",
+      "context": "Caller is renting out their fixed week and needs to know about guest fees and name changes.",
+      "scope": "out_of_scope",
+      "outcome": "transferred",
+      "detail": "The agent correctly identified that reservation changes are out of scope and transferred the caller to the concierge department.",
+      "resolution_confirmed": null,
+      "transfer": {
+        "reason": "out_of_scope",
+        "destination": "concierge",
+        "queue_detected": true
+      },
+      "abandon_stage": null
+    },
+    "secondary": null,
+    "steps": [
+      "Caller asked about fees for adding a guest name to a reservation.",
+      "Agent asked for caller's name.",
+      "Agent clarified if the request was for a resort stay or RCI.",
+      "Agent offered transfer to concierge for reservation assistance.",
+      "Caller accepted and was placed in the concierge queue."
+    ]
+  },
+  "scores": {
+    "effectiveness": 5,
+    "quality": 5,
+    "effort": 1
+  },
+  "sentiment": {
+    "start": "neutral",
+    "end": "neutral"
+  },
+  "failure": null,
+  "friction": {
+    "clarifications": [
+      {
+        "turn": 5,
+        "type": "intent",
+        "cause": "proactive",
+        "note": "Clarifying if resort stay or RCI exchange."
+      }
+    ],
+    "corrections": [],
+    "loops": []
+  },
+  "actions": [
+    {
+      "type": "transfer",
+      "outcome": "success",
+      "detail": "Transferred to concierge for reservation guest name change."
+    }
+  ],
+  "insights": {
+    "summary": "The caller wanted to know the fee for adding a guest name to a reservation for their fixed week. The AI correctly identified this as a reservation-related task and transferred the caller to the concierge department.",
+    "verbatim": "If I run out my fixed thirty eight week, with someone else, do you charge a fee to add the guest name to the reservation?",
+    "coaching": null
+  },
+  "call_id": "adc3f10c-ccf4-4580-9896-4291a0080765",
+  "schema_version": "v6.0",
+  "duration_seconds": 1159.1,
+  "ended_by": "customer"
+}

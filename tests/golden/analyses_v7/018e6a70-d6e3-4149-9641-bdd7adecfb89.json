@@ -1,0 +1,71 @@
+{
+  "turns": 3,
+  "repeat_caller": true,
+  "derailed_at": null,
+  "resolution": {
+    "primary": {
+      "request_category": "billing_dispute",
+      "request": "Speak to the billing department",
+      "context": "Caller wanted to reach billing but was met with a long queue and eventual unavailability",
+      "human_requested": "initial",
+      "department_requested": "billing",
+      "scope": "out_of_scope",
+      "outcome": "abandoned",
+      "detail": "Caller requested billing, waited in a 6-minute queue, and hung up after being told no agents were available.",
+      "resolution_confirmed": null,
+      "transfer": {
+        "reason": "customer_requested",
+        "destination": "specific_department",
+        "queue_detected": true,
+        "queue_result": "caller_abandoned"
+      },
+      "abandon_stage": "mid_task"
+    },
+    "secondary": null,
+    "steps": [
+      "Caller requested the billing department immediately.",
+      "Agent warned of long wait times and offered automated help.",
+      "Caller insisted on a representative.",
+      "Agent placed caller in a queue for over 6 minutes.",
+      "Agent re-engaged to state no representatives were available.",
+      "Caller expressed frustration and disconnected."
+    ]
+  },
+  "scores": {
+    "effectiveness": 2,
+    "quality": 3,
+    "effort": 5
+  },
+  "sentiment": {
+    "start": "neutral",
+    "end": "angry"
+  },
+  "impediment": {
+    "type": "transfer_queue",
+    "detail": "The transfer queue failed to connect the caller to a human agent after a 6-minute wait.",
+    "policy_gap": null
+  },
+  "agent_issue": null,
+  "friction": {
+    "clarifications": [],
+    "corrections": [],
+    "loops": []
+  },
+  "actions": [
+    {
+      "type": "transfer",
+      "outcome": "failed",
+      "detail": "Attempted transfer to billing department; queue timed out."
+    }
+  ],
+  "insights": {
+    "summary": "The caller requested the billing department immediately and was placed in a queue that eventually timed out with no agents available, leading to an angry disconnect.",
+    "verbatim": "Never anybody is available. This is terrible. Sight. Horrible. Horrible.",
+    "coaching": "The agent followed protocol by offering automation and warning of wait times, but the operational failure of the queue led to the poor outcome."
+  },
+  "call_id": "018e6a70-d6e3-4149-9641-bdd7adecfb89",
+  "schema_version": "v7.0",
+  "duration_seconds": 397.8,
+  "ended_by": "customer",
+  "ended_reason": "customer-ended-call"
+}

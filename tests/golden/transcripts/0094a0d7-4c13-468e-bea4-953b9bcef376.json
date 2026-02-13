@@ -1,0 +1,147 @@
+{
+  "agent_id": "IdNSnJmoukxviqoTIWOZ",
+  "duration": 745.782333,
+  "ended_reason": "hangup-during-warm-transfer",
+  "messages": [
+    {
+      "role": "assistant",
+      "timestamp": 1770661083.7596307,
+      "content": "Hi, thank you for calling Vacation Village Resorts. This is Jamie on a recorded line. How can I help you today?"
+    },
+    {
+      "role": "user",
+      "timestamp": 1770661091.8788326,
+      "content": "Speak to a representative."
+    },
+    {
+      "role": "assistant",
+      "timestamp": 1770661096.3262928,
+      "content": "Alright, I can connect you to a representative, but just so"
+    },
+    {
+      "role": "user",
+      "timestamp": 1770661099.118737,
+      "content": "Just like a jail, ain't it?"
+    },
+    {
+      "role": "assistant",
+      "timestamp": 1770661101.3597004,
+      "content": "I hear you, and I know waiting can feel frustrating. Right now, we are experiencing longer-than-usual wait times of up to twenty"
+    },
+    {
+      "role": "assistant",
+      "timestamp": 1770661101.3597004,
+      "content": "minutes to speak with a representative. The automated system is actually the fastest way to get help and solves about ninety percent of all calls. Would you prefer to wait for a representative, or would you like to continue with the automated system?"
+    },
+    {
+      "role": "user",
+      "timestamp": 1770661123.9413903,
+      "content": "Wait for a representative."
+    },
+    {
+      "role": "assistant",
+      "timestamp": 1770661127.9035935,
+      "content": "Please hold while I connect you"
+    },
+    {
+      "role": "assistant",
+      "timestamp": 1770661370.9674025,
+      "content": "Thank you for calling the concierge department for the Vacation Village family of resorts, where owner satisfaction is our top priority. We apologize for the brief wait, and we appreciate your patience. Our hours of operation are 8:30 AM to 6:00 PM Eastern Standard Time. We understand that sometimes nothing beats speaking to a real person. Our team is working diligently to ensure your call is answered as soon as possible. In the meantime, why not explore our website and discover all that Vacation Village Resorts has to offer? Our website is a valuable resource filled with product information, frequently asked questions, important contact information for mortgage services and maintenance fee payments, and much more. Save time and find the answers you need at vacationvillageresorts.com. For real-time assistance, we encourage you to try out our Text Us Now feature. Simply visit our website and look for the Text Us button at the bottom right corner of the screen. With just a few taps, you can connect with one of our dedicated agents who will be happy to assist you promptly. At Vacation Village Resorts, we believe in providing exceptional customer service at every touchpoint. If you prefer to remain on the line, rest assured that your call is essential to us, and we'll be with you shortly."
+    },
+    {
+      "role": "assistant",
+      "timestamp": null,
+      "content": "Thank you for calling the concierge department for the Vacation Village family of resorts, where owner satisfaction is our top priority. We apologize for the brief wait, and we appreciate your patience. Our hours of operation are 8:30 AM to 6:00 PM Eastern Standard Time. We understand that sometimes nothing beats speaking to a real person. Our team is working diligently to ensure your call is answered as soon as possible. In the meantime, why not explore our website and discover all that Vacation Village Resorts has to offer? Our website is a valuable resource filled with product information, frequently asked questions, important contact information for mortgage services and maintenance fee payments, and much more. Save time and find the answers you need at vacationvillageresorts.com. For real-time assistance, we encourage you to try out our Text Us Now feature. Simply visit our website and look for the Text Us button at the bottom right corner of the screen. With just a few taps, you can connect with one of our dedicated agents who will be happy to assist you promptly. At Vacation Village Resorts, we believe in providing exceptional customer service at every touchpoint. If you prefer to remain on the line, rest assured that your call is essential to us, and we'll be with you shortly."
+    },
+    {
+      "role": "assistant",
+      "timestamp": 1770661452.5102262,
+      "content": "I completely understand wanting to speak with a representative, but at the moment, all representatives"
+    },
+    {
+      "role": "assistant",
+      "timestamp": 1770661452.5102262,
+      "content": "are currently busy and none are available to take your call. If you\u2019d like, I can assist you right now with your request, or you can call back later when someone is available. What would you like to do?"
+    },
+    {
+      "role": "user",
+      "timestamp": 1770661474.1857598,
+      "content": "I went to somebody else."
+    },
+    {
+      "role": "assistant",
+      "timestamp": 1770661477.6276753,
+      "content": "No worries, I understand if you decided to reach out elsewhere. If"
+    },
+    {
+      "role": "assistant",
+      "timestamp": 1770661477.6276753,
+      "content": "you still need help with anything, I\u2019m here and ready to assist. Is there something specific you\u2019d like help with today?"
+    },
+    {
+      "role": "user",
+      "timestamp": 1770661492.2440174,
+      "content": "Need to speak to somebody about my, um, maintenance."
+    },
+    {
+      "role": "assistant",
+      "timestamp": 1770661497.7268372,
+      "content": "I can help you with your maintenance questions right now since no representatives"
+    },
+    {
+      "role": "assistant",
+      "timestamp": 1770661497.7268372,
+      "content": "are available at the moment. What exactly would you like to discuss regarding your maintenance?"
+    },
+    {
+      "role": "user",
+      "timestamp": 1770661507.2260714,
+      "content": "My maintenance supposed to be every two years. And it seemed like y'all doing it every a year and three two months."
+    },
+    {
+      "role": "user",
+      "timestamp": 1770661516.9744225,
+      "content": "I got a bill. I need to speak to a representative."
+    },
+    {
+      "role": "assistant",
+      "timestamp": 1770661520.2575417,
+      "content": "I understand your concern about the maintenance billing schedule, and it sounds frustrating to receive a bill unexpectedly. Right now, all"
+    },
+    {
+      "role": "assistant",
+      "timestamp": 1770661520.2575417,
+      "content": "representatives are busy and unavailable to take your call. If you\u2019d like, I can help look into your maintenance billing details or answer questions about your account. Would you like me to assist you with your maintenance bill right now, or would you prefer to call back when a representative is available?"
+    },
+    {
+      "role": "user",
+      "timestamp": 1770661543.6174111,
+      "content": "You can help me, but I wanna call back. You can help me."
+    },
+    {
+      "role": "assistant",
+      "timestamp": 1770661550.471415,
+      "content": "Alright, I can help you with your maintenance bill. Can you tell"
+    },
+    {
+      "role": "assistant",
+      "timestamp": 1770661550.471415,
+      "content": "me which resort your ownership is for?"
+    },
+    {
+      "role": "user",
+      "timestamp": 1770661559.168656,
+      "content": "No. Villa."
+    },
+    {
+      "role": "user",
+      "timestamp": 1770661559.8474038,
+      "content": "Club what's that? What what's that? Club in? I don't know. I need to speak to a representative."
+    },
+    {
+      "role": "assistant",
+      "timestamp": 1770661571.3295145,
+      "content": "Please hold while I connect you"
+    }
+  ]
+}

@@ -1,0 +1,59 @@
+{
+  "turns": 3,
+  "repeat_caller": true,
+  "derailed_at": null,
+  "resolution": {
+    "primary": {
+      "request": "Request credit and discuss ownership surrender",
+      "context": "Customer's husband passed away and she cannot pay the maintenance fee or use the property.",
+      "scope": "out_of_scope",
+      "outcome": "transferred",
+      "detail": "The agent acknowledged the sensitive situation and initiated a transfer to a human representative for billing disputes and ownership issues.",
+      "resolution_confirmed": null,
+      "transfer": {
+        "reason": "out_of_scope",
+        "destination": "concierge",
+        "queue_detected": false
+      },
+      "abandon_stage": null
+    },
+    "secondary": null,
+    "steps": [
+      "Agent identifies as virtual assistant.",
+      "Customer explains husband's death and inability to pay/use timeshare.",
+      "Customer requests a credit for a $648.50 statement.",
+      "Agent expresses empathy and initiates transfer to concierge."
+    ]
+  },
+  "scores": {
+    "effectiveness": 5,
+    "quality": 5,
+    "effort": 2
+  },
+  "sentiment": {
+    "start": "frustrated",
+    "end": "neutral"
+  },
+  "failure": null,
+  "friction": {
+    "clarifications": [],
+    "corrections": [],
+    "loops": []
+  },
+  "actions": [
+    {
+      "type": "transfer",
+      "outcome": "success",
+      "detail": "Transferred to concierge for billing dispute and hardship."
+    }
+  ],
+  "insights": {
+    "summary": "Customer called regarding a $648.50 statement following her husband's death, seeking a credit and to end her commitment. The AI agent correctly identified the out-of-scope nature of the request and transferred her to a human agent.",
+    "verbatim": "I've got this statement and I we can't come there anymore. So who do I need to talk to? My husband died.",
+    "coaching": null
+  },
+  "call_id": "575e8a31-f9a2-4ac9-a5de-8f45a07fc1ad",
+  "schema_version": "v6.0",
+  "duration_seconds": 414.9,
+  "ended_by": "customer"
+}

@@ -1,0 +1,94 @@
+{
+  "turns": 8,
+  "repeat_caller": false,
+  "derailed_at": 14,
+  "resolution": {
+    "primary": {
+      "request": "discuss billing issue",
+      "context": "Customer received a bill but claims they do not have an account",
+      "scope": "in_scope",
+      "outcome": "transferred",
+      "detail": "The agent attempted to verify the account via phone and contract ID, but the caller denied having an account, leading to a transfer.",
+      "resolution_confirmed": null,
+      "transfer": {
+        "reason": "task_failure",
+        "destination": "concierge",
+        "queue_detected": true
+      },
+      "abandon_stage": null
+    },
+    "secondary": null,
+    "steps": [
+      "Caller requested a representative immediately.",
+      "Agent placed caller in a long queue (20+ minutes).",
+      "AI re-engaged after the queue failed to provide a human agent.",
+      "Caller identified the issue as billing.",
+      "Agent attempted verification via phone number and contract ID.",
+      "Caller stated they received a bill but do not have an account.",
+      "Agent transferred the caller back to the concierge queue due to verification failure."
+    ]
+  },
+  "scores": {
+    "effectiveness": 3,
+    "quality": 3,
+    "effort": 4
+  },
+  "sentiment": {
+    "start": "neutral",
+    "end": "neutral"
+  },
+  "failure": {
+    "type": "wrong_action",
+    "detail": "The agent persisted with standard account verification flows even after the caller explicitly stated they do not have an account but received a bill.",
+    "policy_gap": null
+  },
+  "friction": {
+    "clarifications": [
+      {
+        "turn": 7,
+        "type": "intent",
+        "cause": "proactive",
+        "note": "Confirming help needed after queue re-engagement"
+      }
+    ],
+    "corrections": [
+      {
+        "turn": 16,
+        "severity": "moderate",
+        "note": "Caller clarifies they do not have an account"
+      }
+    ],
+    "loops": []
+  },
+  "actions": [
+    {
+      "type": "transfer",
+      "outcome": "failed",
+      "detail": "Initial transfer to representative timed out after 20+ minutes"
+    },
+    {
+      "type": "verification",
+      "outcome": "retry",
+      "detail": "Attempted lookup via phone number"
+    },
+    {
+      "type": "verification",
+      "outcome": "failed",
+      "detail": "Attempted lookup via contract ID"
+    },
+    {
+      "type": "transfer",
+      "outcome": "success",
+      "detail": "Final transfer to concierge after verification failure"
+    }
+  ],
+  "insights": {
+    "summary": "The caller wanted to discuss a billing issue for an account they claim doesn't exist. After a long initial wait in a queue that returned to the AI, the agent failed to handle the 'no account' edge case and simply transferred them back into the same queue.",
+    "verbatim": "I don't have an account. I received a bill. I do not have an account.",
+    "coaching": "When a caller states they received a bill but have no account, the agent should recognize this as a potential billing dispute or error and escalate to a human immediately rather than cycling through failed verification steps."
+  },
+  "call_id": "2a321025-793c-46ee-b357-e485c20b4c00",
+  "schema_version": "v6.0",
+  "duration_seconds": 2695.8,
+  "ended_by": "unknown"
+}

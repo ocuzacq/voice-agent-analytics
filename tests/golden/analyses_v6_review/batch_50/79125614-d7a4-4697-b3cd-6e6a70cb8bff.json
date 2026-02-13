@@ -1,0 +1,47 @@
+{
+  "turns": 0,
+  "repeat_caller": false,
+  "derailed_at": null,
+  "resolution": {
+    "primary": {
+      "request": "No request made",
+      "context": "Caller disconnected immediately after the agent's greeting.",
+      "scope": "no_request",
+      "outcome": "abandoned",
+      "detail": "The caller hung up during or immediately after the initial greeting before stating any intent.",
+      "resolution_confirmed": null,
+      "transfer": null,
+      "abandon_stage": "pre_intent"
+    },
+    "secondary": null,
+    "steps": [
+      "Agent greeted the caller and identified as a virtual agent.",
+      "Caller disconnected without speaking."
+    ]
+  },
+  "scores": {
+    "effectiveness": 1,
+    "quality": 5,
+    "effort": 1
+  },
+  "sentiment": {
+    "start": "neutral",
+    "end": "neutral"
+  },
+  "failure": null,
+  "friction": {
+    "clarifications": [],
+    "corrections": [],
+    "loops": []
+  },
+  "actions": [],
+  "insights": {
+    "summary": "The caller disconnected immediately after the agent's opening greeting without stating a request.",
+    "verbatim": null,
+    "coaching": null
+  },
+  "call_id": "79125614-d7a4-4697-b3cd-6e6a70cb8bff",
+  "schema_version": "v6.0",
+  "duration_seconds": 11.8,
+  "ended_by": "customer"
+}

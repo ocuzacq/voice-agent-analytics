@@ -1,0 +1,67 @@
+{
+  "turns": 4,
+  "repeat_caller": false,
+  "derailed_at": null,
+  "resolution": {
+    "primary": {
+      "request": "make a maintenance payment",
+      "context": "Customer wants to pay fees over the phone rather than via link",
+      "scope": "in_scope",
+      "outcome": "transferred",
+      "detail": "The AI correctly identified the payment request and offered a link; when the user requested to pay over the phone, the AI correctly initiated a transfer to the concierge department.",
+      "resolution_confirmed": null,
+      "transfer": {
+        "reason": "customer_requested",
+        "destination": "concierge",
+        "queue_detected": true
+      },
+      "abandon_stage": null
+    },
+    "secondary": null,
+    "steps": [
+      "Agent greeted the customer.",
+      "Customer requested to make a maintenance payment.",
+      "Agent offered to send a payment link via text or email.",
+      "Customer declined the link and requested to pay over the phone.",
+      "Agent initiated a transfer to the concierge department.",
+      "Customer waited in a long queue with hold music and recorded messages.",
+      "Customer appeared to be in a separate environment or on another call (background audio) while waiting, then eventually disconnected."
+    ]
+  },
+  "scores": {
+    "effectiveness": 5,
+    "quality": 5,
+    "effort": 4
+  },
+  "sentiment": {
+    "start": "neutral",
+    "end": "neutral"
+  },
+  "failure": null,
+  "friction": {
+    "clarifications": [],
+    "corrections": [],
+    "loops": []
+  },
+  "actions": [
+    {
+      "type": "send_payment_link",
+      "outcome": "success",
+      "detail": "Offered payment link options to the customer."
+    },
+    {
+      "type": "transfer",
+      "outcome": "success",
+      "detail": "Transferred to concierge per customer request for phone payment."
+    }
+  ],
+  "insights": {
+    "summary": "The customer wanted to make a maintenance payment over the phone. The AI correctly offered a link first, then transferred to a human agent upon the customer's request, though the customer abandoned after a long wait in the queue.",
+    "verbatim": "No. On the phone. I'm gonna call and make it over the phone payment.",
+    "coaching": "The AI performed correctly according to its design; the friction was caused by the long hold time in the human agent queue."
+  },
+  "call_id": "0a195db9-a53b-4f0e-9f10-c2545a0a5528",
+  "schema_version": "v6.0",
+  "duration_seconds": 1710.0,
+  "ended_by": "customer"
+}

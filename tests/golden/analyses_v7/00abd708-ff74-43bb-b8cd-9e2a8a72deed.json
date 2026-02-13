@@ -1,0 +1,114 @@
+{
+  "turns": 10,
+  "repeat_caller": false,
+  "derailed_at": 11,
+  "resolution": {
+    "primary": {
+      "request_category": "maintenance_payment",
+      "request": "Pay maintenance fee",
+      "context": "Caller wanted to make a payment but could not pass name verification",
+      "human_requested": "after_service",
+      "department_requested": null,
+      "scope": "in_scope",
+      "outcome": "abandoned",
+      "detail": "The caller requested a representative after the AI repeatedly failed to verify her name against the contract record.",
+      "resolution_confirmed": null,
+      "transfer": {
+        "reason": "customer_requested",
+        "destination": "concierge",
+        "queue_detected": true,
+        "queue_result": "caller_abandoned"
+      },
+      "abandon_stage": "mid_task"
+    },
+    "secondary": null,
+    "steps": [
+      "Caller stated intent to pay maintenance fees.",
+      "AI attempted account lookup by name but failed to find a match.",
+      "AI requested spelling of the name and retried lookup, failing again.",
+      "AI successfully pulled up a record using the contract ID provided by the caller.",
+      "AI failed to verify the caller's name against the record found via contract ID.",
+      "Caller became frustrated and requested a representative.",
+      "AI transferred the caller to the concierge queue.",
+      "Caller abandoned the call after approximately 4 minutes of hold music/messages."
+    ]
+  },
+  "scores": {
+    "effectiveness": 2,
+    "quality": 3,
+    "effort": 4
+  },
+  "sentiment": {
+    "start": "neutral",
+    "end": "frustrated"
+  },
+  "impediment": {
+    "type": "verification",
+    "detail": "AI repeatedly failed to match the caller's name to the record, even after a successful contract ID lookup.",
+    "policy_gap": null
+  },
+  "agent_issue": {
+    "detail": "Agent persisted in asking for the name spelling a third time (Turn 19) after the caller had already provided it and spelled it twice, leading to immediate escalation."
+  },
+  "friction": {
+    "clarifications": [
+      {
+        "turn": 5,
+        "type": "name",
+        "cause": "tech",
+        "note": "Initial name lookup failed to match record"
+      },
+      {
+        "turn": 11,
+        "type": "name",
+        "cause": "tech",
+        "note": "Second name lookup attempt failed"
+      }
+    ],
+    "corrections": [],
+    "loops": [
+      {
+        "turns": [
+          5,
+          11,
+          19
+        ],
+        "type": "info_retry",
+        "subject": "name verification",
+        "note": "Repeatedly asking for name/spelling despite failures"
+      }
+    ]
+  },
+  "actions": [
+    {
+      "type": "account_lookup",
+      "outcome": "failed",
+      "detail": "Lookup by name 'Caroline Vasquez' failed"
+    },
+    {
+      "type": "account_lookup",
+      "outcome": "success",
+      "detail": "Lookup by contract ID 5516928 succeeded"
+    },
+    {
+      "type": "verification",
+      "outcome": "failed",
+      "detail": "Name verification failed after contract ID lookup"
+    },
+    {
+      "type": "transfer",
+      "outcome": "success",
+      "detail": "Transferred to concierge queue per request"
+    }
+  ],
+  "insights": {
+    "summary": "The caller wanted to pay maintenance fees but was blocked by name verification failures. Despite finding the record via contract ID, the AI could not match the name provided, leading the caller to request a representative and eventually hang up in the queue.",
+    "verbatim": "Talk to representative. Talk Take me to take me to representative. I don't wanna talk to you.",
+    "coaching": "When a contract ID lookup is successful but the name still doesn't match, the agent should recognize potential name mismatches (spouses/family) and offer to send the link to the contact info on file rather than looping on name spelling."
+  },
+  "call_id": "00abd708-ff74-43bb-b8cd-9e2a8a72deed",
+  "schema_version": "v7.0",
+  "duration_seconds": 575.0,
+  "ended_by": "customer",
+  "ended_reason": "customer-ended-call"
+}

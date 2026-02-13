@@ -1,0 +1,86 @@
+{
+  "turns": 7,
+  "repeat_caller": false,
+  "derailed_at": 15,
+  "resolution": {
+    "primary": {
+      "request_category": "maintenance_payment",
+      "request": "pay maintenance fees",
+      "context": "Caller wanted to pay a balance of $1,484.81 for Vacation Village at Bonaventure.",
+      "human_requested": null,
+      "department_requested": null,
+      "scope": "in_scope",
+      "outcome": "abandoned",
+      "detail": "The AI successfully verified the account and balance but failed to send the payment link, resulting in a transfer to a queue where the caller eventually hung up.",
+      "resolution_confirmed": null,
+      "transfer": {
+        "reason": "task_failure",
+        "destination": "concierge",
+        "queue_detected": true,
+        "queue_result": "caller_abandoned"
+      },
+      "abandon_stage": "mid_task"
+    },
+    "secondary": null,
+    "steps": [
+      "Caller requested to pay maintenance fees.",
+      "Agent collected name and state for verification.",
+      "Agent identified the property, contract number, and balance.",
+      "Agent confirmed the phone number on file (email was blank).",
+      "Agent attempted to send the payment link but encountered a system issue.",
+      "Agent transferred the caller to the concierge department.",
+      "Caller waited through multiple loops of hold messaging before disconnecting."
+    ]
+  },
+  "scores": {
+    "effectiveness": 3,
+    "quality": 4,
+    "effort": 4
+  },
+  "sentiment": {
+    "start": "neutral",
+    "end": "neutral"
+  },
+  "impediment": {
+    "type": "link_delivery",
+    "detail": "Agent encountered an error while attempting to send the payment link after successful verification.",
+    "policy_gap": null
+  },
+  "agent_issue": null,
+  "friction": {
+    "clarifications": [],
+    "corrections": [],
+    "loops": []
+  },
+  "actions": [
+    {
+      "type": "account_lookup",
+      "outcome": "success",
+      "detail": "Found account for Paul Markowitz in Illinois"
+    },
+    {
+      "type": "verification",
+      "outcome": "success",
+      "detail": "Verified identity via name and state"
+    },
+    {
+      "type": "send_payment_link",
+      "outcome": "failed",
+      "detail": "Issue encountered while sending information"
+    },
+    {
+      "type": "transfer",
+      "outcome": "success",
+      "detail": "Transferred to concierge due to link delivery failure"
+    }
+  ],
+  "insights": {
+    "summary": "The caller wanted to pay maintenance fees and successfully completed verification, but the AI failed to send the payment link due to a technical error and transferred the call. The caller abandoned the call after waiting in the concierge queue for several minutes.",
+    "verbatim": "I would like to pay my maintenance fees with a credit card.",
+    "coaching": null
+  },
+  "call_id": "25d30736-73bb-44fa-a42a-2e38a1ea3b73",
+  "schema_version": "v7.0",
+  "duration_seconds": 749.7,
+  "ended_by": "customer"
+}

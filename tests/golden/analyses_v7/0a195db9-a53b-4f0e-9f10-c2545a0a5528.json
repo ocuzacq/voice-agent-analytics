@@ -1,0 +1,76 @@
+{
+  "turns": 4,
+  "repeat_caller": false,
+  "derailed_at": 4,
+  "resolution": {
+    "primary": {
+      "request_category": "maintenance_payment",
+      "request": "Make a maintenance payment over the phone",
+      "context": "Caller refused the automated link delivery and insisted on speaking to someone to pay",
+      "human_requested": "initial",
+      "department_requested": null,
+      "scope": "in_scope",
+      "outcome": "abandoned",
+      "detail": "The caller requested to pay over the phone and was transferred to a queue where they waited for over 25 minutes before disconnecting.",
+      "resolution_confirmed": null,
+      "transfer": {
+        "reason": "customer_requested",
+        "destination": "concierge",
+        "queue_detected": true,
+        "queue_result": "caller_abandoned"
+      },
+      "abandon_stage": "mid_task"
+    },
+    "secondary": null,
+    "steps": [
+      "Caller requested to make a maintenance payment.",
+      "AI offered to send a payment link via text or email.",
+      "Caller refused the link and requested to pay over the phone.",
+      "AI transferred the caller to the concierge queue.",
+      "Caller waited in the queue for approximately 28 minutes, eventually speaking over hold music/messages before hanging up."
+    ]
+  },
+  "scores": {
+    "effectiveness": 4,
+    "quality": 3,
+    "effort": 5
+  },
+  "sentiment": {
+    "start": "neutral",
+    "end": "frustrated"
+  },
+  "impediment": {
+    "type": "transfer_queue",
+    "detail": "The caller was stuck in a transfer queue for over 25 minutes without reaching a human agent.",
+    "policy_gap": null
+  },
+  "agent_issue": null,
+  "friction": {
+    "clarifications": [],
+    "corrections": [
+      {
+        "turn": 4,
+        "severity": "minor",
+        "note": "Caller corrected AI's offer of a link, requesting phone payment."
+      }
+    ],
+    "loops": []
+  },
+  "actions": [
+    {
+      "type": "transfer",
+      "outcome": "success",
+      "detail": "Transfer to concierge initiated per customer request."
+    }
+  ],
+  "insights": {
+    "summary": "The caller wanted to make a maintenance payment but specifically requested to do so over the phone rather than via the AI's link. They were transferred to a queue and abandoned after a 28-minute wait.",
+    "verbatim": "No. On the phone. I'm gonna call and make it over the phone payment.",
+    "coaching": "The agent correctly identified that phone payments are out of scope and transferred the caller; the failure was operational (queue wait time) rather than a logic error by the AI."
+  },
+  "call_id": "0a195db9-a53b-4f0e-9f10-c2545a0a5528",
+  "schema_version": "v7.0",
+  "duration_seconds": 1710.0,
+  "ended_by": "customer",
+  "ended_reason": "customer-ended-call"
+}

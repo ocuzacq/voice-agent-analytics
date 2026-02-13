@@ -1,0 +1,93 @@
+{
+  "turns": 9,
+  "repeat_caller": false,
+  "derailed_at": 11,
+  "resolution": {
+    "primary": {
+      "request": "remove optional fee from balance",
+      "context": "Caller wants to remove a five dollar optional fee before paying their balance.",
+      "scope": "out_of_scope",
+      "outcome": "abandoned",
+      "detail": "The agent correctly identified the request as out-of-scope and attempted a transfer, but after the queue failed and the agent re-engaged, it put the caller through an unnecessary verification loop before attempting the transfer again.",
+      "resolution_confirmed": null,
+      "transfer": {
+        "reason": "out_of_scope",
+        "destination": "concierge",
+        "queue_detected": true
+      },
+      "abandon_stage": "mid_task"
+    },
+    "secondary": null,
+    "steps": [
+      "Caller requested removal of a $5 optional fee.",
+      "Agent identified this as out-of-scope and transferred to concierge.",
+      "Queue timed out with no representatives available; agent re-engaged.",
+      "Agent performed full account verification (phone, name, state) despite already knowing the request was out-of-scope.",
+      "After verification, caller repeated the request to fix the balance and pay.",
+      "Agent attempted a second transfer to concierge, where the caller eventually abandoned during the hold music."
+    ]
+  },
+  "scores": {
+    "effectiveness": 2,
+    "quality": 3,
+    "effort": 5
+  },
+  "sentiment": {
+    "start": "neutral",
+    "end": "frustrated"
+  },
+  "failure": {
+    "type": "wrong_action",
+    "detail": "Agent performed a full identity verification loop after a failed transfer for a request it already knew was out-of-scope.",
+    "policy_gap": null
+  },
+  "friction": {
+    "clarifications": [
+      {
+        "turn": 5,
+        "type": "intent",
+        "cause": "proactive",
+        "note": "Confirming if user wants to dispute or remove charge"
+      },
+      {
+        "turn": 15,
+        "type": "verify",
+        "cause": "misheard",
+        "note": "User said 'Bobby' instead of state"
+      }
+    ],
+    "corrections": [],
+    "loops": []
+  },
+  "actions": [
+    {
+      "type": "transfer",
+      "outcome": "failed",
+      "detail": "First transfer attempt; no representatives available"
+    },
+    {
+      "type": "account_lookup",
+      "outcome": "success",
+      "detail": "Looked up account via phone number"
+    },
+    {
+      "type": "verification",
+      "outcome": "success",
+      "detail": "Verified name and state"
+    },
+    {
+      "type": "transfer",
+      "outcome": "unknown",
+      "detail": "Second transfer attempt; caller abandoned in queue"
+    }
+  ],
+  "insights": {
+    "summary": "The caller wanted to remove an optional fee to pay their balance. The AI correctly identified this as out-of-scope but, after a failed transfer, forced the caller through a redundant verification process before trying to transfer them again, leading to abandonment.",
+    "verbatim": "I'm calling to have a, five dollar optional fee removed from my from my balance.",
+    "coaching": "When a transfer fails and the agent re-engages, if the request is already known to be out-of-scope, the agent should offer a callback or another department immediately rather than putting the customer through a full identity verification loop for a task the AI cannot perform."
+  },
+  "call_id": "2e96b5d3-853c-4718-a8e6-2475fcf07557",
+  "schema_version": "v6.0",
+  "duration_seconds": 2116.7,
+  "ended_by": "customer"
+}

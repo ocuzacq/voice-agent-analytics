@@ -1,0 +1,76 @@
+{
+  "turns": 7,
+  "repeat_caller": true,
+  "derailed_at": null,
+  "resolution": {
+    "primary": {
+      "request": "Pay maintenance fees",
+      "context": "Caller has two contracts and wants to pay maintenance fees for the West Palm property",
+      "scope": "in_scope",
+      "outcome": "fulfilled",
+      "detail": "The agent identified the correct contract and confirmed sending a payment link via text/email.",
+      "resolution_confirmed": false,
+      "transfer": null,
+      "abandon_stage": null
+    },
+    "secondary": {
+      "request": "Make mortgage payment",
+      "context": "First monthly loan payment for new Parkway property",
+      "scope": "out_of_scope",
+      "outcome": "abandoned",
+      "detail": "The agent identified the mortgage contract but the call ended after the primary task was initiated without addressing the mortgage payment.",
+      "resolution_confirmed": null,
+      "transfer": null,
+      "abandon_stage": "post_delivery"
+    },
+    "steps": [
+      "Caller expressed frustration with previous attempts and requested a representative.",
+      "Agent offered automated help to avoid 20-minute wait; caller agreed.",
+      "Agent performed account lookup and verified identity (name and state).",
+      "Agent identified two separate contracts (Palm Beach and Parkway).",
+      "Caller chose to handle Palm Beach maintenance fees first.",
+      "Agent confirmed contact info and sent the payment link."
+    ]
+  },
+  "scores": {
+    "effectiveness": 5,
+    "quality": 5,
+    "effort": 3
+  },
+  "sentiment": {
+    "start": "frustrated",
+    "end": "neutral"
+  },
+  "failure": null,
+  "friction": {
+    "clarifications": [],
+    "corrections": [],
+    "loops": []
+  },
+  "actions": [
+    {
+      "type": "account_lookup",
+      "outcome": "success",
+      "detail": "Pulled record via caller ID"
+    },
+    {
+      "type": "verification",
+      "outcome": "success",
+      "detail": "Verified name and state of residence"
+    },
+    {
+      "type": "send_payment_link",
+      "outcome": "success",
+      "detail": "Sent maintenance fee link for Palm Beach contract"
+    }
+  ],
+  "insights": {
+    "summary": "The caller wanted to pay maintenance fees for one property and a mortgage payment for another. The agent successfully verified the account and sent a link for the maintenance fees before the call concluded.",
+    "verbatim": "I've called several times today. I'm trying to get the virtual agent to help me. I'm trying to pay my maintenance fees.",
+    "coaching": null
+  },
+  "call_id": "3fb12040-78b1-4102-9dbf-895d08a56a86",
+  "schema_version": "v6.0",
+  "duration_seconds": 208.6,
+  "ended_by": "customer"
+}

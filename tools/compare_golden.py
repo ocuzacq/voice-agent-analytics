@@ -4,7 +4,7 @@ Compare two sets of golden transcript analyses field-by-field.
 
 Loads analyses from two directories (supports both flat and nested layouts),
 keys them by call_id, and reports differences across three tiers:
-  CRITICAL - scope, outcome, failure type, transfer reason
+  CRITICAL - scope, outcome, impediment type, agent issue, transfer reason
   IMPORTANT - secondary present, abandon_stage, sentiment start/end
   INFO      - scores, derailed_at, turns
 
@@ -23,10 +23,12 @@ from pathlib import Path
 # ── Field definitions ────────────────────────────────────────────────────
 
 CRITICAL_FIELDS = [
-    ("scope",           lambda d: _get(d, "resolution", "primary", "scope")),
-    ("outcome",         lambda d: _get(d, "resolution", "primary", "outcome")),
-    ("failure",         lambda d: _get(d, "failure", "type") if isinstance(d.get("failure"), dict) else (None if d.get("failure") is None else d.get("failure"))),
-    ("transfer_reason", lambda d: _get(d, "resolution", "primary", "transfer", "reason")),
+    ("scope",              lambda d: _get(d, "resolution", "primary", "scope")),
+    ("outcome",            lambda d: _get(d, "resolution", "primary", "outcome")),
+    ("request_category",   lambda d: _get(d, "resolution", "primary", "request_category")),
+    ("impediment_type",    lambda d: _get(d, "impediment", "type") if isinstance(d.get("impediment"), dict) else None),
+    ("has_agent_issue",    lambda d: d.get("agent_issue") is not None),
+    ("transfer_reason",    lambda d: _get(d, "resolution", "primary", "transfer", "reason")),
 ]
 
 IMPORTANT_FIELDS = [

@@ -1,0 +1,86 @@
+{
+  "turns": 10,
+  "repeat_caller": false,
+  "derailed_at": null,
+  "resolution": {
+    "primary": {
+      "request_category": "other",
+      "request": "Inquire about data breach and account security",
+      "context": "Caller received a suspicious call from Florida and feared her bank account was targeted due to a Vacatia breach.",
+      "human_requested": null,
+      "department_requested": null,
+      "scope": "in_scope",
+      "outcome": "fulfilled",
+      "detail": "The agent checked the account for suspicious activity, confirmed no unusual notes or breaches were visible, and provided official contact info for security.",
+      "resolution_confirmed": true,
+      "transfer": null,
+      "abandon_stage": null
+    },
+    "secondary": {
+      "request_category": "maintenance_payment",
+      "request": "Check maintenance fee due date",
+      "context": "Caller wanted to know when her annual fees were due.",
+      "human_requested": null,
+      "department_requested": null,
+      "scope": "in_scope",
+      "outcome": "fulfilled",
+      "detail": "The agent informed the caller that her resort's invoices were still being processed and provided the general mailing schedule for Florida resorts.",
+      "resolution_confirmed": true,
+      "transfer": null,
+      "abandon_stage": null
+    },
+    "steps": [
+      "Caller expressed concern about a potential data breach.",
+      "Agent performed account lookup and confirmed no suspicious activity or unauthorized access notes.",
+      "Agent provided official contact information and safety advice.",
+      "Caller asked about membership/maintenance fee due dates.",
+      "Agent checked RCI status and maintenance balance, then provided the mailing schedule for invoices."
+    ]
+  },
+  "scores": {
+    "effectiveness": 5,
+    "quality": 5,
+    "effort": 1
+  },
+  "sentiment": {
+    "start": "frustrated",
+    "end": "satisfied"
+  },
+  "impediment": null,
+  "agent_issue": null,
+  "friction": {
+    "clarifications": [
+      {
+        "turn": 3,
+        "type": "intent",
+        "cause": "proactive",
+        "note": "Agent clarifying specific nature of breach concern"
+      },
+      {
+        "turn": 13,
+        "type": "intent",
+        "cause": "proactive",
+        "note": "Agent clarifying if 'membership' meant maintenance fees"
+      }
+    ],
+    "corrections": [],
+    "loops": []
+  },
+  "actions": [
+    {
+      "type": "account_lookup",
+      "outcome": "success",
+      "detail": "Looked up Edith Baer's contract and status."
+    }
+  ],
+  "insights": {
+    "summary": "The caller was concerned about a potential data breach after receiving a scam call; the agent verified her account security and then provided information on upcoming maintenance fee invoices.",
+    "verbatim": "I'm wanting to know if you guys have been compromised... someone from Florida... tried to call and get into my bank account.",
+    "coaching": null
+  },
+  "call_id": "24cdd3bf-ea98-4ff1-ad34-bc9a32552173",
+  "schema_version": "v7.0",
+  "duration_seconds": 251.6,
+  "ended_by": "agent",
+  "ended_reason": "assistant-ended-call"
+}

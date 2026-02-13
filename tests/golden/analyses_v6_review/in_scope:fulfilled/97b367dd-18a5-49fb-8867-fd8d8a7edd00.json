@@ -1,0 +1,79 @@
+{
+  "turns": 9,
+  "repeat_caller": false,
+  "derailed_at": null,
+  "resolution": {
+    "primary": {
+      "request": "Submit rental agreement",
+      "context": "Caller wanted instructions on what to do with a rental agreement for their owned week.",
+      "scope": "in_scope",
+      "outcome": "fulfilled",
+      "detail": "The agent verified the caller and sent a link to complete the rental agreement online.",
+      "resolution_confirmed": true,
+      "transfer": null,
+      "abandon_stage": null
+    },
+    "secondary": null,
+    "steps": [
+      "Agent greeted caller and identified intent regarding rental agreement.",
+      "Agent performed account lookup and verified caller's name and state.",
+      "Agent explained the purpose of the rental agreement for contract 3071293.",
+      "Agent offered and sent a digital link to the caller's email and phone.",
+      "Caller confirmed no further needs and call ended."
+    ]
+  },
+  "scores": {
+    "effectiveness": 5,
+    "quality": 5,
+    "effort": 1
+  },
+  "sentiment": {
+    "start": "neutral",
+    "end": "satisfied"
+  },
+  "failure": null,
+  "friction": {
+    "clarifications": [
+      {
+        "turn": 5,
+        "type": "intent",
+        "cause": "proactive",
+        "note": "Agent confirmed if caller needed submission instructions."
+      },
+      {
+        "turn": 9,
+        "type": "verify",
+        "cause": "proactive",
+        "note": "Agent spelled back name to ensure accuracy."
+      }
+    ],
+    "corrections": [],
+    "loops": []
+  },
+  "actions": [
+    {
+      "type": "account_lookup",
+      "outcome": "success",
+      "detail": "Located record via phone number."
+    },
+    {
+      "type": "verification",
+      "outcome": "success",
+      "detail": "Verified name spelling and state of residence."
+    },
+    {
+      "type": "send_rental_link",
+      "outcome": "success",
+      "detail": "Sent digital rental agreement link to email and phone."
+    }
+  ],
+  "insights": {
+    "summary": "The caller wanted to know how to handle a rental agreement; the agent verified the account and successfully sent a digital link for online completion.",
+    "verbatim": "What do I do with the rental agreement?",
+    "coaching": null
+  },
+  "call_id": "97b367dd-18a5-49fb-8867-fd8d8a7edd00",
+  "schema_version": "v6.0",
+  "duration_seconds": 137.9,
+  "ended_by": "agent"
+}

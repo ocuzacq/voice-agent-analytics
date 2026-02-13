@@ -1,0 +1,78 @@
+{
+  "turns": 9,
+  "repeat_caller": false,
+  "derailed_at": null,
+  "resolution": {
+    "primary": {
+      "request_category": "contract_points_info",
+      "request": "Check timeshare status for RCI exchange",
+      "context": "RCI canceled an exchange and told the caller to contact the resort",
+      "human_requested": null,
+      "department_requested": null,
+      "scope": "in_scope",
+      "outcome": "fulfilled",
+      "detail": "The agent confirmed the account is in good standing with a zero balance and active RCI membership.",
+      "resolution_confirmed": true,
+      "transfer": null,
+      "abandon_stage": null
+    },
+    "secondary": {
+      "request_category": "exchange_program",
+      "request": "Deposit weeks for exchange",
+      "context": "Caller wanted to know if they deposit weeks through the resort or RCI",
+      "human_requested": null,
+      "department_requested": null,
+      "scope": "in_scope",
+      "outcome": "fulfilled",
+      "detail": "The agent explained that deposits are handled directly through RCI and offered to send a maintenance history link.",
+      "resolution_confirmed": true,
+      "transfer": null,
+      "abandon_stage": null
+    },
+    "steps": [
+      "Caller requested status of timeshare for an exchange vacation.",
+      "Agent performed account lookup and confirmed 'Good Business' status and zero balance.",
+      "Caller explained RCI canceled an exchange; agent confirmed no internal blocks exist.",
+      "Agent offered and sent a maintenance account history link.",
+      "Agent clarified that depositing weeks is done via RCI, not the resort."
+    ]
+  },
+  "scores": {
+    "effectiveness": 5,
+    "quality": 5,
+    "effort": 1
+  },
+  "sentiment": {
+    "start": "neutral",
+    "end": "satisfied"
+  },
+  "impediment": null,
+  "agent_issue": null,
+  "friction": {
+    "clarifications": [],
+    "corrections": [],
+    "loops": []
+  },
+  "actions": [
+    {
+      "type": "account_lookup",
+      "outcome": "success",
+      "detail": "Automatic lookup via caller ID or internal data"
+    },
+    {
+      "type": "send_portal_link",
+      "outcome": "success",
+      "detail": "Sent maintenance account history link"
+    }
+  ],
+  "insights": {
+    "summary": "The caller wanted to verify their account status after RCI canceled an exchange. The agent confirmed the account was in good standing, explained the RCI deposit process, and sent a maintenance history link.",
+    "verbatim": "RCI canceled my exchange and said I needed to talk to you about something. I don't know what.",
+    "coaching": null
+  },
+  "call_id": "0d558884-39eb-43a1-81bf-e6131766a558",
+  "schema_version": "v7.0",
+  "duration_seconds": 218.7,
+  "ended_by": "agent",
+  "ended_reason": "assistant-ended-call"
+}

@@ -45,6 +45,7 @@ def extract_key_fields(analysis: CallAnalysis) -> dict:
     return {
         "scope": p.scope,
         "outcome": p.outcome,
+        "request_category": p.request_category,
         "human_requested": p.human_requested,
         "dept_requested": p.department_requested,
         "abandon_stage": p.abandon_stage,
@@ -52,7 +53,8 @@ def extract_key_fields(analysis: CallAnalysis) -> dict:
         "transfer_dest": p.transfer.destination if p.transfer else None,
         "has_secondary": s is not None,
         "secondary_request": s.request if s else None,
-        "failure_type": analysis.failure.type if analysis.failure else None,
+        "impediment_type": analysis.impediment.type if analysis.impediment else None,
+        "has_agent_issue": analysis.agent_issue is not None,
     }
 
 
@@ -95,20 +97,22 @@ def print_results(call_id: str, runs: list[dict]) -> dict:
     print(f"{'=' * 80}")
 
     # Header
-    cols = ["#", "scope", "outcome", "human_req", "dept_req", "abandon_stg", "xfer_reason", "secondary", "failure", "time"]
+    cols = ["#", "scope", "outcome", "req_category", "human_req", "dept_req", "abandon_stg", "xfer_reason", "secondary", "impediment", "agent_iss", "time"]
     print(f"  {'  '.join(f'{c:<14}' for c in cols)}")
-    print(f"  {'-' * 148}")
+    print(f"  {'-' * 162}")
 
     for i, r in enumerate(runs):
         if r.get("status", "").startswith("error"):
             print(f"  {i+1:<14}  ERROR: {r['status']}")
             continue
         print(f"  {i+1:<14}  {r.get('scope', '?'):<14}  {r.get('outcome', '?'):<14}"
+              f"  {str(r.get('request_category') or '-'):<14}"
               f"  {str(r.get('human_requested') or '-'):<14}  {str(r.get('dept_requested') or '-'):<14}"
               f"  {str(r.get('abandon_stage') or '-'):<14}"
               f"  {str(r.get('transfer_reason') or '-'):<14}  "
               f"{'yes: ' + (r.get('secondary_request') or '?') if r.get('has_secondary') else 'no':<14}"
-              f"  {str(r.get('failure_type') or '-'):<14}  {r.get('elapsed', '?')}s")
+              f"  {str(r.get('impediment_type') or '-'):<14}  {'yes' if r.get('has_agent_issue') else '-':<14}"
+              f"  {r.get('elapsed', '?')}s")
 
     # Compute flip counts
     ok_runs = [r for r in runs if r.get("status", "").startswith("ok")]
@@ -116,7 +120,7 @@ def print_results(call_id: str, runs: list[dict]) -> dict:
         print(f"\n  Too few successful runs ({len(ok_runs)}) to assess stability")
         return {"stable": None, "flips": {}}
 
-    fields_to_check = ["scope", "outcome", "human_requested", "dept_requested", "abandon_stage", "transfer_reason", "has_secondary", "failure_type"]
+    fields_to_check = ["scope", "outcome", "request_category", "human_requested", "dept_requested", "abandon_stage", "transfer_reason", "has_secondary", "impediment_type", "has_agent_issue"]
     flips = {}
     for field in fields_to_check:
         values = [r.get(field) for r in ok_runs]

@@ -1,0 +1,71 @@
+{
+  "turns": 4,
+  "repeat_caller": false,
+  "derailed_at": null,
+  "resolution": {
+    "primary": {
+      "request": "Check reservation dates",
+      "context": "Caller wants to know when their reservation at Vacation Village at Weston is scheduled.",
+      "scope": "out_of_scope",
+      "outcome": "transferred",
+      "detail": "The agent correctly identified that reservations are out of scope and transferred the caller to the concierge department.",
+      "resolution_confirmed": null,
+      "transfer": {
+        "reason": "out_of_scope",
+        "destination": "concierge",
+        "queue_detected": true
+      },
+      "abandon_stage": null
+    },
+    "secondary": null,
+    "steps": [
+      "Caller requested reservation information.",
+      "Agent performed name verification.",
+      "Agent offered transfer to concierge or owner services.",
+      "Caller selected concierge and was transferred."
+    ]
+  },
+  "scores": {
+    "effectiveness": 5,
+    "quality": 4,
+    "effort": 2
+  },
+  "sentiment": {
+    "start": "neutral",
+    "end": "neutral"
+  },
+  "failure": null,
+  "friction": {
+    "clarifications": [
+      {
+        "turn": 5,
+        "type": "repeat",
+        "cause": "tech",
+        "note": "Agent asked if caller was still there after silence."
+      }
+    ],
+    "corrections": [],
+    "loops": []
+  },
+  "actions": [
+    {
+      "type": "verification",
+      "outcome": "success",
+      "detail": "Agent captured caller name David Rowan."
+    },
+    {
+      "type": "transfer",
+      "outcome": "success",
+      "detail": "Transferred to concierge department for reservation help."
+    }
+  ],
+  "insights": {
+    "summary": "The caller wanted to check reservation dates, which is an out-of-scope task. The agent verified the caller's name and successfully transferred them to the concierge department.",
+    "verbatim": "I'm checking to see when my reservation is for Vacation Village at Weston.",
+    "coaching": null
+  },
+  "call_id": "c0c09bb9-004e-4cb8-86a5-52215ca70acc",
+  "schema_version": "v6.0",
+  "duration_seconds": 135.9,
+  "ended_by": "agent"
+}

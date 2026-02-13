@@ -1,0 +1,96 @@
+{
+  "turns": 9,
+  "repeat_caller": false,
+  "derailed_at": 3,
+  "resolution": {
+    "primary": {
+      "request": "Speak to concierge",
+      "context": "General assistance or billing inquiry",
+      "scope": "out_of_scope",
+      "outcome": "transferred",
+      "detail": "The caller requested concierge at the start and end of the call, and was eventually transferred after a brief billing inquiry.",
+      "resolution_confirmed": null,
+      "transfer": {
+        "reason": "customer_requested",
+        "destination": "concierge",
+        "queue_detected": true
+      },
+      "abandon_stage": null
+    },
+    "secondary": {
+      "request": "Inquire about billing maintenance",
+      "context": "Caller mentioned billing and maintenance during the flow",
+      "scope": "in_scope",
+      "outcome": "transferred",
+      "detail": "The AI attempted to narrow down the billing request but the caller reverted to asking for a concierge.",
+      "resolution_confirmed": null,
+      "transfer": null,
+      "abandon_stage": null
+    },
+    "steps": [
+      "Caller requested concierge immediately.",
+      "AI attempted to clarify the intent and the caller mentioned billing.",
+      "AI performed account lookup and identity verification.",
+      "AI asked for specific billing needs (maintenance payment, history, etc.).",
+      "Caller requested concierge again and was transferred."
+    ]
+  },
+  "scores": {
+    "effectiveness": 4,
+    "quality": 4,
+    "effort": 2
+  },
+  "sentiment": {
+    "start": "neutral",
+    "end": "neutral"
+  },
+  "failure": {
+    "type": "wrong_action",
+    "detail": "The agent proceeded with full identity verification even though the caller's initial and ultimate request was for a concierge transfer.",
+    "policy_gap": null
+  },
+  "friction": {
+    "clarifications": [
+      {
+        "turn": 3,
+        "type": "intent",
+        "cause": "proactive",
+        "note": "AI clarifying concierge request details"
+      },
+      {
+        "turn": 5,
+        "type": "intent",
+        "cause": "proactive",
+        "note": "AI clarifying billing vs mortgage"
+      }
+    ],
+    "corrections": [],
+    "loops": []
+  },
+  "actions": [
+    {
+      "type": "account_lookup",
+      "outcome": "success",
+      "detail": "Looked up account via caller ID"
+    },
+    {
+      "type": "verification",
+      "outcome": "success",
+      "detail": "Verified name and state"
+    },
+    {
+      "type": "transfer",
+      "outcome": "success",
+      "detail": "Transferred to concierge department"
+    }
+  ],
+  "insights": {
+    "summary": "The caller initially asked for concierge, but the AI diverted into a billing verification flow before finally transferring the caller to the requested department.",
+    "verbatim": "Speak to a concierge.",
+    "coaching": "When a caller explicitly asks for 'Concierge' as their first turn, the agent should prioritize the transfer or provide a more direct path rather than forcing a full verification flow for a potentially out-of-scope request."
+  },
+  "call_id": "0107c02c-0cae-47f5-98d8-37b036effa10",
+  "schema_version": "v6.0",
+  "duration_seconds": 897.6,
+  "ended_by": "customer"
+}

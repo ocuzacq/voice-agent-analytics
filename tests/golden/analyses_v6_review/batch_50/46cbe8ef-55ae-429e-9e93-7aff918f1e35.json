@@ -1,0 +1,93 @@
+{
+  "turns": 17,
+  "repeat_caller": false,
+  "derailed_at": 33,
+  "resolution": {
+    "primary": {
+      "request": "pay maintenance fees for two timeshares",
+      "context": "The caller has two timeshares (weekly and points) and wants to pay the maintenance fees, noting they were charged an extra amount.",
+      "scope": "in_scope",
+      "outcome": "transferred",
+      "detail": "The agent verified the caller and identified the contracts but transferred the call to concierge after a transcription error regarding 'red beer and bacon'.",
+      "resolution_confirmed": null,
+      "transfer": {
+        "reason": "out_of_scope",
+        "destination": "concierge",
+        "queue_detected": true
+      },
+      "abandon_stage": null
+    },
+    "secondary": null,
+    "steps": [
+      "Caller requested a representative immediately.",
+      "Agent attempted a transfer but returned when no agents were available.",
+      "Agent performed account lookup via phone numbers and verified name and state.",
+      "Agent identified two contracts and asked which one to pay first.",
+      "Caller clarified both properties are in Vegas; transcription error occurred ('red beer and bacon').",
+      "Agent transferred the caller back to the concierge queue."
+    ]
+  },
+  "scores": {
+    "effectiveness": 3,
+    "quality": 3,
+    "effort": 4
+  },
+  "sentiment": {
+    "start": "neutral",
+    "end": "neutral"
+  },
+  "failure": {
+    "type": "wrong_action",
+    "detail": "The agent transferred the caller to a human for a routine payment request after a minor NLU hallucination ('red beer and bacon').",
+    "policy_gap": null
+  },
+  "friction": {
+    "clarifications": [
+      {
+        "turn": 33,
+        "type": "intent",
+        "cause": "tech",
+        "note": "Agent hallucinated 'red beer and bacon' from user audio."
+      }
+    ],
+    "corrections": [
+      {
+        "turn": 6,
+        "severity": "minor",
+        "note": "User noted agent already had his name."
+      }
+    ],
+    "loops": []
+  },
+  "actions": [
+    {
+      "type": "transfer",
+      "outcome": "retry",
+      "detail": "Initial transfer attempt failed due to long wait times."
+    },
+    {
+      "type": "account_lookup",
+      "outcome": "success",
+      "detail": "Found records using two provided phone numbers."
+    },
+    {
+      "type": "verification",
+      "outcome": "success",
+      "detail": "Verified name Frank Wells and state Texas."
+    },
+    {
+      "type": "transfer",
+      "outcome": "success",
+      "detail": "Final transfer to concierge queue."
+    }
+  ],
+  "insights": {
+    "summary": "The caller wanted to pay maintenance fees for two properties. After an initial failed transfer and successful identity verification, the agent encountered a transcription error and transferred the caller back to a long queue.",
+    "verbatim": "I need both of those timeshare. I need the maintenance fee to both of those timeshare.",
+    "coaching": "The agent should have ignored the 'red beer and bacon' transcription error and proceeded with the payment link flow, as the caller's intent to pay was already clear and verified."
+  },
+  "call_id": "46cbe8ef-55ae-429e-9e93-7aff918f1e35",
+  "schema_version": "v6.0",
+  "duration_seconds": 2696.6,
+  "ended_by": "unknown"
+}

@@ -1,0 +1,167 @@
+{
+  "agent_id": "IdNSnJmoukxviqoTIWOZ",
+  "duration": 251.567818,
+  "ended_reason": "assistant-ended-call",
+  "messages": [
+    {
+      "role": "assistant",
+      "timestamp": 1770664681.4242697,
+      "content": "Hi, thank you for calling Vacation Village Resorts. This is Jamie on a recorded line. How can I help you today?"
+    },
+    {
+      "role": "user",
+      "timestamp": 1770664693.193631,
+      "content": "Yeah. My name is Edith Bear, and I'm wanting to know if you guys have been compromised."
+    },
+    {
+      "role": "user",
+      "timestamp": 1770664699.1176736,
+      "content": "The reason I asked is because I have a with you guys, and someone from Florida and you guys are the only contact I have in Florida, tried to call and get into my bank account."
+    },
+    {
+      "role": "assistant",
+      "timestamp": 1770664715.6201444,
+      "content": "Oh wow, that sounds really concerning. Just to clarify, are you asking if Vacation Village Resorts has experienced a data breach"
+    },
+    {
+      "role": "assistant",
+      "timestamp": 1770664715.6201444,
+      "content": "or if your personal information with us has been compromised?"
+    },
+    {
+      "role": "user",
+      "timestamp": 1770664699.1176736,
+      "content": "Yes."
+    },
+    {
+      "role": "user",
+      "timestamp": 1770664729.095477,
+      "content": "Well, I guess both."
+    },
+    {
+      "role": "assistant",
+      "timestamp": 1770664732.0967364,
+      "content": "I understand why you'd be worried. I don't have access to information about company-wide data breaches, but I can check your contract details to see if there"
+    },
+    {
+      "role": "assistant",
+      "timestamp": 1770664732.0967364,
+      "content": "are any unusual notes or activity on your account. Would you like me to pull up your contract information to review your account for anything suspicious?"
+    },
+    {
+      "role": "user",
+      "timestamp": 1770664749.3168101,
+      "content": "Yes."
+    },
+    {
+      "role": "assistant",
+      "timestamp": 1770664752.1175425,
+      "content": "Alright, I'll pull up your contract information now. Can you please hold on for just a moment while I do that?"
+    },
+    {
+      "role": "user",
+      "timestamp": 1770664760.3568623,
+      "content": "Sure."
+    },
+    {
+      "role": "assistant",
+      "timestamp": 1770664766.3183596,
+      "content": "So, looking at your contract, I see your ownership is listed under Edith Baer with a Good Business status and no signs"
+    },
+    {
+      "role": "assistant",
+      "timestamp": 1770664766.3183596,
+      "content": "of collections or unusual activity. There are no notes or indicators of suspicious changes, and your mortgage balance is zero. I do not see any evidence on your account of a data breach or unauthorized access. -- -- If you received a suspicious call, I recommend not sharing any personal or banking information and contacting your bank to monitor your accounts. Would you like information on how to contact Vacation Village Resorts directly if you receive another suspicious call?"
+    },
+    {
+      "role": "user",
+      "timestamp": 1770664795.8161826,
+      "content": "Yes."
+    },
+    {
+      "role": "assistant",
+      "timestamp": 1770664801.4973335,
+      "content": "You can reach Vacation Village Resorts directly through the Contact page on their website, vacationvillageresorts dot com. Their headquarters address is twenty six twenty six East Oakland Park Boulevard, Fort Lauderdale, Florida, three three three zero six. If you get another suspicious call, do not provide any information and reach out to us through the official website. Do you have any other questions or concerns about your contract or account?"
+    },
+    {
+      "role": "user",
+      "timestamp": 1770664826.1261048,
+      "content": "No."
+    },
+    {
+      "role": "user",
+      "timestamp": 1770664827.3583968,
+      "content": "When is my membership due?"
+    },
+    {
+      "role": "assistant",
+      "timestamp": 1770664830.8814762,
+      "content": "I checked your contract and I do not see a membership due date or an active RCI"
+    },
+    {
+      "role": "assistant",
+      "timestamp": 1770664830.8814762,
+      "content": "membership on file. Your RCI Member Status is listed as inactive, and there is no upcoming payment or due date showing for your ownership. Are you asking about your annual maintenance fees or something else?"
+    },
+    {
+      "role": "user",
+      "timestamp": 1770664847.5873866,
+      "content": "Annual maintenance fees."
+    },
+    {
+      "role": "assistant",
+      "timestamp": 1770664849.8292894,
+      "content": "Your does not show a current maintenance balance or a past due date, and there are no"
+    },
+    {
+      "role": "assistant",
+      "timestamp": 1770664849.8292894,
+      "content": "maintenance fees listed as owed right now. If you own at Vacation Village Voyages, invoice processing is ongoing for resorts not specifically listed, so you should receive your maintenance bill once it's processed. Would you like to know when invoices are being mailed for specific resorts?"
+    },
+    {
+      "role": "user",
+      "timestamp": 1770664870.9113243,
+      "content": "Yes."
+    },
+    {
+      "role": "assistant",
+      "timestamp": 1770664873.356349,
+      "content": "Here are the current invoice mailing dates: For Grandview and Cliffs in Vegas, invoices will be mailed on December twenty ninth, two"
+    },
+    {
+      "role": "assistant",
+      "timestamp": 1770664873.356349,
+      "content": "thousand twenty five. For Williamsburg in Virginia, invoices will be mailed by December thirtieth, two thousand twenty five. Patriots Inn and Colonies at Williamsburg have already been sent. Silver Seas invoices will be mailed on December twenty ninth, two thousand twenty five. For all other Florida resorts, invoices will be mailed by January ninth, two thousand twenty six. For resorts not listed, invoice processing is ongoing. Is your resort Vacation Village Voyages, or do you own at a different property?"
+    },
+    {
+      "role": "user",
+      "timestamp": 1770664906.6953473,
+      "content": "Village Vacation Voyage."
+    },
+    {
+      "role": "assistant",
+      "timestamp": 1770664908.347957,
+      "content": "Vacation Village Voyages is not specifically listed in the invoice"
+    },
+    {
+      "role": "assistant",
+      "timestamp": 1770664908.347957,
+      "content": "schedule, so your maintenance invoice is still being processed. You should receive your bill once processing is complete. Is there anything else about your contract or account you'd like to check?"
+    },
+    {
+      "role": "user",
+      "timestamp": 1770664922.5692642,
+      "content": "No."
+    },
+    {
+      "role": "assistant",
+      "timestamp": 1770664924.731466,
+      "content": "Alright, if you have any other questions"
+    },
+    {
+      "role": "assistant",
+      "timestamp": 1770664924.731466,
+      "content": "in the future, feel free to reach out. Have a wonderful day and stay safe."
+    }
+  ]
+}

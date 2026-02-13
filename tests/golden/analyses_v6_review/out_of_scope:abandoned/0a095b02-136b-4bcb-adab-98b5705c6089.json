@@ -1,0 +1,61 @@
+{
+  "turns": 2,
+  "repeat_caller": false,
+  "derailed_at": 4,
+  "resolution": {
+    "primary": {
+      "request": "schedule a timeshare week",
+      "context": "Customer wants to book their ownership week",
+      "scope": "out_of_scope",
+      "outcome": "abandoned",
+      "detail": "The caller disconnected after providing a nonsensical response to a name request.",
+      "resolution_confirmed": null,
+      "transfer": null,
+      "abandon_stage": "mid_task"
+    },
+    "secondary": null,
+    "steps": [
+      "Agent greeted the caller.",
+      "Caller requested to schedule a timeshare week.",
+      "Agent asked for the caller's name.",
+      "Caller provided a nonsensical response about shapes.",
+      "Agent attempted to clarify the intent before the caller disconnected."
+    ]
+  },
+  "scores": {
+    "effectiveness": 3,
+    "quality": 4,
+    "effort": 3
+  },
+  "sentiment": {
+    "start": "neutral",
+    "end": "neutral"
+  },
+  "failure": {
+    "type": "customer_confusion",
+    "detail": "The caller provided a nonsensical response about shapes when asked for their name, leading to an abandoned interaction.",
+    "policy_gap": null
+  },
+  "friction": {
+    "clarifications": [
+      {
+        "turn": 5,
+        "type": "intent",
+        "cause": "unclear",
+        "note": "Agent clarified intent after nonsensical user response"
+      }
+    ],
+    "corrections": [],
+    "loops": []
+  },
+  "actions": [],
+  "insights": {
+    "summary": "The customer initially called to schedule a timeshare week but provided a nonsensical response about shapes when asked for their name, eventually hanging up.",
+    "verbatim": "Which state? Has three sides? Patricia. Star. A triangle, or square.",
+    "coaching": null
+  },
+  "call_id": "0a095b02-136b-4bcb-adab-98b5705c6089",
+  "schema_version": "v6.0",
+  "duration_seconds": 37.6,
+  "ended_by": "customer"
+}

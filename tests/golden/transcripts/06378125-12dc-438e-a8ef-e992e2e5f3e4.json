@@ -1,0 +1,147 @@
+{
+  "agent_id": "IdNSnJmoukxviqoTIWOZ",
+  "duration": 192.448796,
+  "ended_reason": "assistant-ended-call",
+  "messages": [
+    {
+      "role": "assistant",
+      "timestamp": 1770655826.5097263,
+      "content": "Hi, thank you for calling Vacation Village Resorts. This is Jamie on a recorded line. How can I help you today?"
+    },
+    {
+      "role": "user",
+      "timestamp": 1770655836.704108,
+      "content": "Missing"
+    },
+    {
+      "role": "user",
+      "timestamp": 1770655838.7323895,
+      "content": "point deposit with RCI."
+    },
+    {
+      "role": "assistant",
+      "timestamp": 1770655841.4542313,
+      "content": "Oh, I see you're having trouble with a missing RCI points deposit. Just to clarify, are you looking for details about"
+    },
+    {
+      "role": "assistant",
+      "timestamp": 1770655841.4542313,
+      "content": "your contract or RCI membership, or do you need help with something else related to your ownership?"
+    },
+    {
+      "role": "user",
+      "timestamp": 1770655855.1094165,
+      "content": "No."
+    },
+    {
+      "role": "assistant",
+      "timestamp": 1770655858.1110044,
+      "content": "Alright, could you tell me a bit more about what you need help with regarding your missing RCI points deposit?"
+    },
+    {
+      "role": "user",
+      "timestamp": 1770655866.372892,
+      "content": "They're not deposited."
+    },
+    {
+      "role": "assistant",
+      "timestamp": 1770655869.0545917,
+      "content": "So, your RCI points haven't been deposited as expected. Would you like me to pull up your contract information"
+    },
+    {
+      "role": "assistant",
+      "timestamp": 1770655869.0545917,
+      "content": "to see if I can help figure out what's going on?"
+    },
+    {
+      "role": "user",
+      "timestamp": 1770655879.434858,
+      "content": "Correct. Yes."
+    },
+    {
+      "role": "assistant",
+      "timestamp": 1770655884.8757799,
+      "content": "Looking at your contract for Vacation Village at Bonaventure, your RCI Member ID"
+    },
+    {
+      "role": "assistant",
+      "timestamp": 1770655884.8757799,
+      "content": "is four zero two five zero seven two one one and your RCI membership status is active. However, I do not see a points allocation listed on your contract, which may be why your RCI points have not been deposited. Would you like to confirm if your ownership is set up for RCI Points or RCI Weeks?"
+    },
+    {
+      "role": "user",
+      "timestamp": 1770655905.7012107,
+      "content": "Yes. It is. Weeks."
+    },
+    {
+      "role": "assistant",
+      "timestamp": 1770655910.0618522,
+      "content": "Thanks for clarifying that your ownership is set up as RCI Weeks. With RCI Weeks,"
+    },
+    {
+      "role": "assistant",
+      "timestamp": 1770655910.0618522,
+      "content": "you need to deposit your eligible week into your RCI account each year to receive Trading Power for exchanges. For your contract, you own week twenty at Vacation Village at Bonaventure, with a Saturday check-in. If you haven't deposited your week yet, that could be why you don't see any Trading Power or points in your RCI account. Would you like information on how to deposit your week with RCI?"
+    },
+    {
+      "role": "user",
+      "timestamp": 1770655936.1258132,
+      "content": "Yes."
+    },
+    {
+      "role": "assistant",
+      "timestamp": 1770655937.927488,
+      "content": "To deposit week with RCI, you'll need to log in to your RCI account and select"
+    },
+    {
+      "role": "assistant",
+      "timestamp": 1770655937.927488,
+      "content": "the option to deposit your ownership week. Make sure to deposit at least nine months before your check-in date to receive full Trading Power. For your week twenty, with a Saturday check-in, your 2026 usage dates are May sixteenth to May twenty-third. Do you need help with the RCI website or have questions about the deposit process?"
+    },
+    {
+      "role": "user",
+      "timestamp": 1770655961.5069113,
+      "content": "Deposit process."
+    },
+    {
+      "role": "assistant",
+      "timestamp": 1770655964.0683854,
+      "content": "The deposit process for RCI Weeks involves logging into your RCI account, selecting the option to deposit your ownership"
+    },
+    {
+      "role": "assistant",
+      "timestamp": 1770655964.0683854,
+      "content": "week, and following the prompts to complete the deposit. You will need your RCI Member ID, which is four zero two five zero seven two one one, and your ownership details for week twenty at Vacation Village at Bonaventure. Once deposited, your week will be assigned Trading Power, which you can use for exchanges. Is there a specific part of the deposit process you need help with?"
+    },
+    {
+      "role": "user",
+      "timestamp": 1770655990.8049927,
+      "content": "Yes. Unit number."
+    },
+    {
+      "role": "assistant",
+      "timestamp": 1770655994.8864315,
+      "content": "Your unit"
+    },
+    {
+      "role": "assistant",
+      "timestamp": 1770655994.8864315,
+      "content": "number for your ownership at Vacation Village at Bonaventure is four zero two. Is there anything else about your unit or the deposit process you'd like to know?"
+    },
+    {
+      "role": "user",
+      "timestamp": 1770656007.8828595,
+      "content": "No."
+    },
+    {
+      "role": "assistant",
+      "timestamp": 1770656009.683853,
+      "content": "Great, I'm glad I could help with your RCI"
+    },
+    {
+      "role": "assistant",
+      "timestamp": 1770656009.683853,
+      "content": "deposit and unit information. Have a wonderful day and enjoy your future vacations!"
+    }
+  ]
+}

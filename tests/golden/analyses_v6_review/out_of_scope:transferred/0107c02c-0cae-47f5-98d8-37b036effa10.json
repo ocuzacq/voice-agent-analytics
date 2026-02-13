@@ -1,0 +1,84 @@
+{
+  "turns": 9,
+  "repeat_caller": false,
+  "derailed_at": null,
+  "resolution": {
+    "primary": {
+      "request": "speak to concierge regarding billing",
+      "context": "Caller has questions about maintenance fees or billing and wants a human agent.",
+      "scope": "out_of_scope",
+      "outcome": "transferred",
+      "detail": "The agent verified the caller and then transferred them to the concierge department as requested.",
+      "resolution_confirmed": null,
+      "transfer": {
+        "reason": "out_of_scope",
+        "destination": "concierge",
+        "queue_detected": true
+      },
+      "abandon_stage": null
+    },
+    "secondary": null,
+    "steps": [
+      "Caller requested concierge.",
+      "Agent asked for clarification on the topic (billing).",
+      "Agent performed account lookup and verification (name, spelling, state).",
+      "Agent asked for specific billing needs.",
+      "Caller reiterated the request for concierge.",
+      "Agent transferred the caller to the concierge queue."
+    ]
+  },
+  "scores": {
+    "effectiveness": 5,
+    "quality": 5,
+    "effort": 2
+  },
+  "sentiment": {
+    "start": "neutral",
+    "end": "neutral"
+  },
+  "failure": null,
+  "friction": {
+    "clarifications": [
+      {
+        "turn": 3,
+        "type": "intent",
+        "cause": "proactive",
+        "note": "Agent confirming specific concierge needs."
+      },
+      {
+        "turn": 9,
+        "type": "repeat",
+        "cause": "proactive",
+        "note": "Agent asking for name spelling for accuracy."
+      }
+    ],
+    "corrections": [],
+    "loops": []
+  },
+  "actions": [
+    {
+      "type": "account_lookup",
+      "outcome": "success",
+      "detail": "Pulled record via phone number."
+    },
+    {
+      "type": "verification",
+      "outcome": "success",
+      "detail": "Verified name and state."
+    },
+    {
+      "type": "transfer",
+      "outcome": "success",
+      "detail": "Connected to concierge department queue."
+    }
+  ],
+  "insights": {
+    "summary": "The caller wanted to speak with concierge regarding billing and maintenance fees. The AI successfully verified the caller's identity and transferred them to the appropriate human queue.",
+    "verbatim": "Speak to a concierge.",
+    "coaching": null
+  },
+  "call_id": "0107c02c-0cae-47f5-98d8-37b036effa10",
+  "schema_version": "v6.0",
+  "duration_seconds": 897.6,
+  "ended_by": "customer"
+}

@@ -1,0 +1,104 @@
+{
+  "turns": 9,
+  "repeat_caller": false,
+  "derailed_at": null,
+  "resolution": {
+    "primary": {
+      "request_category": "maintenance_payment",
+      "request": "Pay maintenance fees",
+      "context": "Caller initially asked for concierge but clarified billing/maintenance needs",
+      "human_requested": "after_service",
+      "department_requested": null,
+      "scope": "in_scope",
+      "outcome": "abandoned",
+      "detail": "The caller clarified a maintenance fee request but then asked for a concierge and abandoned during the transfer queue.",
+      "resolution_confirmed": null,
+      "transfer": {
+        "reason": "customer_requested",
+        "destination": "concierge",
+        "queue_detected": true,
+        "queue_result": "caller_abandoned"
+      },
+      "abandon_stage": "mid_task"
+    },
+    "secondary": null,
+    "steps": [
+      "Caller initially requested concierge.",
+      "Agent probed for intent; caller specified billing and then maintenance.",
+      "Agent successfully performed account lookup and verification.",
+      "Caller reverted to requesting a concierge after being asked for specific billing details.",
+      "Agent transferred to concierge queue where the caller waited for over 10 minutes before hanging up."
+    ]
+  },
+  "scores": {
+    "effectiveness": 4,
+    "quality": 4,
+    "effort": 4
+  },
+  "sentiment": {
+    "start": "neutral",
+    "end": "neutral"
+  },
+  "impediment": {
+    "type": "transfer_queue",
+    "detail": "Caller abandoned after waiting in the concierge transfer queue for approximately 11 minutes.",
+    "policy_gap": null
+  },
+  "agent_issue": null,
+  "friction": {
+    "clarifications": [
+      {
+        "turn": 3,
+        "type": "intent",
+        "cause": "proactive",
+        "note": "Agent clarifying concierge request details"
+      },
+      {
+        "turn": 5,
+        "type": "intent",
+        "cause": "proactive",
+        "note": "Agent clarifying billing vs mortgage"
+      },
+      {
+        "turn": 15,
+        "type": "intent",
+        "cause": "proactive",
+        "note": "Agent asking for specific billing action"
+      },
+      {
+        "turn": 17,
+        "type": "intent",
+        "cause": "proactive",
+        "note": "Agent probing for payment vs history"
+      }
+    ],
+    "corrections": [],
+    "loops": []
+  },
+  "actions": [
+    {
+      "type": "account_lookup",
+      "outcome": "success",
+      "detail": "Lookup by phone number successful"
+    },
+    {
+      "type": "verification",
+      "outcome": "success",
+      "detail": "Verified name and state"
+    },
+    {
+      "type": "transfer",
+      "outcome": "failed",
+      "detail": "Transferred to concierge queue but caller abandoned"
+    }
+  ],
+  "insights": {
+    "summary": "The caller wanted to discuss maintenance billing but requested a concierge; after verification, they abandoned the call during a long hold in the transfer queue.",
+    "verbatim": "Speak to a concierge.",
+    "coaching": null
+  },
+  "call_id": "0107c02c-0cae-47f5-98d8-37b036effa10",
+  "schema_version": "v7.0",
+  "duration_seconds": 897.6,
+  "ended_by": "customer"
+}

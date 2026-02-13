@@ -1,0 +1,96 @@
+{
+  "turns": 14,
+  "repeat_caller": false,
+  "derailed_at": 13,
+  "resolution": {
+    "primary": {
+      "request": "sell timeshare ownership entirely",
+      "context": "The caller wants to dispose of their timeshare property.",
+      "scope": "out_of_scope",
+      "outcome": "transferred",
+      "detail": "The agent attempted to transfer the caller to a representative for ownership sales, but the transfer failed due to no agents being available.",
+      "resolution_confirmed": null,
+      "transfer": {
+        "reason": "out_of_scope",
+        "destination": "concierge",
+        "queue_detected": true
+      },
+      "abandon_stage": null
+    },
+    "secondary": null,
+    "steps": [
+      "Caller requested a representative immediately.",
+      "Agent identified the intent as selling timeshare ownership.",
+      "Agent attempted to transfer to the concierge department.",
+      "Caller waited in a long queue for over 25 minutes.",
+      "Agent returned to the line stating no representatives were available.",
+      "Caller insisted on waiting or expressed frustration that the AI could not help.",
+      "Caller disconnected after being told waiting would not work."
+    ]
+  },
+  "scores": {
+    "effectiveness": 3,
+    "quality": 3,
+    "effort": 5
+  },
+  "sentiment": {
+    "start": "neutral",
+    "end": "frustrated"
+  },
+  "failure": {
+    "type": "tech_issue",
+    "detail": "The transfer failed because no human agents were available, and the AI's fallback logic (Turn 25) discouraged the caller from continuing to wait.",
+    "policy_gap": null
+  },
+  "friction": {
+    "clarifications": [
+      {
+        "turn": 11,
+        "type": "intent",
+        "cause": "proactive",
+        "note": "Distinguishing between renting and selling ownership."
+      }
+    ],
+    "corrections": [
+      {
+        "turn": 14,
+        "severity": "minor",
+        "note": "Caller corrected agent's assumption about renting."
+      },
+      {
+        "turn": 18,
+        "severity": "minor",
+        "note": "Caller rejected agent's phrasing of selling 'week'."
+      }
+    ],
+    "loops": [
+      {
+        "turns": [
+          13,
+          15,
+          17,
+          19
+        ],
+        "type": "comprehension",
+        "subject": "selling vs renting",
+        "note": "Agent repeatedly asked for clarification on ownership disposal."
+      }
+    ]
+  },
+  "actions": [
+    {
+      "type": "transfer",
+      "outcome": "failed",
+      "detail": "Transfer to concierge failed due to no availability."
+    }
+  ],
+  "insights": {
+    "summary": "The caller wanted to sell their timeshare ownership. The AI correctly identified this as out-of-scope and attempted a transfer, but the caller was left in a 25-minute queue only to be told no one was available.",
+    "verbatim": "There are no representatives available to take your call right now, so waiting will not connect you with someone.",
+    "coaching": "The agent's loop in turns 13-19 was repetitive; it should have proceeded to transfer sooner once 'sell ownership entirely' was stated in Turn 12. Additionally, the fallback message in Turn 25 is very discouraging to customers."
+  },
+  "call_id": "042dfaf7-8265-4bdd-a957-1cbec199b173",
+  "schema_version": "v6.0",
+  "duration_seconds": 1708.3,
+  "ended_by": "customer"
+}

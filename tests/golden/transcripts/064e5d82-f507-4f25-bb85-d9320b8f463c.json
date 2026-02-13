@@ -1,0 +1,137 @@
+{
+  "agent_id": "IdNSnJmoukxviqoTIWOZ",
+  "duration": 133.451101,
+  "ended_reason": "assistant-ended-call",
+  "messages": [
+    {
+      "role": "assistant",
+      "timestamp": 1770752229.8123455,
+      "content": "Hi, thank you for calling Vacation Village Resorts. This is Jamie on a recorded line. How can I help you today?"
+    },
+    {
+      "role": "user",
+      "timestamp": 1770752239.7041345,
+      "content": "Questions about how much I still owe"
+    },
+    {
+      "role": "user",
+      "timestamp": 1770752241.9634209,
+      "content": "on my mortgage."
+    },
+    {
+      "role": "assistant",
+      "timestamp": 1770752245.0448873,
+      "content": "Alright, I can help you with your mortgage balance. Could you please provide your"
+    },
+    {
+      "role": "assistant",
+      "timestamp": 1770752245.0448873,
+      "content": "full name as it appears on your account?"
+    },
+    {
+      "role": "user",
+      "timestamp": 1770752252.8636694,
+      "content": "Paul B. Moses."
+    },
+    {
+      "role": "assistant",
+      "timestamp": 1770752255.4246874,
+      "content": "Nice to meet you, Paul. Would you like me to pull up your contract information so I can answer your question"
+    },
+    {
+      "role": "assistant",
+      "timestamp": 1770752255.4246874,
+      "content": "about your mortgage balance?"
+    },
+    {
+      "role": "user",
+      "timestamp": 1770752263.1900275,
+      "content": "Please."
+    },
+    {
+      "role": "assistant",
+      "timestamp": 1770752268.7103112,
+      "content": "Paul, based on your contract for Berkshire Mountain"
+    },
+    {
+      "role": "assistant",
+      "timestamp": 1770752268.7103112,
+      "content": "Lodge, your current mortgage balance is three hundred seventy seven dollars and seventy seven cents. Your monthly mortgage payment is seventy five dollars and thirty six cents, and your next payment is due March first, two thousand twenty six. Is there anything else you\u2019d like to know about your mortgage?"
+    },
+    {
+      "role": "user",
+      "timestamp": 1770752289.4102387,
+      "content": "No, ma'am. But I do have questions about the RCI program."
+    },
+    {
+      "role": "assistant",
+      "timestamp": 1770752293.6537712,
+      "content": "Of course, I can help with"
+    },
+    {
+      "role": "assistant",
+      "timestamp": 1770752293.6537712,
+      "content": "questions about the RCI program. What would you like to know about RCI?"
+    },
+    {
+      "role": "user",
+      "timestamp": 1770752301.9657133,
+      "content": "Why I don't have access to it anymore?"
+    },
+    {
+      "role": "assistant",
+      "timestamp": 1770752305.246986,
+      "content": "Your RCI membership status is currently listed as inactive on your contract."
+    },
+    {
+      "role": "assistant",
+      "timestamp": 1770752305.246986,
+      "content": "This means you do not have access to RCI exchange benefits at the moment. Would you like information on how to reactivate your RCI membership?"
+    },
+    {
+      "role": "user",
+      "timestamp": 1770752319.3141887,
+      "content": "Yes."
+    },
+    {
+      "role": "assistant",
+      "timestamp": 1770752321.7951903,
+      "content": "To reactivate your RCI membership, you would typically need"
+    },
+    {
+      "role": "assistant",
+      "timestamp": 1770752321.7951903,
+      "content": "to contact RCI directly or visit their website to renew your membership. I can provide general information about RCI, but I do not have the ability to process reactivations myself. Would you like the RCI website address or their contact details?"
+    },
+    {
+      "role": "user",
+      "timestamp": 1770752339.560371,
+      "content": "Contact details."
+    },
+    {
+      "role": "assistant",
+      "timestamp": 1770752341.3611324,
+      "content": "You can reach RCI through their website at rci dot com, where you'll"
+    },
+    {
+      "role": "assistant",
+      "timestamp": 1770752341.3611324,
+      "content": "find their contact page and phone numbers for member support. Is there anything else you want to know about your contract or RCI?"
+    },
+    {
+      "role": "user",
+      "timestamp": 1770752352.7255807,
+      "content": "That that that's it. Thank you."
+    },
+    {
+      "role": "assistant",
+      "timestamp": 1770752355.8868766,
+      "content": "Alright, Paul, I hope you have a wonderful day."
+    },
+    {
+      "role": "assistant",
+      "timestamp": 1770752355.8868766,
+      "content": "If you have any other questions in the future, feel free to call us back."
+    }
+  ]
+}

@@ -1,0 +1,60 @@
+{
+  "turns": 4,
+  "repeat_caller": false,
+  "derailed_at": null,
+  "resolution": {
+    "primary": {
+      "request": "Make a maintenance payment",
+      "context": "Caller wants to pay maintenance fees but refuses the digital link option.",
+      "scope": "in_scope",
+      "outcome": "transferred",
+      "detail": "The caller requested to pay over the phone rather than via link, so the agent transferred them to the concierge department.",
+      "resolution_confirmed": null,
+      "transfer": {
+        "reason": "customer_requested",
+        "destination": "concierge",
+        "queue_detected": true
+      },
+      "abandon_stage": null
+    },
+    "secondary": null,
+    "steps": [
+      "Caller stated they wanted to make a maintenance payment.",
+      "Agent offered to send a payment link via text or email.",
+      "Caller declined the link and insisted on paying over the phone.",
+      "Agent initiated a transfer to the concierge department.",
+      "Caller remained in the queue for over 20 minutes before the transcript ends with background noise/audio bleed."
+    ]
+  },
+  "scores": {
+    "effectiveness": 5,
+    "quality": 5,
+    "effort": 2
+  },
+  "sentiment": {
+    "start": "neutral",
+    "end": "neutral"
+  },
+  "failure": null,
+  "friction": {
+    "clarifications": [],
+    "corrections": [],
+    "loops": []
+  },
+  "actions": [
+    {
+      "type": "transfer",
+      "outcome": "success",
+      "detail": "Transferred to concierge per customer request for phone payment."
+    }
+  ],
+  "insights": {
+    "summary": "The caller wanted to make a maintenance payment but specifically requested to do it over the phone. The agent correctly identified this as a need for a human agent and transferred the call to the concierge queue.",
+    "verbatim": "No. On the phone. I'm gonna call and make it over the phone payment.",
+    "coaching": null
+  },
+  "call_id": "0a195db9-a53b-4f0e-9f10-c2545a0a5528",
+  "schema_version": "v6.0",
+  "duration_seconds": 1710.0,
+  "ended_by": "customer"
+}

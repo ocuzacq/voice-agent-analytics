@@ -1,0 +1,75 @@
+{
+  "turns": 8,
+  "repeat_caller": false,
+  "derailed_at": 15,
+  "resolution": {
+    "primary": {
+      "request": "Check status of automatic maintenance fee withdrawal",
+      "context": "Customer expected an automatic payment to be processed but it has not occurred yet.",
+      "scope": "in_scope",
+      "outcome": "abandoned",
+      "detail": "The agent entered a confirmation loop, repeating the customer's details back to them without providing an answer or a link, leading to customer confusion and hang-up.",
+      "resolution_confirmed": false,
+      "transfer": null,
+      "abandon_stage": "mid_task"
+    },
+    "secondary": null,
+    "steps": [
+      "Agent identified caller via phone number and verified name and state.",
+      "Customer explained that an expected autopay withdrawal had not occurred.",
+      "Agent requested account number and property name for confirmation.",
+      "Agent repeated all collected information back to the customer as a question.",
+      "Customer became confused by the repetition and disconnected."
+    ]
+  },
+  "scores": {
+    "effectiveness": 2,
+    "quality": 3,
+    "effort": 4
+  },
+  "sentiment": {
+    "start": "neutral",
+    "end": "frustrated"
+  },
+  "failure": {
+    "type": "wrong_action",
+    "detail": "Agent engaged in excessive confirmation and repetition of data instead of providing the status or sending a portal link.",
+    "policy_gap": null
+  },
+  "friction": {
+    "clarifications": [],
+    "corrections": [],
+    "loops": [
+      {
+        "turns": [
+          15,
+          17
+        ],
+        "type": "action_retry",
+        "subject": "confirming request details",
+        "note": "Agent repeated same summary twice without acting."
+      }
+    ]
+  },
+  "actions": [
+    {
+      "type": "account_lookup",
+      "outcome": "success",
+      "detail": "Matched record via caller ID."
+    },
+    {
+      "type": "verification",
+      "outcome": "success",
+      "detail": "Verified name and state."
+    }
+  ],
+  "insights": {
+    "summary": "The customer called to check why an automatic maintenance fee payment hadn't been withdrawn. The agent successfully verified the account but then entered a repetitive loop, summarizing the request back to the customer until they hung up in confusion.",
+    "verbatim": "Supposed to be an automatic withdrawal, but it has not come out yet. Is it going to come out?",
+    "coaching": "Once the account and property were confirmed, the agent should have provided the balance status or sent a portal link for the customer to check their autopay settings rather than just repeating the request."
+  },
+  "call_id": "0a3660cb-5f3a-4055-86c0-ba9e4f014cd9",
+  "schema_version": "v6.0",
+  "duration_seconds": 133.1,
+  "ended_by": "customer"
+}

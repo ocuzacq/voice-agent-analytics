@@ -1,0 +1,96 @@
+{
+  "turns": 24,
+  "repeat_caller": false,
+  "derailed_at": null,
+  "resolution": {
+    "primary": {
+      "request": "Register a new account on the website",
+      "context": "Caller received a message saying their ownership type requires special handling for registration",
+      "scope": "in_scope",
+      "outcome": "fulfilled",
+      "detail": "Agent verified the caller using contract ID and name, then sent a Clubhouse registration link via email.",
+      "resolution_confirmed": true,
+      "transfer": null,
+      "abandon_stage": null
+    },
+    "secondary": null,
+    "steps": [
+      "Caller requested help with website registration.",
+      "Agent attempted lookup by phone number but failed.",
+      "Agent successfully looked up record using Contract ID.",
+      "Agent verified caller's identity after initial name mismatch (caller provided parent's name).",
+      "Agent confirmed contact information on file.",
+      "Agent sent registration link to the email on file."
+    ]
+  },
+  "scores": {
+    "effectiveness": 5,
+    "quality": 5,
+    "effort": 2
+  },
+  "sentiment": {
+    "start": "neutral",
+    "end": "satisfied"
+  },
+  "failure": null,
+  "friction": {
+    "clarifications": [
+      {
+        "turn": 3,
+        "type": "intent",
+        "cause": "proactive",
+        "note": "Agent clarifying if registration or password reset"
+      },
+      {
+        "turn": 27,
+        "type": "name",
+        "cause": "proactive",
+        "note": "Agent asking for spelling of name"
+      }
+    ],
+    "corrections": [
+      {
+        "turn": 30,
+        "severity": "minor",
+        "note": "Caller explains multiple owners on contract after mismatch"
+      }
+    ],
+    "loops": []
+  },
+  "actions": [
+    {
+      "type": "account_lookup",
+      "outcome": "failed",
+      "detail": "Lookup by Brazilian phone number failed"
+    },
+    {
+      "type": "account_lookup",
+      "outcome": "success",
+      "detail": "Lookup successful using contract ID"
+    },
+    {
+      "type": "verification",
+      "outcome": "retry",
+      "detail": "First name provided did not match record"
+    },
+    {
+      "type": "verification",
+      "outcome": "success",
+      "detail": "Verified using secondary owner name and state"
+    },
+    {
+      "type": "send_portal_link",
+      "outcome": "success",
+      "detail": "Sent Clubhouse registration link to email"
+    }
+  ],
+  "insights": {
+    "summary": "The caller wanted to register for the online portal but was blocked by a 'special handling' message. The agent successfully verified the account using a contract ID and sent the registration link to the email on file.",
+    "verbatim": "Perfect. So I have to log in in Vacatia, the new website.",
+    "coaching": null
+  },
+  "call_id": "8c10f101-1bc6-4735-a744-b8207cc06e0b",
+  "schema_version": "v6.0",
+  "duration_seconds": 409.3,
+  "ended_by": "agent"
+}

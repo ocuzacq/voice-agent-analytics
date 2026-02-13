@@ -1,0 +1,187 @@
+{
+  "agent_id": "IdNSnJmoukxviqoTIWOZ",
+  "duration": 523.63516,
+  "ended_reason": "customer-ended-call",
+  "messages": [
+    {
+      "role": "assistant",
+      "timestamp": 1770665421.9967365,
+      "content": "Hi, thank you for calling Vacation Village Resorts. This is Jamie on a recorded line. How can I help you today?"
+    },
+    {
+      "role": "user",
+      "timestamp": 1770665434.058689,
+      "content": "Speak to a representative."
+    },
+    {
+      "role": "assistant",
+      "timestamp": 1770665437.5428588,
+      "content": "I can connect you to a representative, but just so you know, we are experiencing longer-than-usual wait times of up to twenty minutes."
+    },
+    {
+      "role": "assistant",
+      "timestamp": 1770665437.5428588,
+      "content": "The automated system is actually the fastest way to get help and solves about ninety percent of all calls. Would you still like to wait for a representative, or would you prefer to continue with the automated system?"
+    },
+    {
+      "role": "user",
+      "timestamp": 1770665457.2663984,
+      "content": "Wait for representative."
+    },
+    {
+      "role": "assistant",
+      "timestamp": 1770665460.9480314,
+      "content": "Please hold while I connect you"
+    },
+    {
+      "role": "assistant",
+      "timestamp": 1770665704.856038,
+      "content": "Thank you for calling the concierge department for the Vacation Village family of resorts, where owner satisfaction is our top priority. We apologize for the brief wait, and we appreciate your patience. Our hours of operation are 8:30 AM to 6:00 PM Eastern Standard Time. We understand that sometimes nothing beats speaking to a real person. Our team is working diligently to ensure your call is answered as soon as possible. In the meantime, why not explore our website and discover all that Vacation Village Resorts has to offer? Our website is a valuable resource filled with product information, frequently asked questions, important contact information for mortgage services and maintenance fee payments, and much more. Save time and find the answers you need at vacationvillageresorts.com. For real-time assistance, we encourage you to try out our Text Us Now feature. Simply visit our website and look for the Text Us button at the bottom right corner of the screen. With just a few taps, you can connect with one of our dedicated agents who will be happy to assist you promptly. At Vacation Village Resorts, we believe in providing exceptional customer service at every touchpoint. If you prefer to remain on the line, rest assured that your call is essential to us, and we'll be with you shortly."
+    },
+    {
+      "role": "assistant",
+      "timestamp": null,
+      "content": "Thank you for calling the concierge department for the Vacation Village family of resorts, where owner satisfaction is our top priority. We apologize for the brief wait, and we appreciate your patience. Our hours of operation are 8:30 AM to 6:00 PM Eastern Standard Time. We understand that sometimes nothing beats speaking to a real person. Our team is working diligently to ensure your call is answered as soon as possible. In the meantime, why not explore our website and discover all that Vacation Village Resorts has to offer? Our website is a valuable resource filled with product information, frequently asked questions, important contact information for mortgage services and maintenance fee payments, and much more. Save time and find the answers you need at vacationvillageresorts.com. For real-time assistance, we encourage you to try out our Text Us Now feature. Simply visit our website and look for the Text Us button at the bottom right corner of the screen. With just a few taps, you can connect with one of our dedicated agents who will be happy to assist you promptly. At Vacation Village Resorts, we believe in providing exceptional customer service at every touchpoint. If you prefer to remain on the line, rest assured that your call is essential to us, and we'll be with you shortly."
+    },
+    {
+      "role": "assistant",
+      "timestamp": 1770665786.7186117,
+      "content": "I wish I could place you on hold, but right now, all representatives are busy and none are available to take your call. If you\u2019d like, I can help with your request, or you can call"
+    },
+    {
+      "role": "assistant",
+      "timestamp": 1770665786.7186117,
+      "content": "back a little later when someone is available. What would you like to do?"
+    },
+    {
+      "role": "user",
+      "timestamp": 1770665801.6464634,
+      "content": "Get a receipt for twenty twenty five for tax reasons."
+    },
+    {
+      "role": "user",
+      "timestamp": 1770665806.2134907,
+      "content": "I'm gonna try some."
+    },
+    {
+      "role": "assistant",
+      "timestamp": 1770665809.4145012,
+      "content": "I can help you with your request for a twenty twenty five receipt for"
+    },
+    {
+      "role": "assistant",
+      "timestamp": 1770665809.4145012,
+      "content": "tax purposes. Could you tell me which resort your ownership is with?"
+    },
+    {
+      "role": "user",
+      "timestamp": 1770665819.5708363,
+      "content": "Williamsburg."
+    },
+    {
+      "role": "assistant",
+      "timestamp": 1770665825.4523053,
+      "content": "So you\u2019re looking for a maintenance account history link for your Williamsburg ownership, which will include your twenty twenty five payment details"
+    },
+    {
+      "role": "assistant",
+      "timestamp": 1770665825.4523053,
+      "content": "for tax purposes. Is that correct?"
+    },
+    {
+      "role": "user",
+      "timestamp": 1770665836.4525678,
+      "content": "Yes."
+    },
+    {
+      "role": "assistant",
+      "timestamp": 1770665839.6531982,
+      "content": "I can send you a link to view your full maintenance account history, which will include your twenty twenty five payment details for tax purposes. Does"
+    },
+    {
+      "role": "assistant",
+      "timestamp": 1770665839.6531982,
+      "content": "that sound good to you?"
+    },
+    {
+      "role": "user",
+      "timestamp": 1770665850.0058713,
+      "content": "Yes."
+    },
+    {
+      "role": "assistant",
+      "timestamp": 1770665854.3273425,
+      "content": "It looks like the phone number you called from did not return any valid contracts. Do you have a different phone number or a contract ID I can use to look up your account?"
+    },
+    {
+      "role": "user",
+      "timestamp": 1770665865.259958,
+      "content": "Two zero three two four two six seven seven eight."
+    },
+    {
+      "role": "assistant",
+      "timestamp": 1770665874.6211882,
+      "content": "I was able to pull up your contract for Vacation Village at Williamsburg under the name John Klous. To"
+    },
+    {
+      "role": "assistant",
+      "timestamp": 1770665874.6211882,
+      "content": "complete your request for a maintenance account history link that includes your twenty twenty five payment details, I will send an email. Is jmklous at yahoo dot com your preferred email address for this?"
+    },
+    {
+      "role": "user",
+      "timestamp": 1770665892.2488017,
+      "content": "Yes."
+    },
+    {
+      "role": "assistant",
+      "timestamp": 1770665899.6514807,
+      "content": "I\u2019ve just sent the maintenance account history link to"
+    },
+    {
+      "role": "assistant",
+      "timestamp": 1770665899.6514807,
+      "content": "jmklous at yahoo dot com. Could you check your inbox and let me know if you see the email?"
+    },
+    {
+      "role": "user",
+      "timestamp": 1770665916.0974007,
+      "content": "Let me check your inbox real quick."
+    },
+    {
+      "role": "assistant",
+      "timestamp": 1770665920.5455577,
+      "content": "Take your time"
+    },
+    {
+      "role": "assistant",
+      "timestamp": 1770665920.5455577,
+      "content": "checking your inbox. Do you see the email from us yet?"
+    },
+    {
+      "role": "user",
+      "timestamp": 1770665928.185032,
+      "content": "For checking."
+    },
+    {
+      "role": "assistant",
+      "timestamp": 1770665931.4672327,
+      "content": "No rush,"
+    },
+    {
+      "role": "assistant",
+      "timestamp": 1770665931.4672327,
+      "content": "just let me know once you find the email in your inbox."
+    },
+    {
+      "role": "user",
+      "timestamp": 1770665940.4258022,
+      "content": "Are you it's the same fucking thing."
+    },
+    {
+      "role": "user",
+      "timestamp": 1770665941.5902324,
+      "content": "It's the same. Why do you keep"
+    }
+  ]
+}

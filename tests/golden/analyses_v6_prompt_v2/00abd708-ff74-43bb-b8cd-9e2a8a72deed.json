@@ -1,0 +1,115 @@
+{
+  "turns": 10,
+  "repeat_caller": false,
+  "derailed_at": 5,
+  "resolution": {
+    "primary": {
+      "request": "Pay maintenance fee",
+      "context": "Caller wanted to make a payment but got stuck in verification",
+      "scope": "in_scope",
+      "outcome": "transferred",
+      "detail": "The agent failed to verify the caller's name multiple times despite the caller providing a contract ID, leading to a requested transfer.",
+      "resolution_confirmed": null,
+      "transfer": {
+        "reason": "customer_requested",
+        "destination": "concierge",
+        "queue_detected": true
+      },
+      "abandon_stage": null
+    },
+    "secondary": null,
+    "steps": [
+      "Caller requested to pay maintenance fees.",
+      "Agent attempted account lookup but failed to match the name.",
+      "Agent requested spelling and contract ID.",
+      "Agent successfully pulled record via contract ID but still failed to verify the name.",
+      "Caller became frustrated and requested a representative.",
+      "Agent transferred the call to the concierge department."
+    ]
+  },
+  "scores": {
+    "effectiveness": 2,
+    "quality": 3,
+    "effort": 4
+  },
+  "sentiment": {
+    "start": "neutral",
+    "end": "frustrated"
+  },
+  "failure": {
+    "type": "wrong_action",
+    "detail": "Agent persisted in name verification loops even after successfully pulling the record via contract ID, causing customer frustration.",
+    "policy_gap": null
+  },
+  "friction": {
+    "clarifications": [
+      {
+        "turn": 5,
+        "type": "name",
+        "cause": "unclear",
+        "note": "Agent could not match name to record"
+      },
+      {
+        "turn": 11,
+        "type": "name",
+        "cause": "unclear",
+        "note": "Second failed attempt to match name"
+      },
+      {
+        "turn": 19,
+        "type": "verify",
+        "cause": "unclear",
+        "note": "Failed name match after contract ID provided"
+      }
+    ],
+    "corrections": [],
+    "loops": [
+      {
+        "turns": [
+          5,
+          11,
+          19
+        ],
+        "type": "info_retry",
+        "subject": "Name verification",
+        "note": "Repeatedly failed to verify name despite spelling"
+      }
+    ]
+  },
+  "actions": [
+    {
+      "type": "account_lookup",
+      "outcome": "failed",
+      "detail": "Initial lookup by name failed"
+    },
+    {
+      "type": "verification",
+      "outcome": "retry",
+      "detail": "Attempted name spelling verification"
+    },
+    {
+      "type": "account_lookup",
+      "outcome": "success",
+      "detail": "Pulled record using contract ID 5516928"
+    },
+    {
+      "type": "verification",
+      "outcome": "failed",
+      "detail": "Failed to match name to the pulled record"
+    },
+    {
+      "type": "transfer",
+      "outcome": "success",
+      "detail": "Transferred to concierge at customer request"
+    }
+  ],
+  "insights": {
+    "summary": "The caller wanted to pay maintenance fees but was unable to pass the AI's name verification process, even after providing a valid contract ID. This led to the caller requesting a human representative.",
+    "verbatim": "Talk to representative. Talk Take me to take me to representative. I don't wanna talk to you.",
+    "coaching": "The agent should have more flexibility in name matching once a contract ID is provided, or offer to send the payment link to the contact on file if a partial match is found."
+  },
+  "call_id": "00abd708-ff74-43bb-b8cd-9e2a8a72deed",
+  "schema_version": "v6.0",
+  "duration_seconds": 575.0,
+  "ended_by": "customer"
+}

@@ -1,0 +1,73 @@
+{
+  "turns": 9,
+  "repeat_caller": false,
+  "derailed_at": null,
+  "resolution": {
+    "primary": {
+      "request": "submit rental agreement instructions",
+      "context": "Caller wanted to know how to handle their rental agreement",
+      "scope": "in_scope",
+      "outcome": "fulfilled",
+      "detail": "The agent verified the caller and offered to send a link to complete the rental agreement online.",
+      "resolution_confirmed": true,
+      "transfer": null,
+      "abandon_stage": null
+    },
+    "secondary": null,
+    "steps": [
+      "Caller asked about rental agreement instructions.",
+      "Agent performed account lookup and verified identity (name spelling and state).",
+      "Agent explained the purpose of the rental agreement.",
+      "Agent offered to send a link via email and text.",
+      "Caller accepted and confirmed no further needs."
+    ]
+  },
+  "scores": {
+    "effectiveness": 5,
+    "quality": 5,
+    "effort": 1
+  },
+  "sentiment": {
+    "start": "neutral",
+    "end": "satisfied"
+  },
+  "failure": null,
+  "friction": {
+    "clarifications": [
+      {
+        "turn": 7,
+        "type": "name",
+        "cause": "proactive",
+        "note": "Agent asked to spell name for verification"
+      }
+    ],
+    "corrections": [],
+    "loops": []
+  },
+  "actions": [
+    {
+      "type": "account_lookup",
+      "outcome": "success",
+      "detail": "Located record using caller ID"
+    },
+    {
+      "type": "verification",
+      "outcome": "success",
+      "detail": "Verified name spelling and state"
+    },
+    {
+      "type": "send_rental_link",
+      "outcome": "success",
+      "detail": "Prepared rental agreement link for delivery"
+    }
+  ],
+  "insights": {
+    "summary": "The caller wanted instructions on how to submit a rental agreement. The AI successfully verified the account and sent a link to complete the process online.",
+    "verbatim": "What do I do with the rental agreement?",
+    "coaching": null
+  },
+  "call_id": "97b367dd-18a5-49fb-8867-fd8d8a7edd00",
+  "schema_version": "v6.0",
+  "duration_seconds": 137.9,
+  "ended_by": "agent"
+}

@@ -1,0 +1,67 @@
+{
+  "turns": 6,
+  "repeat_caller": false,
+  "derailed_at": null,
+  "resolution": {
+    "primary": {
+      "request": "book a resort stay",
+      "context": "Customer is having trouble booking a resort in Tennessee",
+      "scope": "out_of_scope",
+      "outcome": "abandoned",
+      "detail": "The AI correctly identified the booking request as out-of-scope and attempted a transfer, but no agents were available after a long hold.",
+      "resolution_confirmed": null,
+      "transfer": {
+        "reason": "out_of_scope",
+        "destination": "concierge",
+        "queue_detected": true
+      },
+      "abandon_stage": "mid_task"
+    },
+    "secondary": null,
+    "steps": [
+      "Caller requested a human agent immediately.",
+      "AI acknowledged the request and asked for the caller's name and intent.",
+      "Caller specified they wanted to book a resort in Tennessee.",
+      "AI confirmed the intent and initiated a transfer to the concierge department.",
+      "Caller waited in a long queue (approx. 25 minutes) before the AI re-engaged to state no agents were available."
+    ]
+  },
+  "scores": {
+    "effectiveness": 5,
+    "quality": 5,
+    "effort": 4
+  },
+  "sentiment": {
+    "start": "neutral",
+    "end": "neutral"
+  },
+  "failure": null,
+  "friction": {
+    "clarifications": [
+      {
+        "turn": 11,
+        "type": "name",
+        "cause": "proactive",
+        "note": "Agent re-confirmed name before final transfer"
+      }
+    ],
+    "corrections": [],
+    "loops": []
+  },
+  "actions": [
+    {
+      "type": "transfer",
+      "outcome": "failed",
+      "detail": "Transferred to concierge but queue timed out with no agents"
+    }
+  ],
+  "insights": {
+    "summary": "The customer wanted to book a resort stay, which is out of scope for the AI. The AI correctly gathered the necessary information and transferred the caller, but the call ended because no human agents were available in the queue.",
+    "verbatim": "I would like to book Bar Resort in Tennessee and I'm having trouble.",
+    "coaching": null
+  },
+  "call_id": "14706655-8579-483d-aa0a-135e4c89a89e",
+  "schema_version": "v6.0",
+  "duration_seconds": 1617.0,
+  "ended_by": "agent"
+}

@@ -1,0 +1,85 @@
+{
+  "turns": 12,
+  "repeat_caller": false,
+  "derailed_at": null,
+  "resolution": {
+    "primary": {
+      "request_category": "portal_account",
+      "request": "Set up owner account login",
+      "context": "Caller has never logged into the owner portal before and needs a registration link",
+      "human_requested": null,
+      "department_requested": null,
+      "scope": "in_scope",
+      "outcome": "fulfilled",
+      "detail": "The agent verified the caller and sent a Clubhouse registration link to the updated email address provided.",
+      "resolution_confirmed": true,
+      "transfer": null,
+      "abandon_stage": null
+    },
+    "secondary": null,
+    "steps": [
+      "Caller requested help logging into their account.",
+      "Agent performed account lookup via phone number and verified identity with name and state.",
+      "Agent identified that the caller needed a new registration link for the Clubhouse portal.",
+      "Agent confirmed contact details; caller corrected the email address and phone number.",
+      "Agent confirmed the updated details and sent the registration link.",
+      "Caller confirmed satisfaction and the call was closed."
+    ]
+  },
+  "scores": {
+    "effectiveness": 5,
+    "quality": 5,
+    "effort": 2
+  },
+  "sentiment": {
+    "start": "neutral",
+    "end": "satisfied"
+  },
+  "impediment": null,
+  "agent_issue": null,
+  "friction": {
+    "clarifications": [
+      {
+        "turn": 13,
+        "type": "intent",
+        "cause": "proactive",
+        "note": "Agent confirms if registration link is needed"
+      }
+    ],
+    "corrections": [
+      {
+        "turn": 16,
+        "severity": "minor",
+        "note": "Caller corrected email and phone number digits"
+      }
+    ],
+    "loops": []
+  },
+  "actions": [
+    {
+      "type": "account_lookup",
+      "outcome": "success",
+      "detail": "Lookup by phone number 8137894506"
+    },
+    {
+      "type": "verification",
+      "outcome": "success",
+      "detail": "Verified name and state (Florida)"
+    },
+    {
+      "type": "send_clubhouse_link",
+      "outcome": "success",
+      "detail": "Sent link to rdnorman1@gmail.com"
+    }
+  ],
+  "insights": {
+    "summary": "The caller wanted to set up their owner account for the first time. The agent successfully verified the caller, updated their contact information, and sent a Clubhouse registration link.",
+    "verbatim": "No. You've been very helpful.",
+    "coaching": null
+  },
+  "call_id": "0a434683-1ac4-4f26-83ee-c6fce1040ef4",
+  "schema_version": "v7.0",
+  "duration_seconds": 187.9,
+  "ended_by": "agent",
+  "ended_reason": "assistant-ended-call"
+}

@@ -1,0 +1,68 @@
+{
+  "turns": 9,
+  "repeat_caller": false,
+  "derailed_at": null,
+  "resolution": {
+    "primary": {
+      "request_category": "exchange_program",
+      "request": "Resolve missing RCI points deposit",
+      "context": "Caller believed points were missing but actually owns RCI Weeks, requiring a manual deposit",
+      "human_requested": null,
+      "department_requested": null,
+      "scope": "in_scope",
+      "outcome": "fulfilled",
+      "detail": "AI identified the caller's membership type as RCI Weeks, explained the manual deposit process, and provided the necessary unit and member ID details.",
+      "resolution_confirmed": true,
+      "transfer": null,
+      "abandon_stage": null
+    },
+    "secondary": null,
+    "steps": [
+      "Caller reported missing RCI points.",
+      "AI performed account lookup and identified the contract as RCI Weeks, not Points.",
+      "AI explained the difference and the requirement to manually deposit the week.",
+      "AI provided the RCI Member ID and usage dates.",
+      "AI provided the specific unit number requested for the deposit process."
+    ]
+  },
+  "scores": {
+    "effectiveness": 5,
+    "quality": 5,
+    "effort": 1
+  },
+  "sentiment": {
+    "start": "neutral",
+    "end": "satisfied"
+  },
+  "impediment": null,
+  "agent_issue": null,
+  "friction": {
+    "clarifications": [
+      {
+        "turn": 3,
+        "type": "intent",
+        "cause": "proactive",
+        "note": "Confirming if caller needs contract or membership info"
+      }
+    ],
+    "corrections": [],
+    "loops": []
+  },
+  "actions": [
+    {
+      "type": "account_lookup",
+      "outcome": "success",
+      "detail": "Retrieved contract for Vacation Village at Bonaventure"
+    }
+  ],
+  "insights": {
+    "summary": "The caller was confused about why points hadn't appeared; the AI correctly identified they had a Weeks membership and provided the specific unit and ID info needed to complete a manual deposit.",
+    "verbatim": "Missing point deposit with RCI.",
+    "coaching": null
+  },
+  "call_id": "06378125-12dc-438e-a8ef-e992e2e5f3e4",
+  "schema_version": "v7.0",
+  "duration_seconds": 192.4,
+  "ended_by": "agent",
+  "ended_reason": "assistant-ended-call"
+}

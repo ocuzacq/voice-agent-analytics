@@ -1,0 +1,212 @@
+{
+  "agent_id": "IdNSnJmoukxviqoTIWOZ",
+  "duration": 218.730132,
+  "ended_reason": "assistant-ended-call",
+  "messages": [
+    {
+      "role": "assistant",
+      "timestamp": 1770668838.9955325,
+      "content": "Hi, thank you for calling Vacation Village Resorts. This is Jamie on a recorded line. How can I help you today?"
+    },
+    {
+      "role": "user",
+      "timestamp": 1770668847.8730474,
+      "content": "I would like to speak with someone about the status of my, uh, timeshare."
+    },
+    {
+      "role": "assistant",
+      "timestamp": 1770668855.1867979,
+      "content": "I can definitely help with contract details or specific questions about your timeshare, like ownership information,"
+    },
+    {
+      "role": "assistant",
+      "timestamp": 1770668855.1867979,
+      "content": "maintenance, or mortgage status. Could you tell me what exactly you'd like to know about your timeshare?"
+    },
+    {
+      "role": "user",
+      "timestamp": 1770668869.5059676,
+      "content": "Well, I"
+    },
+    {
+      "role": "user",
+      "timestamp": 1770668872.1668804,
+      "content": "wanted to schedule a week"
+    },
+    {
+      "role": "user",
+      "timestamp": 1770668874.9440012,
+      "content": "an exchange vacation and"
+    },
+    {
+      "role": "user",
+      "timestamp": 1770668878.200538,
+      "content": "it says"
+    },
+    {
+      "role": "user",
+      "timestamp": 1770668881.2296677,
+      "content": "that I need to contact you before it I can"
+    },
+    {
+      "role": "user",
+      "timestamp": 1770668885.1182244,
+      "content": "I can arrange any vacation?"
+    },
+    {
+      "role": "user",
+      "timestamp": 1770668889.4801362,
+      "content": "So I don't know what the status of my"
+    },
+    {
+      "role": "user",
+      "timestamp": 1770668891.2617247,
+      "content": "timeshare is."
+    },
+    {
+      "role": "assistant",
+      "timestamp": 1770668894.3830934,
+      "content": "So, you\u2019re looking to confirm the status of your timeshare before arranging an exchange vacation. Would you"
+    },
+    {
+      "role": "assistant",
+      "timestamp": 1770668894.3830934,
+      "content": "like me to pull up your contract information to check your ownership status?"
+    },
+    {
+      "role": "user",
+      "timestamp": 1770668891.2617247,
+      "content": "Correct."
+    },
+    {
+      "role": "user",
+      "timestamp": 1770668905.7469125,
+      "content": "Yeah."
+    },
+    {
+      "role": "assistant",
+      "timestamp": 1770668913.4287105,
+      "content": "Here\u2019s what I see for your timeshare: your"
+    },
+    {
+      "role": "assistant",
+      "timestamp": 1770668913.4287105,
+      "content": "contract status is listed as Good Business, your maintenance billing status is Current with a zero balance, and your RCI membership is active. There are no outstanding mortgage or maintenance fees. This means your ownership is in good standing and you\u2019re eligible to schedule an exchange vacation. Is there anything else you\u2019d like to check or need help with before you move forward with your exchange?"
+    },
+    {
+      "role": "user",
+      "timestamp": 1770668938.3952777,
+      "content": "Well, for some reason, they canceled my exchange. RCI canceled my exchange and said I needed to"
+    },
+    {
+      "role": "user",
+      "timestamp": 1770668945.0238318,
+      "content": "talk to you about something. I don't know what."
+    },
+    {
+      "role": "assistant",
+      "timestamp": 1770668947.6252077,
+      "content": "That sounds frustrating, and I Based on your want to contract, help everything is you current: get clarity. your maintenance"
+    },
+    {
+      "role": "assistant",
+      "timestamp": 1770668947.6252077,
+      "content": "balance"
+    },
+    {
+      "role": "assistant",
+      "timestamp": 1770668947.6252077,
+      "content": "is zero,"
+    },
+    {
+      "role": "user",
+      "timestamp": 1770668951.6150239,
+      "content": "Yeah."
+    },
+    {
+      "role": "assistant",
+      "timestamp": 1770668954.6578498,
+      "content": "Your maintenance balance is zero,"
+    },
+    {
+      "role": "assistant",
+      "timestamp": 1770668954.6578498,
+      "content": "your contract status is Good Business, and your RCI membership is active, so there are no outstanding issues on your account that would prevent exchanges. Sometimes RCI may require confirmation from the resort or developer, or there could be a technical issue. Did RCI give you any specific reason for the cancellation, or mention any documentation or action needed from Vacation Village Resorts?"
+    },
+    {
+      "role": "user",
+      "timestamp": 1770668981.2478275,
+      "content": "No. You just wanted me to contact you."
+    },
+    {
+      "role": "assistant",
+      "timestamp": 1770668984.5428727,
+      "content": "Alright, since your contract is in good standing and there are no outstanding balances or issues,"
+    },
+    {
+      "role": "assistant",
+      "timestamp": 1770668984.5428727,
+      "content": "you should be eligible for exchanges. Sometimes RCI requests owners to confirm their account status directly with us, which you\u2019ve now done. Would you like me to send you a maintenance account history link so you can view your full maintenance billing history, or is there something else you\u2019d like to check regarding your ownership?"
+    },
+    {
+      "role": "user",
+      "timestamp": 1770669005.228245,
+      "content": "Yes. Please send me that information."
+    },
+    {
+      "role": "user",
+      "timestamp": 1770669009.3364298,
+      "content": "And"
+    },
+    {
+      "role": "assistant",
+      "timestamp": 1770669013.7196121,
+      "content": "I\u2019ll send"
+    },
+    {
+      "role": "assistant",
+      "timestamp": 1770669013.7196121,
+      "content": "you a maintenance account history link so you can view your full billing history. Is there anything else you\u2019d like to check about your timeshare ownership?"
+    },
+    {
+      "role": "user",
+      "timestamp": 1770669009.3364298,
+      "content": "yeah,"
+    },
+    {
+      "role": "user",
+      "timestamp": 1770669024.5212803,
+      "content": "Do you do I deposit the weeks through you?"
+    },
+    {
+      "role": "assistant",
+      "timestamp": 1770669029.2140527,
+      "content": "Great question! Depositing your week for exchange is actually done directly"
+    },
+    {
+      "role": "assistant",
+      "timestamp": 1770669029.2140527,
+      "content": "through RCI, not through Vacation Village Resorts. You would log in to your RCI account and deposit your eligible week there. Is there anything else you\u2019d like to know about the process?"
+    },
+    {
+      "role": "user",
+      "timestamp": 1770669024.5212803,
+      "content": "Okay."
+    },
+    {
+      "role": "user",
+      "timestamp": 1770669046.3103304,
+      "content": "No. Thank you."
+    },
+    {
+      "role": "assistant",
+      "timestamp": 1770669049.0827572,
+      "content": "It was nice speaking with you today."
+    },
+    {
+      "role": "assistant",
+      "timestamp": 1770669049.0827572,
+      "content": "If you have any other questions in the future, feel free to call us back. Have a wonderful day!"
+    }
+  ]
+}

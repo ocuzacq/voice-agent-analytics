@@ -128,23 +128,23 @@ python3 tools/query.py runs/run_XXXX/ --dashboard
 python3 tools/query.py runs/run_XXXX/ -q "SELECT call_scope, call_outcome, COUNT(*) FROM calls GROUP BY 1, 2"
 ```
 
-### V6 Dashboard (v6.0 schema)
+### V7 Dashboard
 
-19-section narrative dashboard reading v6.0 analysis JSONs via DuckDB `read_json_auto()`:
+20-section narrative dashboard reading v7.0 analysis JSONs via DuckDB `read_json_auto()`:
 
 ```bash
-# Run on any directory of v6.0 analysis JSONs
-python3 tools/dashboard_v6.py tests/golden/analyses_v6_prompt_v5/
+# Run on any directory of v7 analysis JSONs
+python3 tools/dashboard_v7.py tests/golden/analyses_v7/
 
-# Older data without human_requested — Act 2 auto-skipped
-python3 tools/dashboard_v6.py tests/golden/analyses_v6_review/batch_50/
+# Older v6 data — Act 2 auto-skipped if human_requested absent, Queue Performance skipped if queue_result absent
+python3 tools/dashboard_v7.py tests/golden/analyses_v6_review/batch_50/
 ```
 
 **4-act structure:**
 1. **The Big Picture** — KPIs, funnel, scope x outcome, top requests
-2. **Human-Request Phenomenon** — human_requested rates, organic containment, departments (v5+ only)
-3. **Quality & Failure** — failure modes, preventable escalations, scores, sentiment
-4. **Operational Details** — duration, actions, transfers, friction, abandons, secondary intents
+2. **Human-Request Phenomenon** — human_requested rates, organic containment, departments
+3. **Quality & Impediments** — impediments, agent issues, preventable escalations, scores, sentiment
+4. **Operational Details** — duration, actions, transfers, queue performance, friction, abandons, secondary intents
 
 ### Ad-hoc Q&A Tools
 
@@ -164,6 +164,29 @@ sampled/ → ask_raw.py → asks_raw/<timestamp>/
 - Preprocesses on-the-fly (coalesces fragmented ASR messages)
 - Lower default limit (30) due to larger per-call context
 - Auto-saves to `asks_raw/`
+
+**`ask_struct_v7.py`** — queries v7 structured analyses with full schema awareness
+```
+v7 analyses/ → ask_struct_v7.py → asks_v7/<timestamp>/
+```
+- Auto-generates schema description from Pydantic models (LLM sees every field + enum)
+- Supports `--filter` for keyword pre-filtering before sampling
+- Handles flat and subdirectory layouts (e.g. scope:outcome subdirs)
+- No run integration — bare `--analyses-dir` only
+
+```bash
+# Basic usage
+python3 tools/ask_struct_v7.py "What are the main customer requests?" \
+  --analyses-dir tests/golden/analyses_v6_review/
+
+# Topic deep-dive with filter
+python3 tools/ask_struct_v7.py "Recap all RCI-related calls" \
+  --analyses-dir tests/golden/analyses_v6_review/ --filter RCI
+
+# Control sample size and show token usage
+python3 tools/ask_struct_v7.py "Why do transfers fail?" \
+  --analyses-dir path/ --limit 50 --stats
+```
 
 ### Parallelization (v3.2)
 
@@ -200,28 +223,34 @@ python3 tools/test_v37_features.py
 python3 tools/test_v36_features.py
 ```
 
-### v6.0 Schema Testing (Structured Output)
+### v7.0 Schema Testing (Structured Output)
 
 Per-intent resolution schema with Gemini structured output (`response_schema`).
 
-**Current prompt version**: v5 — scope fix + `human_requested` / `department_requested` fields.
+**Current schema**: v7.0 — impediment/agent_issue model, queue_result on transfers.
 
 ```bash
 # Single transcript analysis
 python3 tools/poc_structured_full.py tests/golden/transcripts/<uuid>.json
 
-# Batch all 23 golden transcripts
-python3 tools/batch_golden_v6.py --output-dir tests/golden/analyses_v6_prompt_v5
+# Batch golden transcripts (36 transcripts, full enum coverage)
+python3 tools/batch_analyze_v7.py --input-dir tests/golden/transcripts/ --output-dir tests/golden/analyses_v7
 
-# Compare two prompt versions (finds regressions)
-python3 tools/compare_golden.py tests/golden/analyses_v6_prompt_v4 tests/golden/analyses_v6_prompt_v5
+# Batch any directory of transcripts
+python3 tools/batch_analyze_v7.py --input-dir transcripts/ --output-dir runs/v7_batch/
+
+# Batch from a file list
+python3 tools/batch_analyze_v7.py --transcript-list /tmp/recent_500.txt --output-dir runs/v7_batch/ --workers 3
+
+# Compare against previous schema version
+python3 tools/compare_golden.py tests/golden/analyses_v6_prompt_v5 tests/golden/analyses_v7
 
 # Stability test: run volatile transcripts N times to verify consistency
 python3 tools/stability_test.py              # default: 3 volatile transcripts × 5 reps
 python3 tools/stability_test.py -n 5 --transcripts path1.json path2.json
 ```
 
-**Prompt tuning workflow**: edit prompt in `poc_structured_full.py` → run `stability_test.py` on affected transcripts → run `batch_golden_v6.py` → run `compare_golden.py` to check for regressions.
+**Prompt tuning workflow**: edit prompt in `poc_structured_full.py` → run `stability_test.py` on affected transcripts → run `batch_analyze_v7.py` on golden set → run `compare_golden.py` to check for regressions.
 
 ## LLM Provider
 
@@ -256,7 +285,7 @@ python3 tools/stability_test.py -n 5 --transcripts path1.json path2.json
 - `medium`: Balanced reasoning
 - `high`: Deep reasoning, slower
 
-**Note:** Gemini 3 Pro only supports LOW/HIGH when explicitly set. Thinking tokens count against `max_output_tokens`, so use higher limits (16384+) when using thinking configs.
+**Note:** Gemini 3 Pro only supports LOW/HIGH when explicitly set. Thinking tokens count against `max_output_tokens`, so use higher limits when using thinking configs. `ask_struct_v7.py` uses 65536 max output tokens to avoid truncation on large analytical responses.
 
 ### API Key
 

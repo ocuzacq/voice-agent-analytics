@@ -1,0 +1,105 @@
+{
+  "turns": 8,
+  "repeat_caller": false,
+  "derailed_at": 7,
+  "resolution": {
+    "primary": {
+      "request": "Speak to a live representative",
+      "context": "Caller immediately requested human assistance upon greeting.",
+      "scope": "in_scope",
+      "outcome": "abandoned",
+      "detail": "The agent attempted a transfer to concierge, but after a 25-minute hold, the system reported no agents available and the caller eventually disconnected during a re-engagement loop.",
+      "resolution_confirmed": null,
+      "transfer": {
+        "reason": "customer_requested",
+        "destination": "concierge",
+        "queue_detected": true
+      },
+      "abandon_stage": "mid_task"
+    },
+    "secondary": {
+      "request": "Make a payment",
+      "context": "After the transfer failed, the caller attempted to proceed with the AI to pay.",
+      "scope": "in_scope",
+      "outcome": "abandoned",
+      "detail": "The caller tried to provide payment intent after the queue failed, but became confused by the AI's verification prompts and hung up.",
+      "resolution_confirmed": null,
+      "transfer": null,
+      "abandon_stage": "mid_task"
+    },
+    "steps": [
+      "Agent greeted caller.",
+      "Caller requested a live person.",
+      "Agent warned of 20-minute wait and attempted transfer to concierge.",
+      "Caller waited in queue for approximately 25 minutes.",
+      "Queue failed with 'no representatives available' message; AI re-engaged.",
+      "Caller stated intent to make a payment.",
+      "Agent requested phone number for verification.",
+      "Caller expressed confusion about the AI's identity and disconnected."
+    ]
+  },
+  "scores": {
+    "effectiveness": 2,
+    "quality": 2,
+    "effort": 5
+  },
+  "sentiment": {
+    "start": "neutral",
+    "end": "frustrated"
+  },
+  "failure": {
+    "type": "tech_issue",
+    "detail": "The transfer queue exceeded the wait time and returned the caller to the AI, leading to a confusing interaction and abandonment.",
+    "policy_gap": null
+  },
+  "friction": {
+    "clarifications": [
+      {
+        "turn": 11,
+        "type": "verify",
+        "cause": "proactive",
+        "note": "Agent asked for phone number to start payment flow."
+      }
+    ],
+    "corrections": [
+      {
+        "turn": 14,
+        "severity": "moderate",
+        "note": "Caller confused by AI re-engagement after queue."
+      }
+    ],
+    "loops": [
+      {
+        "turns": [
+          11,
+          13,
+          17
+        ],
+        "type": "info_retry",
+        "subject": "Verification data",
+        "note": "Agent repeatedly asked for phone number or contract ID."
+      }
+    ]
+  },
+  "actions": [
+    {
+      "type": "transfer",
+      "outcome": "failed",
+      "detail": "Transfer to concierge failed after 25 minute wait."
+    },
+    {
+      "type": "verification",
+      "outcome": "retry",
+      "detail": "Attempted to get phone number for account lookup."
+    }
+  ],
+  "insights": {
+    "summary": "The caller requested a human agent immediately but was returned to the AI after a 25-minute hold because no agents were available. The caller then tried to make a payment but became confused by the AI's prompts and abandoned the call.",
+    "verbatim": "Actually, all representatives are currently busy and no one is available to take your call right now.",
+    "coaching": "While the AI correctly handled the initial transfer request, the failure of the human queue created a high-effort experience that the AI could not recover from effectively."
+  },
+  "call_id": "7f3e8168-99b3-4787-9690-bef38a136ea1",
+  "schema_version": "v6.0",
+  "duration_seconds": 1673.0,
+  "ended_by": "customer"
+}

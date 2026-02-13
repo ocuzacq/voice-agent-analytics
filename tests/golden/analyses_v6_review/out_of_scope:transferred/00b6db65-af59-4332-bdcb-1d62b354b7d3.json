@@ -1,0 +1,73 @@
+{
+  "turns": 8,
+  "repeat_caller": false,
+  "derailed_at": null,
+  "resolution": {
+    "primary": {
+      "request": "make a payment",
+      "context": "Customer needs to pay annual maintenance fees or mortgage",
+      "scope": "out_of_scope",
+      "outcome": "transferred",
+      "detail": "The AI attempted to verify the account before transferring for payment processing, but failed to locate the record and routed to concierge.",
+      "resolution_confirmed": null,
+      "transfer": {
+        "reason": "out_of_scope",
+        "destination": "concierge",
+        "queue_detected": false
+      },
+      "abandon_stage": null
+    },
+    "secondary": null,
+    "steps": [
+      "Customer requested to make a payment.",
+      "Agent asked for name and phone number for verification.",
+      "Customer did not know the phone number on file.",
+      "Agent requested contract ID; customer offered account number instead.",
+      "Customer provided a long account number.",
+      "Agent failed to verify the account and transferred to concierge."
+    ]
+  },
+  "scores": {
+    "effectiveness": 4,
+    "quality": 4,
+    "effort": 3
+  },
+  "sentiment": {
+    "start": "neutral",
+    "end": "neutral"
+  },
+  "failure": null,
+  "friction": {
+    "clarifications": [
+      {
+        "turn": 9,
+        "type": "intent",
+        "cause": "proactive",
+        "note": "Agent specifically requested contract ID over other IDs"
+      }
+    ],
+    "corrections": [],
+    "loops": []
+  },
+  "actions": [
+    {
+      "type": "account_lookup",
+      "outcome": "failed",
+      "detail": "Could not locate account with provided number 872100275210"
+    },
+    {
+      "type": "transfer",
+      "outcome": "success",
+      "detail": "Transferred to concierge after verification failure"
+    }
+  ],
+  "insights": {
+    "summary": "Customer called to make a payment but was unable to provide the phone number on the contract. After providing an account number, the AI could not verify the record and correctly transferred the caller to concierge.",
+    "verbatim": "I don't know what number I have on my contract.",
+    "coaching": "The agent handled the lack of information well by offering alternative lookup methods (Contract ID/Account Number) and maintained a patient tone during the customer's pause."
+  },
+  "call_id": "00b6db65-af59-4332-bdcb-1d62b354b7d3",
+  "schema_version": "v6.0",
+  "duration_seconds": 205.6,
+  "ended_by": "customer"
+}

@@ -1,0 +1,79 @@
+{
+  "turns": 10,
+  "repeat_caller": false,
+  "derailed_at": null,
+  "resolution": {
+    "primary": {
+      "request_category": "unit_resort_info",
+      "request": "Check address and ownership on file",
+      "context": "Caller had questions regarding a maintenance bill and wanted to verify account details.",
+      "human_requested": null,
+      "department_requested": null,
+      "scope": "in_scope",
+      "outcome": "fulfilled",
+      "detail": "The AI successfully verified the caller and provided the address and owner name on file.",
+      "resolution_confirmed": true,
+      "transfer": null,
+      "abandon_stage": null
+    },
+    "secondary": null,
+    "steps": [
+      "Caller stated they had questions about a bill.",
+      "AI identified it as a maintenance bill and initiated account lookup via phone number.",
+      "AI performed verification (name and state).",
+      "Caller asked for the address on file; AI provided it.",
+      "Caller asked for the owner name on file; AI provided it.",
+      "Caller confirmed no further assistance was needed."
+    ]
+  },
+  "scores": {
+    "effectiveness": 5,
+    "quality": 5,
+    "effort": 1
+  },
+  "sentiment": {
+    "start": "neutral",
+    "end": "satisfied"
+  },
+  "impediment": null,
+  "agent_issue": null,
+  "friction": {
+    "clarifications": [
+      {
+        "turn": 9,
+        "type": "name",
+        "cause": "misheard",
+        "note": "AI asked for spelling after name mismatch"
+      }
+    ],
+    "corrections": [
+      {
+        "turn": 10,
+        "severity": "minor",
+        "note": "Caller provided 'Valerie' after 'Vincent' mismatch"
+      }
+    ],
+    "loops": []
+  },
+  "actions": [
+    {
+      "type": "account_lookup",
+      "outcome": "success",
+      "detail": "Lookup by phone number 2012138080"
+    },
+    {
+      "type": "verification",
+      "outcome": "success",
+      "detail": "Verified name Valerie Creo and state New Jersey"
+    }
+  ],
+  "insights": {
+    "summary": "The caller wanted to verify the address and ownership details associated with a maintenance bill. The AI successfully looked up the account, verified the caller, and provided the requested information.",
+    "verbatim": "Whose address is on file? ... Who owns the unit?",
+    "coaching": null
+  },
+  "call_id": "743d7b2a-ebf9-4534-a999-667c8687b0e2",
+  "schema_version": "v7.0",
+  "duration_seconds": 162.3,
+  "ended_by": "agent"
+}

@@ -1,0 +1,72 @@
+{
+  "turns": 9,
+  "repeat_caller": false,
+  "derailed_at": 11,
+  "resolution": {
+    "primary": {
+      "request_category": "ownership_exit",
+      "request": "End timeshare ownership",
+      "context": "Caller wants to no longer have ownership over the timeshare",
+      "human_requested": "initial",
+      "department_requested": "concierge",
+      "scope": "out_of_scope",
+      "outcome": "abandoned",
+      "detail": "Caller requested a transfer for ownership exit, but the queue was unavailable and the caller disconnected after being told a callback was not possible.",
+      "resolution_confirmed": null,
+      "transfer": {
+        "reason": "customer_requested",
+        "destination": "concierge",
+        "queue_detected": true,
+        "queue_result": "caller_abandoned"
+      },
+      "abandon_stage": "mid_task"
+    },
+    "secondary": null,
+    "steps": [
+      "Caller requested concierge immediately.",
+      "Agent collected name and intent (ownership exit).",
+      "Agent attempted transfer to concierge.",
+      "Caller waited in queue for over 25 minutes.",
+      "AI re-engaged after queue timeout, stating no agents were available.",
+      "Caller asked for a callback, which the AI could not provide.",
+      "Caller disconnected."
+    ]
+  },
+  "scores": {
+    "effectiveness": 3,
+    "quality": 3,
+    "effort": 5
+  },
+  "sentiment": {
+    "start": "neutral",
+    "end": "frustrated"
+  },
+  "impediment": {
+    "type": "transfer_queue",
+    "detail": "No representatives were available in the concierge queue after a 25-minute wait.",
+    "policy_gap": null
+  },
+  "agent_issue": null,
+  "friction": {
+    "clarifications": [],
+    "corrections": [],
+    "loops": []
+  },
+  "actions": [
+    {
+      "type": "transfer",
+      "outcome": "failed",
+      "detail": "Transfer to concierge timed out after 25 minutes."
+    }
+  ],
+  "insights": {
+    "summary": "The caller wanted to discuss ending their timeshare ownership and requested a human agent immediately. After a 25-minute wait in the queue, the AI re-engaged to report no agents were available and could not offer a callback, leading to an abandoned call.",
+    "verbatim": "I'm calling about our timeshare. We want to no longer have ownership over it.",
+    "coaching": null
+  },
+  "call_id": "0a5afc8b-170e-4d53-8cb9-414afa914328",
+  "schema_version": "v7.0",
+  "duration_seconds": 1644.8,
+  "ended_by": "customer",
+  "ended_reason": "customer-ended-call"
+}

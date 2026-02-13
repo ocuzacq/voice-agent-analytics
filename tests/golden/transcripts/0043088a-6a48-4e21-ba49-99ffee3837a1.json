@@ -1,0 +1,67 @@
+{
+  "agent_id": "IdNSnJmoukxviqoTIWOZ",
+  "duration": 335.548759,
+  "ended_reason": "assistant-forwarded-call",
+  "messages": [
+    {
+      "role": "assistant",
+      "timestamp": 1770654902.0056632,
+      "content": "Hi, thank you for calling Vacation Village Resorts. This is Jamie on a recorded line. How can I help you today?"
+    },
+    {
+      "role": "user",
+      "timestamp": 1770654911.6722457,
+      "content": "Speak to representative."
+    },
+    {
+      "role": "assistant",
+      "timestamp": 1770654915.8859856,
+      "content": "Alright, I can connect you to a representative, but just so you know, we are experiencing longer-than-usual wait times of"
+    },
+    {
+      "role": "assistant",
+      "timestamp": 1770654915.8859856,
+      "content": "up to twenty minutes. The automated system is actually the quickest way to get help and solves about ninety percent of all calls. Would you still like to wait for a representative, or would you prefer to continue with the automated system?"
+    },
+    {
+      "role": "user",
+      "timestamp": 1770654911.6722457,
+      "content": "Yes."
+    },
+    {
+      "role": "assistant",
+      "timestamp": 1770654935.4462261,
+      "content": "Just to clarify, would you like to be connected to a representative, or would you"
+    },
+    {
+      "role": "assistant",
+      "timestamp": 1770654935.4462261,
+      "content": "prefer to continue with the automated system?"
+    },
+    {
+      "role": "user",
+      "timestamp": 1770654942.562027,
+      "content": "Connect with a representative."
+    },
+    {
+      "role": "assistant",
+      "timestamp": 1770654946.7255623,
+      "content": "Please hold while I connect you"
+    },
+    {
+      "role": "assistant",
+      "timestamp": 1770655190.0514755,
+      "content": "Thank you for calling the concierge department for the Vacation Village family of resorts, where owner satisfaction is our top priority. We apologize for the brief wait, and we appreciate your patience. Our hours of operation are 8:30 AM to 6:00 PM Eastern Standard Time. We understand that sometimes nothing beats speaking to a real person. Our team is working diligently to ensure your call is answered as soon as possible. In the meantime, why not explore our website and discover all that Vacation Village Resorts has to offer? Our website is a valuable resource filled with product information, frequently asked questions, important contact information for mortgage services and maintenance fee payments, and much more. Save time and find the answers you need at vacationvillageresorts.com. For real-time assistance, we encourage you to try out our Text Us Now feature. Simply visit our website and look for the Text Us button"
+    },
+    {
+      "role": "assistant",
+      "timestamp": null,
+      "content": "Thank you for calling the concierge department for the Vacation Village family of resorts, where owner satisfaction is our top priority. We apologize for the brief wait, and we appreciate your patience. Our hours of operation are 8:30 AM to 6:00 PM Eastern Standard Time. We understand that sometimes nothing beats speaking to a real person. Our team is working diligently to ensure your call is answered as soon as possible. In the meantime, why not explore our website and discover all that Vacation Village Resorts has to offer? Our website is a valuable resource filled with product information, frequently asked questions, important contact information for mortgage services and maintenance fee payments, and much more. Save time and find the answers you need at vacationvillageresorts.com. For real-time assistance, we encourage you to try out our Text Us Now feature. Simply visit our website and look for the Text Us button at the bottom right corner of the screen. With just a few taps, you can connect with one of our dedicated agents who will be happy to assist you promptly. At Vacation Village Resorts, we believe in providing exceptional customer service at every touchpoint. If you prefer to remain on the line, rest assured that your call is essential to us, and we'll be with you shortly."
+    },
+    {
+      "role": "assistant",
+      "timestamp": 1770655232.670495,
+      "content": "I will now connect you."
+    }
+  ]
+}

@@ -1,0 +1,68 @@
+{
+  "turns": 5,
+  "repeat_caller": false,
+  "derailed_at": null,
+  "resolution": {
+    "primary": {
+      "request_category": "ownership_exit",
+      "request": "Verify legitimacy of deedback offer",
+      "context": "Caller received offers about a deedback and wanted to confirm if they were official",
+      "human_requested": null,
+      "department_requested": null,
+      "scope": "out_of_scope",
+      "outcome": "fulfilled",
+      "detail": "AI correctly identified deedback as out of scope, provided account status info, and directed the caller to the official website to verify legitimacy.",
+      "resolution_confirmed": true,
+      "transfer": null,
+      "abandon_stage": null
+    },
+    "secondary": null,
+    "steps": [
+      "Caller asked about deedback for Bonaventure account.",
+      "Agent clarified the request and stated deedback actions are out of scope.",
+      "Agent offered to look up contract details to provide account context.",
+      "Agent performed account lookup and provided contract number, status, and balance.",
+      "Agent advised caller to verify offers via the official website contact page."
+    ]
+  },
+  "scores": {
+    "effectiveness": 5,
+    "quality": 5,
+    "effort": 1
+  },
+  "sentiment": {
+    "start": "neutral",
+    "end": "neutral"
+  },
+  "impediment": null,
+  "agent_issue": null,
+  "friction": {
+    "clarifications": [
+      {
+        "turn": 3,
+        "type": "intent",
+        "cause": "proactive",
+        "note": "Agent clarifying if user needs account help or links"
+      }
+    ],
+    "corrections": [],
+    "loops": []
+  },
+  "actions": [
+    {
+      "type": "account_lookup",
+      "outcome": "success",
+      "detail": "Retrieved Bonaventure contract 518191 via caller ID"
+    }
+  ],
+  "insights": {
+    "summary": "The caller wanted to verify a deedback offer; the AI correctly identified this as out of scope but provided helpful account information and instructions on how to verify legitimacy through official channels.",
+    "verbatim": "I received offers about a d back and wanted to see if it was legitimate.",
+    "coaching": null
+  },
+  "call_id": "0460e184-9d30-4137-9f2e-f130433a49dd",
+  "schema_version": "v7.0",
+  "duration_seconds": 127.1,
+  "ended_by": "agent",
+  "ended_reason": "assistant-ended-call"
+}

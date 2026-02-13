@@ -1,0 +1,73 @@
+{
+  "turns": 3,
+  "repeat_caller": false,
+  "derailed_at": null,
+  "resolution": {
+    "primary": {
+      "request_category": "human_transfer",
+      "request": "Speak to a representative",
+      "context": "Caller immediately requested human assistance",
+      "human_requested": "initial",
+      "department_requested": null,
+      "scope": "out_of_scope",
+      "outcome": "transferred",
+      "detail": "The caller requested a representative at the start of the call and was transferred to the concierge queue.",
+      "resolution_confirmed": null,
+      "transfer": {
+        "reason": "customer_requested",
+        "destination": "concierge",
+        "queue_detected": true,
+        "queue_result": "connected"
+      },
+      "abandon_stage": null
+    },
+    "secondary": null,
+    "steps": [
+      "Agent greeted caller",
+      "Caller requested a representative",
+      "Agent attempted to deflect with wait time warning",
+      "Caller confirmed desire for representative",
+      "Agent transferred caller to concierge queue"
+    ]
+  },
+  "scores": {
+    "effectiveness": 5,
+    "quality": 5,
+    "effort": 2
+  },
+  "sentiment": {
+    "start": "neutral",
+    "end": "neutral"
+  },
+  "impediment": null,
+  "agent_issue": null,
+  "friction": {
+    "clarifications": [
+      {
+        "turn": 5,
+        "type": "intent",
+        "cause": "unclear",
+        "note": "Caller said 'Yes' to binary choice"
+      }
+    ],
+    "corrections": [],
+    "loops": []
+  },
+  "actions": [
+    {
+      "type": "transfer",
+      "outcome": "success",
+      "detail": "Transferred to concierge department per caller request"
+    }
+  ],
+  "insights": {
+    "summary": "The caller requested a representative immediately upon greeting. After a brief clarification regarding a deflection attempt, the agent successfully transferred the caller to the concierge queue.",
+    "verbatim": "Speak to representative.",
+    "coaching": null
+  },
+  "call_id": "0043088a-6a48-4e21-ba49-99ffee3837a1",
+  "schema_version": "v7.0",
+  "duration_seconds": 335.5,
+  "ended_by": "agent",
+  "ended_reason": "assistant-forwarded-call"
+}

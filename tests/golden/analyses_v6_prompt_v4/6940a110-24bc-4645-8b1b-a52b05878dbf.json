@@ -1,0 +1,103 @@
+{
+  "turns": 9,
+  "repeat_caller": false,
+  "derailed_at": 13,
+  "resolution": {
+    "primary": {
+      "request": "pay maintenance fees",
+      "context": "Caller cannot access account to view balance or pay fees",
+      "scope": "in_scope",
+      "outcome": "transferred",
+      "detail": "The AI could not verify the caller's name against the contract ID and transferred to concierge.",
+      "resolution_confirmed": null,
+      "transfer": {
+        "reason": "task_failure",
+        "destination": "concierge",
+        "queue_detected": true
+      },
+      "abandon_stage": null
+    },
+    "secondary": null,
+    "steps": [
+      "Caller requested to pay maintenance fees and reported account access issues.",
+      "Agent performed account lookup using contract ID provided by the caller.",
+      "Agent found a record but the name on file (Kenneth Beaumont) did not match the caller (Sandra Haining).",
+      "After multiple failed name verification attempts, the agent transferred the caller to the concierge department."
+    ]
+  },
+  "scores": {
+    "effectiveness": 3,
+    "quality": 4,
+    "effort": 4
+  },
+  "sentiment": {
+    "start": "neutral",
+    "end": "neutral"
+  },
+  "failure": {
+    "type": "wrong_action",
+    "detail": "Agent persisted in name verification loops despite a clear mismatch between the caller and the contract holder, rather than acknowledging the mismatch and offering a path forward or transferring sooner.",
+    "policy_gap": null
+  },
+  "friction": {
+    "clarifications": [
+      {
+        "turn": 11,
+        "type": "verify",
+        "cause": "proactive",
+        "note": "Agent asking to confirm name on contract"
+      },
+      {
+        "turn": 17,
+        "type": "verify",
+        "cause": "refused",
+        "note": "Agent asking for letter-by-letter spelling"
+      }
+    ],
+    "corrections": [
+      {
+        "turn": 14,
+        "severity": "major",
+        "note": "Caller rejects name Kenneth Beaumont provided by agent"
+      }
+    ],
+    "loops": [
+      {
+        "turns": [
+          13,
+          15,
+          17
+        ],
+        "type": "info_retry",
+        "subject": "name verification",
+        "note": "Repeatedly asking for name despite mismatch"
+      }
+    ]
+  },
+  "actions": [
+    {
+      "type": "account_lookup",
+      "outcome": "success",
+      "detail": "Looked up record using contract ID 350375"
+    },
+    {
+      "type": "verification",
+      "outcome": "failed",
+      "detail": "Name Sandra Haining did not match Kenneth Beaumont"
+    },
+    {
+      "type": "transfer",
+      "outcome": "success",
+      "detail": "Transferred to concierge after verification failure"
+    }
+  ],
+  "insights": {
+    "summary": "The caller wanted to pay maintenance fees but was blocked by a name mismatch during the verification process. The AI attempted to verify the name multiple times before transferring to a human agent.",
+    "verbatim": "I'm looking at owner's invoice. And my name is on the owner's invoice.",
+    "coaching": "When a name mismatch occurs after a successful contract ID lookup, the agent should recognize that the caller may be a spouse or family member and either proceed with a limited-scope link delivery or transfer immediately rather than looping on name spelling."
+  },
+  "call_id": "6940a110-24bc-4645-8b1b-a52b05878dbf",
+  "schema_version": "v6.0",
+  "duration_seconds": 1119.0,
+  "ended_by": "customer"
+}

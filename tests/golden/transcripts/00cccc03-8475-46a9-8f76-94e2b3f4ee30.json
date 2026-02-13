@@ -1,0 +1,37 @@
+{
+  "agent_id": "IdNSnJmoukxviqoTIWOZ",
+  "duration": 78.768267,
+  "ended_reason": "silence-timeout",
+  "messages": [
+    {
+      "role": "assistant",
+      "timestamp": 1770655986.7473056,
+      "content": "Hi, thank you for calling Vacation Village Resorts. This is Jamie on a recorded line. How can I help you today?"
+    },
+    {
+      "role": "assistant",
+      "timestamp": 1770656010.3532853,
+      "content": "Is there something"
+    },
+    {
+      "role": "assistant",
+      "timestamp": 1770656010.3532853,
+      "content": "I can help you with today?"
+    },
+    {
+      "role": "assistant",
+      "timestamp": 1770656029.1977837,
+      "content": "Are"
+    },
+    {
+      "role": "assistant",
+      "timestamp": 1770656029.1977837,
+      "content": "you still there?"
+    },
+    {
+      "role": "assistant",
+      "timestamp": 1770656047.7248788,
+      "content": "Would you like to continue?"
+    }
+  ]
+}
